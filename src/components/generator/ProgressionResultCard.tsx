@@ -1,8 +1,9 @@
-import { Bookmark, BookmarkCheck } from "lucide-react"
+import { Bookmark, BookmarkCheck, Play, Square } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card"
 import { STYLE_OPTIONS } from "@/features/chord-engine/templates"
+import { usePlayerStore } from "@/store/usePlayerStore"
 import type { GeneratedProgression } from "@/types/progression"
 import { MOOD_OPTIONS, SECTION_OPTIONS } from "@/types/music"
 import { ScoreBadge } from "./ScoreBadge"
@@ -17,6 +18,9 @@ export function ProgressionResultCard({ progression, saved, onSave }: Props) {
   const styleLabel = STYLE_OPTIONS.find((s) => s.value === progression.style)?.label
   const sectionLabel = SECTION_OPTIONS.find((s) => s.value === progression.section)?.label
   const moodLabel = MOOD_OPTIONS.find((m) => m.value === progression.mood)?.label
+  const playingId = usePlayerStore((s) => s.playingId)
+  const play = usePlayerStore((s) => s.play)
+  const playing = playingId === progression.id
 
   return (
     <Card className="flex h-full flex-col gap-4 border-border/60">
@@ -43,10 +47,28 @@ export function ProgressionResultCard({ progression, saved, onSave }: Props) {
           <ScoreBadge scores={progression.scores} compact />
         </div>
       </CardContent>
-      <CardFooter>
+      <CardFooter className="gap-2">
+        <Button
+          variant="outline"
+          className="shrink-0"
+          onClick={() => play(progression.id, progression.chords, progression.style)}
+          aria-label={playing ? "停止" : "試聴"}
+        >
+          {playing ? (
+            <>
+              <Square data-icon="inline-start" />
+              停止
+            </>
+          ) : (
+            <>
+              <Play data-icon="inline-start" />
+              試聴
+            </>
+          )}
+        </Button>
         <Button
           variant={saved ? "secondary" : "default"}
-          className="w-full"
+          className="flex-1"
           onClick={onSave}
           disabled={saved}
         >

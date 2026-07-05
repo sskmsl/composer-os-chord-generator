@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react"
 import { Link, useNavigate, useParams } from "react-router-dom"
-import { ArrowLeft, Save, Trash2 } from "lucide-react"
+import { ArrowLeft, Play, Save, Square, Trash2 } from "lucide-react"
 import { toast } from "sonner"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -11,6 +11,7 @@ import { ConfirmDeleteDialog } from "@/components/ConfirmDeleteDialog"
 import { ScoreBadge } from "@/components/generator/ScoreBadge"
 import { STYLE_OPTIONS } from "@/features/chord-engine/templates"
 import { useAppStore } from "@/store/useAppStore"
+import { usePlayerStore } from "@/store/usePlayerStore"
 import { MOOD_OPTIONS, SECTION_OPTIONS } from "@/types/music"
 import { formatDate } from "@/utils/date"
 
@@ -35,6 +36,8 @@ export function ProgressionDetailPage() {
   const loaded = useAppStore((s) => s.loaded)
   const updateSaved = useAppStore((s) => s.updateSaved)
   const deleteSaved = useAppStore((s) => s.deleteSaved)
+  const playingId = usePlayerStore((s) => s.playingId)
+  const play = usePlayerStore((s) => s.play)
 
   const progression = saved.find((p) => p.id === id)
 
@@ -130,16 +133,34 @@ export function ProgressionDetailPage() {
               <Badge variant="outline" className="font-normal">{moodLabel}</Badge>
             </div>
           </div>
-          <ConfirmDeleteDialog
-            title="進行を削除しますか?"
-            description={`「${progression.chords.join(" – ")}」を削除します。この操作は取り消せません。`}
-            onConfirm={() => void handleDelete()}
-            trigger={
-              <Button variant="destructive" size="icon" aria-label="進行を削除">
-                <Trash2 />
-              </Button>
-            }
-          />
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              onClick={() => play(progression.id, progression.chords, progression.style)}
+            >
+              {playingId === progression.id ? (
+                <>
+                  <Square data-icon="inline-start" />
+                  停止
+                </>
+              ) : (
+                <>
+                  <Play data-icon="inline-start" />
+                  試聴
+                </>
+              )}
+            </Button>
+            <ConfirmDeleteDialog
+              title="進行を削除しますか?"
+              description={`「${progression.chords.join(" – ")}」を削除します。この操作は取り消せません。`}
+              onConfirm={() => void handleDelete()}
+              trigger={
+                <Button variant="destructive" size="icon" aria-label="進行を削除">
+                  <Trash2 />
+                </Button>
+              }
+            />
+          </div>
         </div>
       </div>
 

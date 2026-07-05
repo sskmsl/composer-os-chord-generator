@@ -52,9 +52,10 @@ export function SavedProgressionsPage() {
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {saved.map((p) => (
-            <div key={p.id} className="relative">
-              <SavedProgressionCard progression={p} />
-              <div className="absolute top-3 right-3">
+            <SavedProgressionCard
+              key={p.id}
+              progression={p}
+              action={
                 <ConfirmDeleteDialog
                   title="進行を削除しますか?"
                   description={`「${p.chords.join(" – ")}」を削除します。この操作は取り消せません。`}
@@ -65,13 +66,16 @@ export function SavedProgressionsPage() {
                       size="icon-sm"
                       aria-label="進行を削除"
                       className="text-muted-foreground hover:text-destructive"
+                      onClick={(e: React.MouseEvent) => {
+                        e.stopPropagation()
+                      }}
                     >
                       <Trash2 />
                     </Button>
                   }
                 />
-              </div>
-            </div>
+              }
+            />
           ))}
         </div>
       )}
