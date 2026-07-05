@@ -1,5 +1,5 @@
-import type { MoodId, MusicKey, SectionId, StyleId } from "@/types/music"
-import { keyLabel } from "@/types/music"
+import type { MoodId, MusicKey, RuleSection, SectionId, StyleId } from "@/types/music"
+import { keyLabel, sectionRule } from "@/types/music"
 import type { GeneratedProgression } from "@/types/progression"
 import type { ParsedChord } from "./degrees"
 import { bassNoteName, buildToken, chordName, parseToken } from "./degrees"
@@ -67,14 +67,21 @@ function generateOne(params: GenerateParams): GeneratedProgression {
 function selectTemplate(style: StyleId, section: SectionId, mood: MoodId, key: MusicKey): string[] {
   const templates = STYLE_TEMPLATES[style][key.mode]
   const affinity = MOOD_PROFILES[mood].affinity
+  const rule = sectionRule(section)
 
   const weights = templates.map((template) => {
     const joined = template.join(" ")
     let w = 1
     if (affinity.some((a) => joined.includes(a))) w += 1.5
-    if (section === "chorus" && template.some((t) => /^i(\(|1|$)/.test(t) || /^I(a|m|$)/.test(t))) w += 1
-    if (section === "bridge" && /bII|#iv|ivm9|iv(?![ms])/.test(joined)) w += 1.5
-    if (section === "verse" && !joined.includes("V7")) w += 0.5
+    if (
+      (rule === "chorus" || rule === "finalChorus") &&
+      template.some((t) => /^i(\(|1|$)/.test(t) || /^I(a|m|$)/.test(t))
+    )
+      w += 1
+    // Final Chorus は bVI→bVII 系の解放感あるテンプレートを優遇
+    if (rule === "finalChorus" && joined.includes("bVI") && joined.includes("bVII")) w += 1.5
+    if (rule === "bridge" && /bII|#iv|ivm9|iv(?![ms])/.test(joined)) w += 1.5
+    if (rule === "verse" && !joined.includes("V7")) w += 0.5
     return w
   })
 
@@ -85,8 +92,9 @@ function selectTemplate(style: StyleId, section: SectionId, mood: MoodId, key: M
 function adaptToSection(tokens: string[], section: SectionId, key: MusicKey): string[] {
   const minor = key.mode === "minor"
   let result = [...tokens]
+  const rule: RuleSection = sectionRule(section)
 
-  switch (section) {
+  switch (rule) {
     case "intro":
       // 疎に: 2〜4コード、終止は未解決に
       if (chance(0.5)) result = result.slice(0, 2)
@@ -106,6 +114,13 @@ function adaptToSection(tokens: string[], section: SectionId, key: MusicKey): st
       break
 
     case "chorus":
+      break
+
+    case "finalChorus":
+      // 最後のサビ: 半分の確率でトニック終止を保証して解放感を出す
+      if (minor && chance(0.5) && !/^i/.test(result[result.length - 1])) {
+        result[result.length - 1] = pick(["i", "i(add9)"])
+      }
       break
 
     case "bridge":

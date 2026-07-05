@@ -1,6 +1,16 @@
+import { FolderPlus } from "lucide-react"
 import { toast } from "sonner"
 import { GeneratorForm } from "@/components/generator/GeneratorForm"
 import { ProgressionResultCard } from "@/components/generator/ProgressionResultCard"
+import { FolderNameDialog } from "@/components/saved/FolderNameDialog"
+import { Button } from "@/components/ui/button"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 import { useAppStore } from "@/store/useAppStore"
 import type { GeneratedProgression } from "@/types/progression"
 
@@ -9,6 +19,10 @@ export function GeneratorPage() {
   const params = useAppStore((s) => s.params)
   const saved = useAppStore((s) => s.saved)
   const saveProgression = useAppStore((s) => s.saveProgression)
+  const folders = useAppStore((s) => s.folders)
+  const saveTargetFolderId = useAppStore((s) => s.saveTargetFolderId)
+  const setSaveTargetFolder = useAppStore((s) => s.setSaveTargetFolder)
+  const createFolder = useAppStore((s) => s.createFolder)
 
   const savedIds = new Set(saved.map((p) => p.id))
 
@@ -32,11 +46,53 @@ export function GeneratorPage() {
 
       {results.length > 0 ? (
         <>
-          <p className="text-sm text-muted-foreground">
-            {results.length}件の候補
-            {results.length < params.count &&
-              `(重複を除いたユニークな進行は${results.length}件でした)`}
-          </p>
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <p className="text-sm text-muted-foreground">
+              {results.length}件の候補
+              {results.length < params.count &&
+                `(重複を除いたユニークな進行は${results.length}件でした)`}
+            </p>
+            <div className="flex items-center gap-2">
+              <span className="text-xs tracking-wider text-muted-foreground uppercase">
+                保存先
+              </span>
+              <Select
+                items={[
+                  { value: "none", label: "未分類" },
+                  ...folders.map((f) => ({ value: f.id, label: f.name })),
+                ]}
+                value={saveTargetFolderId ?? "none"}
+                onValueChange={(v) => setSaveTargetFolder(v === "none" ? null : (v as string))}
+              >
+                <SelectTrigger size="sm" aria-label="保存先フォルダ">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">未分類</SelectItem>
+                  {folders.map((f) => (
+                    <SelectItem key={f.id} value={f.id}>
+                      {f.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <FolderNameDialog
+                title="新しいフォルダ(曲)"
+                description="この曲の進行をまとめるフォルダを作成します。"
+                submitLabel="作成する"
+                onSubmit={async (name) => {
+                  const folder = await createFolder(name)
+                  setSaveTargetFolder(folder.id)
+                  toast.success(`フォルダ「${folder.name}」を作成しました`)
+                }}
+                trigger={
+                  <Button variant="outline" size="icon-sm" aria-label="フォルダを作成">
+                    <FolderPlus />
+                  </Button>
+                }
+              />
+            </div>
+          </div>
           <div className="grid items-stretch gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {results.map((p) => (
               <ProgressionResultCard

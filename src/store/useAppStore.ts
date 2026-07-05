@@ -1,6 +1,8 @@
 import { create } from "zustand"
 import { generateProgressions, type GenerateParams } from "@/features/chord-engine/generateProgressions"
-import { progressionRepository } from "@/features/storage/progressionRepository"
+import { folderRepository, progressionRepository } from "@/features/storage/progressionRepository"
+import type { Folder } from "@/types/folder"
+import { createFolder as buildFolder } from "@/types/folder"
 import type { MoodId, MusicKey, SectionId, StyleId, VariationCount } from "@/types/music"
 import type { GeneratedProgression, SavedProgression } from "@/types/progression"
 import { toSavedProgression } from "@/types/progression"
@@ -31,6 +33,16 @@ interface AppStore {
   saveProgression(generated: GeneratedProgression): Promise<void>
   updateSaved(id: string, patch: Partial<SavedProgression>): Promise<void>
   deleteSaved(id: string): Promise<void>
+
+  // フォルダ(曲)
+  folders: Folder[]
+  /** Generatorで保存するときの保存先フォルダ(null=未分類) */
+  saveTargetFolderId: string | null
+  setSaveTargetFolder(id: string | null): void
+  createFolder(name: string): Promise<Folder>
+  renameFolder(id: string, name: string): Promise<void>
+  deleteFolder(id: string): Promise<void>
+  moveToFolder(progressionId: string, folderId: string | null): Promise<void>
 }
 
 export const useAppStore = create<AppStore>((set, get) => ({
@@ -69,16 +81,20 @@ export const useAppStore = create<AppStore>((set, get) => ({
 
   async load() {
     try {
-      const saved = await progressionRepository.list()
+      const [saved, folders] = await Promise.all([
+        progressionRepository.list(),
+        folderRepository.list(),
+      ])
       saved.sort((a, b) => b.savedAt.localeCompare(a.savedAt))
-      set({ saved, loaded: true, error: null })
+      folders.sort((a, b) => a.createdAt.localeCompare(b.createdAt))
+      set({ saved, folders, loaded: true, error: null })
     } catch (e) {
       set({ error: e instanceof Error ? e.message : "読み込みに失敗しました", loaded: true })
     }
   },
 
   async saveProgression(generated) {
-    const entry = toSavedProgression(generated)
+    const entry = toSavedProgression(generated, get().saveTargetFolderId)
     await progressionRepository.save(entry)
     set({ saved: [entry, ...get().saved] })
   },
@@ -94,5 +110,52 @@ export const useAppStore = create<AppStore>((set, get) => ({
   async deleteSaved(id) {
     await progressionRepository.delete(id)
     set({ saved: get().saved.filter((p) => p.id !== id) })
+  },
+
+  folders: [],
+  saveTargetFolderId: null,
+
+  setSaveTargetFolder(id) {
+    set({ saveTargetFolderId: id })
+  },
+
+  async createFolder(name) {
+    const trimmed = name.trim()
+    if (trimmed === "") throw new Error("フォルダ名を入力してください")
+    if (get().folders.some((f) => f.name === trimmed)) {
+      throw new Error("同名のフォルダがあります")
+    }
+    const folder = buildFolder(trimmed)
+    await folderRepository.save(folder)
+    set({ folders: [...get().folders, folder] })
+    return folder
+  },
+
+  async renameFolder(id, name) {
+    const trimmed = name.trim()
+    if (trimmed === "") throw new Error("フォルダ名を入力してください")
+    const folder = get().folders.find((f) => f.id === id)
+    if (!folder) throw new Error("フォルダが見つかりません")
+    const updated = { ...folder, name: trimmed }
+    await folderRepository.save(updated)
+    set({ folders: get().folders.map((f) => (f.id === id ? updated : f)) })
+  },
+
+  async deleteFolder(id) {
+    // フォルダ内の進行は削除せず未分類へ移す
+    const affected = get().saved.filter((p) => p.folderId === id)
+    const moved = affected.map((p) => ({ ...p, folderId: null }))
+    await progressionRepository.saveMany(moved)
+    await folderRepository.delete(id)
+    const movedIds = new Set(moved.map((p) => p.id))
+    set({
+      folders: get().folders.filter((f) => f.id !== id),
+      saved: get().saved.map((p) => (movedIds.has(p.id) ? { ...p, folderId: null } : p)),
+      saveTargetFolderId: get().saveTargetFolderId === id ? null : get().saveTargetFolderId,
+    })
+  },
+
+  async moveToFolder(progressionId, folderId) {
+    await get().updateSaved(progressionId, { folderId })
   },
 }))

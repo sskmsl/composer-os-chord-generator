@@ -109,8 +109,8 @@ export function computeScores(
   mood: MoodId,
 ): Scores {
   const darkMood = ["dark", "melancholic", "romantic", "mysterious", "tense"].includes(mood)
-  const liftSection = ["preChorus", "chorus", "outro"].includes(section)
-  const orchestralSection = ["preChorus", "chorus", "bridge"].includes(section)
+  const liftSection = ["preChorus", "chorus", "finalChorus", "outro"].includes(section)
+  const orchestralSection = ["preChorus", "chorus", "finalChorus", "bridge"].includes(section)
   const cinematicStyle = ["cinematic", "finale", "symphonicRock"].includes(style)
 
   const mylene =

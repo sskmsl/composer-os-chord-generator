@@ -8,7 +8,15 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { ConfirmDeleteDialog } from "@/components/ConfirmDeleteDialog"
+import { ChordKeyboard } from "@/components/generator/ChordKeyboard"
 import { ScoreBadge } from "@/components/generator/ScoreBadge"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 import { STYLE_OPTIONS } from "@/features/chord-engine/templates"
 import { useAppStore } from "@/store/useAppStore"
 import { usePlayerStore } from "@/store/usePlayerStore"
@@ -36,6 +44,8 @@ export function ProgressionDetailPage() {
   const loaded = useAppStore((s) => s.loaded)
   const updateSaved = useAppStore((s) => s.updateSaved)
   const deleteSaved = useAppStore((s) => s.deleteSaved)
+  const folders = useAppStore((s) => s.folders)
+  const moveToFolder = useAppStore((s) => s.moveToFolder)
   const playingId = usePlayerStore((s) => s.playingId)
   const play = usePlayerStore((s) => s.play)
 
@@ -165,11 +175,55 @@ export function ProgressionDetailPage() {
       </div>
 
       <div className="grid items-start gap-6 lg:grid-cols-2">
+        <Card className="border-border/60 lg:col-span-2">
+          <CardHeader>
+            <CardTitle className="text-base tracking-wide">鍵盤ポジション</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid gap-4 sm:grid-cols-2">
+              {progression.chords.map((chord, i) => (
+                <ChordKeyboard key={`${chord}-${i}`} symbol={chord} />
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+
         <Card className="border-border/60">
           <CardHeader>
             <CardTitle className="text-base tracking-wide">進行の特徴</CardTitle>
           </CardHeader>
           <CardContent className="flex flex-col gap-4">
+            <div className="flex flex-col gap-2">
+              <p className="text-xs tracking-wider text-muted-foreground uppercase">
+                フォルダ(曲)
+              </p>
+              <Select
+                items={[
+                  { value: "none", label: "未分類" },
+                  ...folders.map((f) => ({ value: f.id, label: f.name })),
+                ]}
+                value={progression.folderId ?? "none"}
+                onValueChange={(v) => {
+                  void moveToFolder(progression.id, v === "none" ? null : (v as string))
+                    .then(() => toast.success("フォルダを移動しました"))
+                    .catch((e: unknown) =>
+                      toast.error(e instanceof Error ? e.message : "移動に失敗しました"),
+                    )
+                }}
+              >
+                <SelectTrigger aria-label="フォルダを選択">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">未分類</SelectItem>
+                  {folders.map((f) => (
+                    <SelectItem key={f.id} value={f.id}>
+                      {f.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
             <div>
               <p className="text-xs tracking-wider text-muted-foreground uppercase">Bass</p>
               <p className="mt-1 font-mono text-sm">{progression.bassMovement}</p>

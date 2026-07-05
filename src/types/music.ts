@@ -14,7 +14,25 @@ export type StyleId =
   | "ritual"
   | "finale"
 
-export type SectionId = "intro" | "verse" | "preChorus" | "chorus" | "bridge" | "outro"
+export type SectionId =
+  | "intro"
+  | "verse"
+  | "verse1"
+  | "verse2"
+  | "verse3"
+  | "preChorus"
+  | "chorus"
+  | "bridge"
+  | "finalChorus"
+  | "outro"
+
+/** エンジンの生成ルール上の基底セクション(Verse 1/2/3 は verse のルールを使う) */
+export type RuleSection = "intro" | "verse" | "preChorus" | "chorus" | "bridge" | "finalChorus" | "outro"
+
+export function sectionRule(section: SectionId): RuleSection {
+  if (section === "verse1" || section === "verse2" || section === "verse3") return "verse"
+  return section
+}
 
 export type MoodId =
   | "melancholic"
@@ -70,9 +88,13 @@ export function keyLabel(key: MusicKey): string {
 export const SECTION_OPTIONS: { value: SectionId; label: string }[] = [
   { value: "intro", label: "Intro" },
   { value: "verse", label: "Verse" },
+  { value: "verse1", label: "Verse 1" },
+  { value: "verse2", label: "Verse 2" },
+  { value: "verse3", label: "Verse 3" },
   { value: "preChorus", label: "Pre-Chorus" },
   { value: "chorus", label: "Chorus" },
   { value: "bridge", label: "Bridge" },
+  { value: "finalChorus", label: "Final Chorus" },
   { value: "outro", label: "Outro" },
 ]
 

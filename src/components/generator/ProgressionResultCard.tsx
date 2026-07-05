@@ -1,4 +1,5 @@
-import { Bookmark, BookmarkCheck, Play, Square } from "lucide-react"
+import { useState } from "react"
+import { Bookmark, BookmarkCheck, Piano, Play, Square } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card"
@@ -6,6 +7,7 @@ import { STYLE_OPTIONS } from "@/features/chord-engine/templates"
 import { usePlayerStore } from "@/store/usePlayerStore"
 import type { GeneratedProgression } from "@/types/progression"
 import { MOOD_OPTIONS, SECTION_OPTIONS } from "@/types/music"
+import { ChordKeyboard } from "./ChordKeyboard"
 import { ScoreBadge } from "./ScoreBadge"
 
 interface Props {
@@ -21,6 +23,7 @@ export function ProgressionResultCard({ progression, saved, onSave }: Props) {
   const playingId = usePlayerStore((s) => s.playingId)
   const play = usePlayerStore((s) => s.play)
   const playing = playingId === progression.id
+  const [showKeys, setShowKeys] = useState(false)
 
   return (
     <Card className="flex h-full flex-col gap-4 border-border/60">
@@ -39,6 +42,13 @@ export function ProgressionResultCard({ progression, saved, onSave }: Props) {
         </p>
       </CardHeader>
       <CardContent className="flex flex-1 flex-col gap-3">
+        {showKeys && (
+          <div className="flex flex-col gap-3 rounded-lg border border-border/60 bg-background/40 p-3">
+            {progression.chords.map((chord, i) => (
+              <ChordKeyboard key={`${chord}-${i}`} symbol={chord} />
+            ))}
+          </div>
+        )}
         <p className="text-xs text-muted-foreground">
           Bass: <span className="font-mono">{progression.bassMovement}</span>
         </p>
@@ -48,6 +58,16 @@ export function ProgressionResultCard({ progression, saved, onSave }: Props) {
         </div>
       </CardContent>
       <CardFooter className="gap-2">
+        <Button
+          variant={showKeys ? "secondary" : "outline"}
+          size="icon"
+          className="shrink-0"
+          onClick={() => setShowKeys((v) => !v)}
+          aria-label={showKeys ? "鍵盤を隠す" : "鍵盤を表示"}
+          aria-pressed={showKeys}
+        >
+          <Piano />
+        </Button>
         <Button
           variant="outline"
           className="shrink-0"

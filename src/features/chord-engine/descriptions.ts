@@ -1,4 +1,5 @@
-import type { MoodId, SectionId, StyleId } from "@/types/music"
+import type { MoodId, RuleSection, SectionId, StyleId } from "@/types/music"
+import { sectionRule } from "@/types/music"
 import type { Features } from "./scoring"
 import { pick } from "./random"
 
@@ -23,12 +24,13 @@ const MOOD_PHRASES: Record<MoodId, string> = {
   tense: "張り詰めた緊張",
 }
 
-const SECTION_CLOSERS: Record<SectionId, string[]> = {
+const SECTION_CLOSERS: Record<RuleSection, string[]> = {
   intro: ["曲の扉を静かに開きます。", "これから始まる物語を予感させます。"],
   verse: ["言葉を語るための余白を残します。", "抑制された足取りで物語を進めます。"],
   preChorus: ["サビへの期待を一気に高めます。", "感情が満ちていく助走になります。"],
   chorus: ["感情の解放点として機能します。", "記憶に残るサビの土台になります。"],
   bridge: ["物語を予期しない場所へ運びます。", "視界が反転するような転換を生みます。"],
+  finalChorus: ["すべての感情を解き放つ最後のサビになります。", "物語の頂点でカタルシスをもたらします。"],
   outro: ["余韻を残したまま景色をフェードさせます。", "終わりきらない残響を漂わせます。"],
 }
 
@@ -55,5 +57,5 @@ export function buildDescription(
       ? `${pick(featurePhrases)}が${MOOD_PHRASES[mood]}を描き、`
       : `${MOOD_PHRASES[mood]}をたたえながら、`
 
-  return `${pick(STYLE_OPENERS[style])}${middle}${pick(SECTION_CLOSERS[section])}`
+  return `${pick(STYLE_OPENERS[style])}${middle}${pick(SECTION_CLOSERS[sectionRule(section)])}`
 }

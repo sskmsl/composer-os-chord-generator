@@ -1,6 +1,5 @@
 import {
   AlertDialog,
-  AlertDialogAction,
   AlertDialogCancel,
   AlertDialogContent,
   AlertDialogDescription,
@@ -9,7 +8,6 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
-import { buttonVariants } from "@/components/ui/button"
 import type { ReactElement } from "react"
 
 interface Props {
@@ -31,12 +29,10 @@ export function ConfirmDeleteDialog({ title, description, onConfirm, trigger }: 
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel>キャンセル</AlertDialogCancel>
-          <AlertDialogAction
-            className={buttonVariants({ variant: "destructive" })}
-            onClick={onConfirm}
-          >
+          {/* Close(内部クローズ)に削除処理を載せて、クリックで確実に閉じる */}
+          <AlertDialogCancel variant="destructive" onClick={onConfirm}>
             削除する
-          </AlertDialogAction>
+          </AlertDialogCancel>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>

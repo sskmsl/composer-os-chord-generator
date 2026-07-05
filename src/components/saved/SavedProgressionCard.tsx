@@ -1,9 +1,10 @@
 import { useNavigate } from "react-router-dom"
-import { Play, Square } from "lucide-react"
+import { Folder, Play, Square } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { STYLE_OPTIONS } from "@/features/chord-engine/templates"
+import { useAppStore } from "@/store/useAppStore"
 import { usePlayerStore } from "@/store/usePlayerStore"
 import type { SavedProgression } from "@/types/progression"
 import { MOOD_OPTIONS, SECTION_OPTIONS } from "@/types/music"
@@ -23,6 +24,10 @@ export function SavedProgressionCard({ progression, action }: Props) {
   const playingId = usePlayerStore((s) => s.playingId)
   const play = usePlayerStore((s) => s.play)
   const playing = playingId === progression.id
+  const folders = useAppStore((s) => s.folders)
+  const folderName = progression.folderId
+    ? folders.find((f) => f.id === progression.folderId)?.name
+    : undefined
 
   const openDetail = () => navigate(`/saved/${progression.id}`)
 
@@ -59,6 +64,12 @@ export function SavedProgressionCard({ progression, action }: Props) {
           </div>
         </div>
         <div className="flex flex-wrap gap-1.5">
+          {folderName && (
+            <Badge variant="outline" className="gap-1 border-primary/40 font-normal text-primary">
+              <Folder className="size-3" />
+              {folderName}
+            </Badge>
+          )}
           <Badge variant="secondary" className="font-normal">{progression.key}</Badge>
           <Badge variant="secondary" className="font-normal">{styleLabel}</Badge>
           <Badge variant="secondary" className="font-normal">{sectionLabel}</Badge>
