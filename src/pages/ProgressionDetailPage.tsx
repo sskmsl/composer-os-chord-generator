@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { Link, useNavigate, useParams } from "react-router-dom"
 import { ArrowLeft, Play, Save, Square, Trash2 } from "lucide-react"
 import { toast } from "sonner"
@@ -58,16 +58,22 @@ export function ProgressionDetailPage() {
     logicProNote: "",
   })
   const [saving, setSaving] = useState(false)
+  const loadedProgressionIdRef = useRef<string | null>(null)
 
   useEffect(() => {
-    if (progression) {
-      setFields({
-        memo: progression.memo,
-        songIdea: progression.songIdea,
-        arrangementNote: progression.arrangementNote,
-        logicProNote: progression.logicProNote,
-      })
+    if (!progression) {
+      loadedProgressionIdRef.current = null
+      return
     }
+    if (loadedProgressionIdRef.current === progression.id) return
+
+    loadedProgressionIdRef.current = progression.id
+    setFields({
+      memo: progression.memo,
+      songIdea: progression.songIdea,
+      arrangementNote: progression.arrangementNote,
+      logicProNote: progression.logicProNote,
+    })
   }, [progression])
 
   if (!loaded) {
