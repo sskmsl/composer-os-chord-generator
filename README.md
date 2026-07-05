@@ -36,7 +36,15 @@ npm run build    # 型チェック + 本番ビルド
 - IndexedDB によるローカル永続化(リロード後も保持、DB v2 でフォルダ対応)
 - **試聴機能**: Web Audio API の内蔵シンセ(デチューンsawパッド+サインベース、
   外部音源不要)で進行を1コード=4拍で再生。テンポはスタイル別
-  (`src/store/usePlayerStore.ts` の STYLE_TEMPO で調整可能)
+  (`src/features/chord-engine/templates.ts` の STYLE_TEMPO で調整可能)
+- **SMF (MIDI) 書き出し**: フォルダ(= 1曲)の構成を **SMF Type 1** の `.mid` として
+  書き出し、Logic Pro にインポート可能。オーディオは含まずノートのみなので音質劣化ゼロ
+  (Logic 側の音源で再生)。曲の構成はフォルダ絞り込み時の「曲の構成」パネルで組む:
+  - セクション(=保存進行)の並べ替え、繰り返し回数(×1〜4)、曲全体のテンポ設定
+  - 1コード = 1小節(4/4)。Track 0 = コンダクター(テンポ・拍子・セクションマーカー)、
+    Track 1 = コード。Logic のマーカーにセクション名(例: `Verse 1 (Am)`)が並ぶ
+  - 実装: `src/features/midi/`(`smf.ts` = ライブラリ非依存のバイナリエンコーダ、
+    `exportSong.ts` = フォルダ→ノート列の組み立て)
 
 ## アーキテクチャ
 

@@ -8,6 +8,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import { ConfirmDeleteDialog } from "@/components/ConfirmDeleteDialog"
 import { FolderNameDialog } from "@/components/saved/FolderNameDialog"
 import { SavedProgressionCard } from "@/components/saved/SavedProgressionCard"
+import { SongPanel } from "@/components/song/SongPanel"
 import { useAppStore } from "@/store/useAppStore"
 import { cn } from "@/lib/utils"
 
@@ -142,6 +143,8 @@ export function SavedProgressionsPage() {
           </div>
         )}
       </div>
+
+      {activeFolder && <SongPanel folder={activeFolder} />}
 
       {!loaded ? (
         <p className="py-12 text-center text-muted-foreground">読み込み中...</p>

@@ -1,17 +1,7 @@
 import { create } from "zustand"
 import { chordPlayer } from "@/features/audio/chordPlayer"
+import { STYLE_TEMPO } from "@/features/chord-engine/templates"
 import type { StyleId } from "@/types/music"
-
-/** スタイルごとの試聴テンポ(BPM) */
-const STYLE_TEMPO: Record<StyleId, number> = {
-  ethereal: 76,
-  romanticDark: 84,
-  cinematic: 80,
-  newWave: 112,
-  symphonicRock: 96,
-  ritual: 70,
-  finale: 88,
-}
 
 interface PlayerStore {
   /** 再生中の進行のid(なければnull) */

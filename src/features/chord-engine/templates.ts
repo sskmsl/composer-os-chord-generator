@@ -107,6 +107,17 @@ export const STYLE_TEMPLATES: Record<StyleId, Record<Mode, string[][]>> = {
   },
 }
 
+/** スタイルごとの標準テンポ(BPM)。試聴とMIDI書き出しのデフォルトに使う */
+export const STYLE_TEMPO: Record<StyleId, number> = {
+  ethereal: 76,
+  romanticDark: 84,
+  cinematic: 80,
+  newWave: 112,
+  symphonicRock: 96,
+  ritual: 70,
+  finale: 88,
+}
+
 export const STYLE_OPTIONS: { value: StyleId; label: string; tagline: string }[] = [
   { value: "ethereal", label: "Ethereal", tagline: "浮遊・透明・夢幻" },
   { value: "romanticDark", label: "Romantic Dark", tagline: "暗い官能とエレガンス" },

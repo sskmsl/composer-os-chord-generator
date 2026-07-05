@@ -1,5 +1,6 @@
 import { create } from "zustand"
 import { generateProgressions, type GenerateParams } from "@/features/chord-engine/generateProgressions"
+import { downloadSongSmf } from "@/features/midi/exportSong"
 import { folderRepository, progressionRepository } from "@/features/storage/progressionRepository"
 import type { Folder } from "@/types/folder"
 import { createFolder as buildFolder } from "@/types/folder"
@@ -43,6 +44,12 @@ interface AppStore {
   renameFolder(id: string, name: string): Promise<void>
   deleteFolder(id: string): Promise<void>
   moveToFolder(progressionId: string, folderId: string | null): Promise<void>
+
+  // 曲構成(フォルダ = 1曲)
+  setFolderTempo(id: string, tempo: number | undefined): Promise<void>
+  setRepeatCount(progressionId: string, count: number): Promise<void>
+  reorderSection(progressionId: string, direction: "up" | "down"): Promise<void>
+  exportFolderAsMidi(folderId: string): void
 }
 
 export const useAppStore = create<AppStore>((set, get) => ({
@@ -157,5 +164,42 @@ export const useAppStore = create<AppStore>((set, get) => ({
 
   async moveToFolder(progressionId, folderId) {
     await get().updateSaved(progressionId, { folderId })
+  },
+
+  async setFolderTempo(id, tempo) {
+    const folder = get().folders.find((f) => f.id === id)
+    if (!folder) throw new Error("フォルダが見つかりません")
+    const updated = { ...folder, tempo }
+    await folderRepository.save(updated)
+    set({ folders: get().folders.map((f) => (f.id === id ? updated : f)) })
+  },
+
+  async setRepeatCount(progressionId, count) {
+    await get().updateSaved(progressionId, { repeatCount: Math.max(1, Math.round(count)) })
+  },
+
+  async reorderSection(progressionId, direction) {
+    const target = get().saved.find((p) => p.id === progressionId)
+    if (!target) return
+    const siblings = get()
+      .saved.filter((p) => p.folderId === target.folderId)
+      .sort((a, b) => a.order - b.order)
+    const idx = siblings.findIndex((p) => p.id === progressionId)
+    const swapIdx = direction === "up" ? idx - 1 : idx + 1
+    if (swapIdx < 0 || swapIdx >= siblings.length) return
+    const other = siblings[swapIdx]
+    // order 値を入れ替える
+    const a = { ...target, order: other.order }
+    const b = { ...other, order: target.order }
+    await progressionRepository.saveMany([a, b])
+    set({
+      saved: get().saved.map((p) => (p.id === a.id ? a : p.id === b.id ? b : p)),
+    })
+  },
+
+  exportFolderAsMidi(folderId) {
+    const folder = get().folders.find((f) => f.id === folderId)
+    if (!folder) throw new Error("フォルダが見つかりません")
+    downloadSongSmf(folder, get().saved)
   },
 }))
