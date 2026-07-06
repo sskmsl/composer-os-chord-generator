@@ -101,9 +101,13 @@ export const useAppStore = create<AppStore>((set, get) => ({
   },
 
   async saveProgression(generated) {
+    if (get().saved.some((p) => p.id === generated.id)) return
+
     const entry = toSavedProgression(generated, get().saveTargetFolderId)
     await progressionRepository.save(entry)
-    set({ saved: [entry, ...get().saved] })
+    set((state) => ({
+      saved: state.saved.some((p) => p.id === entry.id) ? state.saved : [entry, ...state.saved],
+    }))
   },
 
   async updateSaved(id, patch) {
