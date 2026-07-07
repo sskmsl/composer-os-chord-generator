@@ -73,17 +73,22 @@ function buildTrack(events: AbsEvent[]): number[] {
   return [...textBytes("MTrk"), ...uint32(body.length), ...body]
 }
 
+export interface SmfTrack {
+  name: string
+  notes: MidiNote[]
+}
+
 export interface SmfSong {
   name: string
   tempoBpm: number
   markers: MidiMarker[]
-  notes: MidiNote[]
+  tracks: SmfTrack[]
 }
 
 /**
  * Type 1 (マルチトラック) のSMFバイナリを生成する。
  * Track 0 = コンダクター(テンポ・拍子・トラック名・セクションマーカー)
- * Track 1 = コード(ノートイベント)
+ * Track 1〜 = 楽器トラック(コード・ベース等)。Logicでは別々のトラックに読み込まれる
  */
 export function buildSmf(song: SmfSong): Uint8Array {
   // --- コンダクタートラック ---
@@ -111,31 +116,34 @@ export function buildSmf(song: SmfSong): Uint8Array {
     })),
   ]
 
-  // --- コードトラック ---
-  const chordTrack: AbsEvent[] = [
-    { tick: 0, order: 0, data: metaEvent(0x03, textBytes("Chords")) },
-  ]
-  for (const n of song.notes) {
-    chordTrack.push({
-      tick: n.start,
-      order: 2,
-      data: [0x90 | (n.channel & 0x0f), n.pitch & 0x7f, n.velocity & 0x7f],
-    })
-    chordTrack.push({
-      tick: n.start + n.duration,
-      order: 1,
-      data: [0x80 | (n.channel & 0x0f), n.pitch & 0x7f, 0x40],
-    })
-  }
+  // --- 楽器トラック ---
+  const instrumentTracks = song.tracks.map((track) => {
+    const events: AbsEvent[] = [
+      { tick: 0, order: 0, data: metaEvent(0x03, textBytes(track.name)) },
+    ]
+    for (const n of track.notes) {
+      events.push({
+        tick: n.start,
+        order: 2,
+        data: [0x90 | (n.channel & 0x0f), n.pitch & 0x7f, n.velocity & 0x7f],
+      })
+      events.push({
+        tick: n.start + n.duration,
+        order: 1,
+        data: [0x80 | (n.channel & 0x0f), n.pitch & 0x7f, 0x40],
+      })
+    }
+    return buildTrack(events)
+  })
 
   const header = [
     ...textBytes("MThd"),
     ...uint32(6),
     ...uint16(1), // format 1
-    ...uint16(2), // 2 tracks
+    ...uint16(1 + song.tracks.length),
     ...uint16(TICKS_PER_QUARTER),
   ]
 
-  const bytes = [...header, ...buildTrack(conductor), ...buildTrack(chordTrack)]
+  const bytes = [...header, ...buildTrack(conductor), ...instrumentTracks.flat()]
   return new Uint8Array(bytes)
 }

@@ -37,19 +37,22 @@ function sectionLabel(p: SavedProgression): string {
 /**
  * フォルダ(曲)をSMF Type 1 バイナリに変換する。
  * 各コード=1小節、セクションは repeatCount 回繰り返す。
+ * Chords(コードトーン)と Bass(コードのベース音、スラッシュコード対応)を
+ * 別トラックに分け、Logic側で個別に音源を割り当てられるようにする。
  */
 export function buildSongSmf(folder: Folder, progressions: SavedProgression[]): Uint8Array {
   const sections = songSections(folder, progressions)
   const tempo = resolveTempo(folder, sections)
 
-  const notes: MidiNote[] = []
+  const chordNotes: MidiNote[] = []
+  const bassNotes: MidiNote[] = []
   const markers: MidiMarker[] = []
   let tick = 0
 
   for (const section of sections) {
     const repeat = Math.max(1, section.repeatCount)
     for (let r = 0; r < repeat; r++) {
-      // セクションマーカー(繰り返し2回目以降は " x2" を付す)
+      // セクションマーカー(繰り返し2回目以降は #n を付す)
       markers.push({
         tick,
         text: repeat > 1 ? `${sectionLabel(section)} #${r + 1}` : sectionLabel(section),
@@ -57,23 +60,32 @@ export function buildSongSmf(folder: Folder, progressions: SavedProgression[]): 
       for (const chord of section.chords) {
         const voicing = parseChordSymbol(chord)
         if (voicing) {
-          const pitches = dedupe([voicing.bass, ...voicing.notes])
-          for (const pitch of pitches) {
-            notes.push({
-              pitch,
-              start: tick,
-              duration: BAR_TICKS - 10, // 小節末にわずかな隙間を残す
-              velocity: pitch === voicing.bass ? 92 : 78,
-              channel: 0,
-            })
+          const duration = BAR_TICKS - 10 // 小節末にわずかな隙間を残す
+          for (const pitch of dedupe(voicing.notes)) {
+            chordNotes.push({ pitch, start: tick, duration, velocity: 78, channel: 0 })
           }
+          bassNotes.push({
+            pitch: voicing.bass,
+            start: tick,
+            duration,
+            velocity: 92,
+            channel: 1,
+          })
         }
         tick += BAR_TICKS
       }
     }
   }
 
-  return buildSmf({ name: folder.name, tempoBpm: tempo, markers, notes })
+  return buildSmf({
+    name: folder.name,
+    tempoBpm: tempo,
+    markers,
+    tracks: [
+      { name: "Chords", notes: chordNotes },
+      { name: "Bass", notes: bassNotes },
+    ],
+  })
 }
 
 /** 生成したSMFを .mid としてダウンロードさせる */
