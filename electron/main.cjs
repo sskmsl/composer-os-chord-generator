@@ -44,9 +44,15 @@ app.whenReady().then(() => {
     app.dock?.setIcon(nativeImage.createFromPath(ICON_PATH))
   }
 
-  // MIDI書き出し(Blob URL経由のダウンロード)を既定のダウンロードフォルダへ保存する
+  // MIDI書き出し(Blob URL経由のダウンロード): setSavePathを呼ばずに
+  // setSaveDialogOptionsだけ設定すると、Electronが標準の保存先選択
+  // ダイアログを毎回表示してくれる(初期表示はDownloadsフォルダ)
   session.defaultSession.on("will-download", (_e, item) => {
-    item.setSavePath(path.join(app.getPath("downloads"), item.getFilename()))
+    item.setSaveDialogOptions({
+      title: "MIDIファイルの保存先を選択",
+      defaultPath: path.join(app.getPath("downloads"), item.getFilename()),
+      filters: [{ name: "MIDI File", extensions: ["mid"] }],
+    })
   })
 
   createWindow()

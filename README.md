@@ -32,8 +32,10 @@ Node.js のインストールやターミナルは不要(ビルド時にElectron
 - 未署名アプリのため、初回起動時にGatekeeperが警告を出す。Finderで
   右クリック→「開く」を選ぶか、システム設定 > プライバシーとセキュリティ
   から許可する
-- MIDI書き出し(`.mid`)は `~/Downloads` に自動保存される
-  (`electron/main.cjs` の `will-download` ハンドラ)
+- MIDI書き出し(`.mid`)時は保存先選択ダイアログが開く(初期表示は
+  `~/Downloads`)。`electron/main.cjs` の `will-download` で
+  `item.setSaveDialogOptions()` を設定して実現している
+  (`setSavePath()` を呼ぶと逆にダイアログなしで自動保存になる)
 - アプリアイコンは `build/icon.icns`。ソースは `build/icon-src/icon.html`
   (夜空に浮かぶ三日月のSVG)で、`electron build/icon-src/render-icon.cjs`
   で1024px PNG→各サイズ→iconsetを書き出し、`iconutil -c icns build/icon.iconset
