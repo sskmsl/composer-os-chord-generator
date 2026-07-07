@@ -34,6 +34,11 @@ Node.js のインストールやターミナルは不要(ビルド時にElectron
   から許可する
 - MIDI書き出し(`.mid`)は `~/Downloads` に自動保存される
   (`electron/main.cjs` の `will-download` ハンドラ)
+- アプリアイコンは `build/icon.icns`。ソースは `build/icon-src/icon.html`
+  (夜空に浮かぶ三日月のSVG)で、`electron build/icon-src/render-icon.cjs`
+  で1024px PNG→各サイズ→iconsetを書き出し、`iconutil -c icns build/icon.iconset
+  -o build/icon.icns` で `.icns` 化している。デザインを変えたい場合は
+  `icon.html` を編集して同じ手順を繰り返す
 
 ## v0.1 の機能
 

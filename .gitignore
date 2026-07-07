@@ -13,6 +13,10 @@ dist-ssr
 release
 *.local
 
+# アイコン生成の中間成果物(build/icon-src/render-icon.cjs で再生成可能)
+build/icon.iconset/
+build/icon-1024.png
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

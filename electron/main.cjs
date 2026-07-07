@@ -1,7 +1,8 @@
-const { app, BrowserWindow, shell, session } = require("electron")
+const { app, BrowserWindow, shell, session, nativeImage } = require("electron")
 const path = require("node:path")
 
 const DEV_SERVER_URL = process.env.ELECTRON_DEV_SERVER_URL
+const ICON_PATH = path.join(__dirname, "..", "build", "icon.icns")
 
 function createWindow() {
   const win = new BrowserWindow({
@@ -11,6 +12,7 @@ function createWindow() {
     minHeight: 640,
     backgroundColor: "#1a1420", // ダークテーマの背景色に合わせ、起動時の白画面を防ぐ
     title: "Composer OS Chord Generator",
+    icon: ICON_PATH,
     webPreferences: {
       contextIsolation: true,
       nodeIntegration: false,
@@ -36,6 +38,12 @@ function createWindow() {
 }
 
 app.whenReady().then(() => {
+  // 開発時(未パッケージ)はDockアイコンが既定のElectronロゴになるため明示的に設定する。
+  // パッケージ後はInfo.plistのCFBundleIconFile(electron-builderが設定)が使われる
+  if (!app.isPackaged && process.platform === "darwin") {
+    app.dock?.setIcon(nativeImage.createFromPath(ICON_PATH))
+  }
+
   // MIDI書き出し(Blob URL経由のダウンロード)を既定のダウンロードフォルダへ保存する
   session.defaultSession.on("will-download", (_e, item) => {
     item.setSavePath(path.join(app.getPath("downloads"), item.getFilename()))

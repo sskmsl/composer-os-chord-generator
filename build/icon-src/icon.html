@@ -1,0 +1,75 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8" />
+<style>
+  html, body { margin: 0; padding: 0; background: transparent; }
+  svg { display: block; }
+</style>
+</head>
+<body>
+<svg width="1024" height="1024" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <radialGradient id="nebula" cx="46%" cy="42%" r="72%">
+      <stop offset="0%"  stop-color="#2c2038"/>
+      <stop offset="55%" stop-color="#1a1422"/>
+      <stop offset="100%" stop-color="#120e18" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="moonGlow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%"  stop-color="#e2896a" stop-opacity="0.55"/>
+      <stop offset="60%" stop-color="#e2896a" stop-opacity="0.16"/>
+      <stop offset="100%" stop-color="#e2896a" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="moonBody" cx="38%" cy="34%" r="72%">
+      <stop offset="0%"   stop-color="#fbe3c4"/>
+      <stop offset="45%"  stop-color="#eda27e"/>
+      <stop offset="100%" stop-color="#c15b4e"/>
+    </radialGradient>
+    <radialGradient id="star" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#fbe9d6" stop-opacity="0.95"/>
+      <stop offset="100%" stop-color="#fbe9d6" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <!-- 背景の夜空(周縁は透明にフェードし、丸角マスクされても違和感がない) -->
+  <rect x="0" y="0" width="1024" height="1024" fill="url(#nebula)"/>
+
+  <!-- 遠景の同心円(倍音・魔法陣を思わせるリング) -->
+  <g opacity="0.16" stroke="#f3c9a0" fill="none">
+    <circle cx="470" cy="430" r="300" stroke-width="1.5"/>
+    <circle cx="470" cy="430" r="360" stroke-width="1"/>
+  </g>
+
+  <!-- 星々 -->
+  <g>
+    <circle cx="220" cy="230" r="10" fill="url(#star)"/>
+    <circle cx="760" cy="200" r="7" fill="url(#star)"/>
+    <circle cx="300" cy="680" r="6" fill="url(#star)"/>
+    <circle cx="190" cy="560" r="5" fill="url(#star)"/>
+    <circle cx="700" cy="640" r="8" fill="url(#star)"/>
+    <circle cx="620" cy="760" r="5" fill="url(#star)"/>
+  </g>
+
+  <!-- 月に向かって舞い上がる音符(光の粒) -->
+  <g fill="#f6d9c0">
+    <g opacity="0.9">
+      <ellipse cx="330" cy="760" rx="15" ry="11" transform="rotate(-18 330 760)"/>
+      <rect x="342" y="700" width="6" height="66" rx="3" transform="rotate(-18 330 760)"/>
+    </g>
+    <g opacity="0.7">
+      <ellipse cx="255" cy="660" rx="12" ry="9" transform="rotate(-18 255 660)"/>
+      <rect x="265" y="612" width="5" height="52" rx="2.5" transform="rotate(-18 255 660)"/>
+    </g>
+    <circle cx="400" cy="600" r="6" fill="#f6d9c0" opacity="0.6"/>
+  </g>
+
+  <!-- 月の後光 -->
+  <circle cx="470" cy="430" r="330" fill="url(#moonGlow)"/>
+
+  <!-- 三日月本体(単色のオクルーダーで欠けを作る。グラデーションだと
+       境界ボックス基準で中心がずれてしまい色ムラが出るため単色にする) -->
+  <circle cx="470" cy="430" r="230" fill="url(#moonBody)"/>
+  <circle cx="548" cy="378" r="222" fill="#1a1422"/>
+</svg>
+</body>
+</html>
