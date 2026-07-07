@@ -15,6 +15,26 @@ npm run dev      # http://localhost:5173(使用中なら自動で別ポート)
 npm run build    # 型チェック + 本番ビルド
 ```
 
+## デスクトップアプリ(macOS)として使う
+
+```sh
+npm run electron:dev     # 開発モード(Viteのホットリロード込みでElectronウィンドウを起動)
+npm run electron:build   # dist/ をビルドし、release/mac-arm64/ に .app を生成
+```
+
+生成された `release/mac-arm64/Composer OS Chord Generator.app` を
+`/Applications` に移動すればFinderやSpotlightから直接起動できる。
+Node.js のインストールやターミナルは不要(ビルド時にElectron本体が同梱される)。
+
+- ルーティングは `HashRouter`(`#/generator` 形式)。`file://` で配信する
+  Electron環境でもページ遷移が壊れないようにするため
+- Vite の `base` は `"./"` (相対パス)。パッケージ後の `file://` 読み込みに必要
+- 未署名アプリのため、初回起動時にGatekeeperが警告を出す。Finderで
+  右クリック→「開く」を選ぶか、システム設定 > プライバシーとセキュリティ
+  から許可する
+- MIDI書き出し(`.mid`)は `~/Downloads` に自動保存される
+  (`electron/main.cjs` の `will-download` ハンドラ)
+
 ## v0.1 の機能
 
 - **ルールベースのコードエンジン**(AI不使用)

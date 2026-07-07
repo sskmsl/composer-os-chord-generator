@@ -5,6 +5,7 @@ import tailwindcss from "@tailwindcss/vite"
 
 // https://vite.dev/config/
 export default defineConfig({
+  base: "./", // file://で配信するElectronパッケージのため相対パスにする
   plugins: [react(), tailwindcss()],
   resolve: {
     alias: {
