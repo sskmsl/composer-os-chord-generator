@@ -6,6 +6,8 @@ const fs = require("node:fs")
 
 const OUT_DIR = path.join(__dirname, "..", "icon.iconset")
 const MASTER_PNG = path.join(__dirname, "..", "icon-1024.png")
+// PWA用アイコンはpublic/直下に置き、ビルド成果物としてそのまま配信する
+const PWA_DIR = path.join(__dirname, "..", "..", "public", "pwa")
 
 const SIZES = [
   { name: "icon_16x16.png", size: 16 },
@@ -20,8 +22,15 @@ const SIZES = [
   { name: "icon_512x512@2x.png", size: 1024 },
 ]
 
+const PWA_SIZES = [
+  { name: "icon-192.png", size: 192 },
+  { name: "icon-512.png", size: 512 },
+  { name: "apple-touch-icon.png", size: 180 },
+]
+
 app.whenReady().then(async () => {
   fs.mkdirSync(OUT_DIR, { recursive: true })
+  fs.mkdirSync(PWA_DIR, { recursive: true })
 
   const win = new BrowserWindow({
     width: 1024,
@@ -44,6 +53,11 @@ app.whenReady().then(async () => {
     fs.writeFileSync(path.join(OUT_DIR, name), resized.toPNG())
   }
 
-  console.log("[icon] done:", OUT_DIR)
+  for (const { name, size } of PWA_SIZES) {
+    const resized = image.resize({ width: size, height: size, quality: "best" })
+    fs.writeFileSync(path.join(PWA_DIR, name), resized.toPNG())
+  }
+
+  console.log("[icon] done:", OUT_DIR, PWA_DIR)
   app.quit()
 })

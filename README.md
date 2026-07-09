@@ -42,6 +42,22 @@ Node.js のインストールやターミナルは不要(ビルド時にElectron
   -o build/icon.icns` で `.icns` 化している。デザインを変えたい場合は
   `icon.html` を編集して同じ手順を繰り返す
 
+## スマホ/Webアプリ(PWA)として使う
+
+`npm run build` すると、`dist/` が **PWA(インストール可能なWebアプリ)** として
+出力される。Netlify・Vercel・GitHub Pages 等どこにでも `dist/` をそのままデプロイ
+でき、そのURLをスマホのブラウザで開けば「ホーム画面に追加」でアプリのように使える。
+
+- `vite-plugin-pwa` を導入。Service Workerがビルド成果物を自動プリキャッシュし、
+  オフラインでも開ける(初回アクセス後)
+- マニフェスト・アイコンは `public/pwa/`(192px・512px・iOS用 apple-touch-icon)。
+  `build/icon-src/render-icon.cjs` が同じ三日月アイコンから自動生成する
+  (macOS用 `.icns` と生成元が共通)
+- `base: "./"` のため、ドメイン直下でもサブパス(例: `username.github.io/repo/`)
+  でも配置場所を問わず動く
+- 開発サーバー(`npm run dev`)ではPWA機能(Service Worker登録)は無効。
+  実際の動作は `npm run build && npm run preview` で確認する
+
 ## v0.1 の機能
 
 - **ルールベースのコードエンジン**(AI不使用)
