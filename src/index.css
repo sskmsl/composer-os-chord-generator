@@ -124,8 +124,11 @@
     }
   body {
     @apply bg-background text-foreground;
+    /* iOSでページ全体がゴムのように跳ねる(bounce)のを抑える */
+    overscroll-behavior-y: none;
     }
   html {
     @apply font-sans;
+    overscroll-behavior-y: none;
     }
 }

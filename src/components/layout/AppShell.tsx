@@ -21,7 +21,7 @@ export function AppShell() {
 
   return (
     <div className="min-h-dvh bg-background text-foreground">
-      <header className="sticky top-0 z-40 border-b border-border/60 bg-background/80 backdrop-blur">
+      <header className="sticky top-0 z-40 border-b border-border/60 bg-background/80 pt-[env(safe-area-inset-top)] backdrop-blur">
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-4 px-4 sm:justify-start sm:gap-8 sm:px-8">
           <NavLink to="/" className="flex shrink-0 items-center gap-2.5">
             <Waves className="size-5 text-primary" />
