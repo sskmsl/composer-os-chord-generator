@@ -126,9 +126,23 @@
     @apply bg-background text-foreground;
     /* iOSでページ全体がゴムのように跳ねる(bounce)のを抑える */
     overscroll-behavior-y: none;
+    /* ヘッダー等の内部要素がはみ出しても、ページ全体は横に動かない */
+    overflow-x: hidden;
     }
   html {
     @apply font-sans;
     overscroll-behavior-y: none;
+    overflow-x: hidden;
     }
+}
+
+@layer utilities {
+  /* ヘッダーの横スクロール領域からスクロールバーの見た目だけ消す */
+  .no-scrollbar {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
 }
