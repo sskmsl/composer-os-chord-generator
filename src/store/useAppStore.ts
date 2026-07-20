@@ -49,6 +49,7 @@ interface AppStore {
   setFolderTempo(id: string, tempo: number | undefined): Promise<void>
   setRepeatCount(progressionId: string, count: number): Promise<void>
   reorderSection(progressionId: string, direction: "up" | "down"): Promise<void>
+  duplicateSection(progressionId: string): Promise<SavedProgression>
   exportFolderAsMidi(folderId: string): void
 }
 
@@ -199,6 +200,29 @@ export const useAppStore = create<AppStore>((set, get) => ({
     set({
       saved: get().saved.map((p) => (p.id === a.id ? a : p.id === b.id ? b : p)),
     })
+  },
+
+  async duplicateSection(progressionId) {
+    const target = get().saved.find((p) => p.id === progressionId)
+    if (!target) throw new Error("進行が見つかりません")
+
+    // 同じフォルダ内で、元のセクションの直後に挿入されるようorderを算出する
+    const siblings = get()
+      .saved.filter((p) => p.folderId === target.folderId)
+      .sort((a, b) => a.order - b.order)
+    const idx = siblings.findIndex((p) => p.id === progressionId)
+    const next = siblings[idx + 1]
+    const order = next ? (target.order + next.order) / 2 : target.order + 1
+
+    const copy: SavedProgression = {
+      ...target,
+      id: crypto.randomUUID(),
+      order,
+      savedAt: new Date().toISOString(),
+    }
+    await progressionRepository.save(copy)
+    set({ saved: [...get().saved, copy] })
+    return copy
   },
 
   exportFolderAsMidi(folderId) {

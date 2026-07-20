@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react"
 import { Link } from "react-router-dom"
-import { ChevronDown, ChevronUp, Download, Music, Trash2 } from "lucide-react"
+import { ChevronDown, ChevronUp, Copy, Download, Music, Trash2 } from "lucide-react"
 import { toast } from "sonner"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -31,6 +31,7 @@ export function SongPanel({ folder }: { folder: Folder }) {
   const reorderSection = useAppStore((s) => s.reorderSection)
   const exportFolderAsMidi = useAppStore((s) => s.exportFolderAsMidi)
   const deleteSaved = useAppStore((s) => s.deleteSaved)
+  const duplicateSection = useAppStore((s) => s.duplicateSection)
   const play = usePlayerStore((s) => s.play)
   const playingId = usePlayerStore((s) => s.playingId)
 
@@ -74,6 +75,15 @@ export function SongPanel({ folder }: { folder: Folder }) {
       toast.success(`「${chords}」を削除しました`)
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "削除に失敗しました")
+    }
+  }
+
+  const handleDuplicate = async (id: string) => {
+    try {
+      await duplicateSection(id)
+      toast.success("セクションを複製しました")
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "複製に失敗しました")
     }
   }
 
@@ -187,6 +197,15 @@ export function SongPanel({ folder }: { folder: Folder }) {
                   </SelectContent>
                 </Select>
               </div>
+              <Button
+                variant="ghost"
+                size="icon-sm"
+                aria-label="このセクションを複製"
+                className="shrink-0 text-muted-foreground hover:text-foreground"
+                onClick={() => void handleDuplicate(section.id)}
+              >
+                <Copy />
+              </Button>
               <ConfirmDeleteDialog
                 title="セクションを削除しますか?"
                 description={`「${section.chords.join(" – ")}」を曲の構成から削除します。この操作は取り消せません。`}
