@@ -82,8 +82,11 @@ export function buildSongSmf(folder: Folder, progressions: SavedProgression[]): 
     tempoBpm: tempo,
     markers,
     tracks: [
-      { name: "Chords", notes: chordNotes },
-      { name: "Bass", notes: bassNotes },
+      // コンダクター側のマーカーだけでなく、各トラック自身にも同じラベルを
+      // メモ書き(Text event)として埋め込み、そのトラックだけを見ても
+      // 今どのパートかが分かるようにする
+      { name: "Chords", notes: chordNotes, textEvents: markers },
+      { name: "Bass", notes: bassNotes, textEvents: markers },
     ],
   })
 }

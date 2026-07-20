@@ -76,6 +76,12 @@ function buildTrack(events: AbsEvent[]): number[] {
 export interface SmfTrack {
   name: string
   notes: MidiNote[]
+  /**
+   * トラック自身に埋め込むメモ書き(Text meta event, type 0x01)。
+   * コンダクタートラックのマーカーとは別に、各トラック単体を見ても
+   * 「今どのパートか」がDAW上で分かるようにするためのもの。
+   */
+  textEvents?: MidiMarker[]
 }
 
 export interface SmfSong {
@@ -120,6 +126,11 @@ export function buildSmf(song: SmfSong): Uint8Array {
   const instrumentTracks = song.tracks.map((track) => {
     const events: AbsEvent[] = [
       { tick: 0, order: 0, data: metaEvent(0x03, textBytes(track.name)) },
+      ...(track.textEvents ?? []).map((m) => ({
+        tick: m.tick,
+        order: 0,
+        data: metaEvent(0x01, textBytes(m.text)),
+      })),
     ]
     for (const n of track.notes) {
       events.push({
