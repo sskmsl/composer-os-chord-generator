@@ -126,12 +126,14 @@
     @apply bg-background text-foreground;
     /* iOSでページ全体がゴムのように跳ねる(bounce)のを抑える */
     overscroll-behavior-y: none;
-    /* ヘッダー等の内部要素がはみ出しても、ページ全体は横に動かない */
-    overflow-x: hidden;
     }
   html {
     @apply font-sans;
     overscroll-behavior-y: none;
+    /* ヘッダー等の内部要素がはみ出しても、ページ全体は横に動かない。
+       html/body両方にoverflow-xを指定すると、ブラウザがどちらを
+       スクロール対象要素にするか混乱し、ホイール/キーボードでの
+       縦スクロールが効かなくなることがあるため、htmlのみに指定する */
     overflow-x: hidden;
     }
 }
