@@ -47,6 +47,7 @@ interface AppStore {
 
   // 曲構成(フォルダ = 1曲)
   setFolderTempo(id: string, tempo: number | undefined): Promise<void>
+  setFolderMemo(id: string, memo: string): Promise<void>
   setRepeatCount(progressionId: string, count: number): Promise<void>
   reorderSection(progressionId: string, direction: "up" | "down"): Promise<void>
   duplicateSection(progressionId: string): Promise<SavedProgression>
@@ -175,6 +176,14 @@ export const useAppStore = create<AppStore>((set, get) => ({
     const folder = get().folders.find((f) => f.id === id)
     if (!folder) throw new Error("フォルダが見つかりません")
     const updated = { ...folder, tempo }
+    await folderRepository.save(updated)
+    set({ folders: get().folders.map((f) => (f.id === id ? updated : f)) })
+  },
+
+  async setFolderMemo(id, memo) {
+    const folder = get().folders.find((f) => f.id === id)
+    if (!folder) throw new Error("フォルダが見つかりません")
+    const updated = { ...folder, memo }
     await folderRepository.save(updated)
     set({ folders: get().folders.map((f) => (f.id === id ? updated : f)) })
   },

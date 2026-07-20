@@ -144,7 +144,7 @@ export function SavedProgressionsPage() {
         )}
       </div>
 
-      {activeFolder && <SongPanel folder={activeFolder} />}
+      {activeFolder && <SongPanel key={activeFolder.id} folder={activeFolder} />}
 
       {!loaded ? (
         <p className="py-12 text-center text-muted-foreground">読み込み中...</p>

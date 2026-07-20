@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { ConfirmDeleteDialog } from "@/components/ConfirmDeleteDialog"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { Textarea } from "@/components/ui/textarea"
 import {
   Select,
   SelectContent,
@@ -27,6 +28,7 @@ const REPEAT_OPTIONS = [1, 2, 3, 4]
 export function SongPanel({ folder }: { folder: Folder }) {
   const saved = useAppStore((s) => s.saved)
   const setFolderTempo = useAppStore((s) => s.setFolderTempo)
+  const setFolderMemo = useAppStore((s) => s.setFolderMemo)
   const setRepeatCount = useAppStore((s) => s.setRepeatCount)
   const reorderSection = useAppStore((s) => s.reorderSection)
   const exportFolderAsMidi = useAppStore((s) => s.exportFolderAsMidi)
@@ -40,6 +42,7 @@ export function SongPanel({ folder }: { folder: Folder }) {
   const effectiveTempo = resolveTempo(folder, sections)
 
   const [tempoInput, setTempoInput] = useState(folder.tempo ? String(folder.tempo) : "")
+  const [memoInput, setMemoInput] = useState(folder.memo ?? "")
 
   const commitTempo = () => {
     const trimmed = tempoInput.trim()
@@ -54,6 +57,11 @@ export function SongPanel({ folder }: { folder: Folder }) {
       toast.error("テンポは 20〜300 で入力してください")
       setTempoInput(folder.tempo ? String(folder.tempo) : "")
     }
+  }
+
+  const commitMemo = () => {
+    if (memoInput === (folder.memo ?? "")) return
+    void setFolderMemo(folder.id, memoInput)
   }
 
   const handleExport = () => {
@@ -126,6 +134,20 @@ export function SongPanel({ folder }: { folder: Folder }) {
           Proにインポート可能
           {!folder.tempo && `(テンポ未設定のため ${effectiveTempo} BPM で書き出し)`}
         </p>
+        <div className="flex flex-col gap-1.5">
+          <Label htmlFor="song-memo" className="text-xs text-muted-foreground">
+            曲のメモ
+          </Label>
+          <Textarea
+            id="song-memo"
+            value={memoInput}
+            onChange={(e) => setMemoInput(e.target.value)}
+            onBlur={commitMemo}
+            placeholder="構成の意図、アレンジのアイデアなど"
+            rows={2}
+            className="resize-none bg-card/60 text-sm leading-relaxed"
+          />
+        </div>
       </CardHeader>
       <CardContent className="flex flex-col gap-2">
         {sections.map((section, i) => {
