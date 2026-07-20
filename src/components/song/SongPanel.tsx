@@ -1,10 +1,11 @@
 import { useMemo, useState } from "react"
 import { Link } from "react-router-dom"
-import { ChevronDown, ChevronUp, Download, Music } from "lucide-react"
+import { ChevronDown, ChevronUp, Download, Music, Trash2 } from "lucide-react"
 import { toast } from "sonner"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { ConfirmDeleteDialog } from "@/components/ConfirmDeleteDialog"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import {
@@ -29,6 +30,7 @@ export function SongPanel({ folder }: { folder: Folder }) {
   const setRepeatCount = useAppStore((s) => s.setRepeatCount)
   const reorderSection = useAppStore((s) => s.reorderSection)
   const exportFolderAsMidi = useAppStore((s) => s.exportFolderAsMidi)
+  const deleteSaved = useAppStore((s) => s.deleteSaved)
   const play = usePlayerStore((s) => s.play)
   const playingId = usePlayerStore((s) => s.playingId)
 
@@ -63,6 +65,15 @@ export function SongPanel({ folder }: { folder: Folder }) {
       toast.success(`「${folder.name}.mid」を書き出しました`)
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "書き出しに失敗しました")
+    }
+  }
+
+  const handleDelete = async (id: string, chords: string) => {
+    try {
+      await deleteSaved(id)
+      toast.success(`「${chords}」を削除しました`)
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "削除に失敗しました")
     }
   }
 
@@ -176,6 +187,21 @@ export function SongPanel({ folder }: { folder: Folder }) {
                   </SelectContent>
                 </Select>
               </div>
+              <ConfirmDeleteDialog
+                title="セクションを削除しますか?"
+                description={`「${section.chords.join(" – ")}」を曲の構成から削除します。この操作は取り消せません。`}
+                onConfirm={() => void handleDelete(section.id, section.chords.join(" – "))}
+                trigger={
+                  <Button
+                    variant="ghost"
+                    size="icon-sm"
+                    aria-label="このセクションを削除"
+                    className="shrink-0 text-muted-foreground hover:text-destructive"
+                  >
+                    <Trash2 />
+                  </Button>
+                }
+              />
             </div>
           )
         })}
