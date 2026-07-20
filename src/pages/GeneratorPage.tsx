@@ -1,6 +1,7 @@
 import { FolderPlus } from "lucide-react"
 import { toast } from "sonner"
 import { GeneratorForm } from "@/components/generator/GeneratorForm"
+import { NextSectionSuggestion } from "@/components/generator/NextSectionSuggestion"
 import { ProgressionResultCard } from "@/components/generator/ProgressionResultCard"
 import { FolderNameDialog } from "@/components/saved/FolderNameDialog"
 import { Button } from "@/components/ui/button"
@@ -103,6 +104,7 @@ export function GeneratorPage() {
               />
             ))}
           </div>
+          <NextSectionSuggestion />
         </>
       ) : (
         <div className="rounded-xl border border-dashed border-border/60 py-20 text-center">
