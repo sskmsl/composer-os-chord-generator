@@ -98,6 +98,21 @@ export const SECTION_OPTIONS: { value: SectionId; label: string }[] = [
   { value: "outro", label: "Outro" },
 ]
 
+/** 曲の流れ(Intro→…→Outro)に沿った、パートごとの識別色(Badge用) */
+const SECTION_BADGE_CLASSES: Record<RuleSection, string> = {
+  intro: "border-sky-500/30 bg-sky-500/15 text-sky-600 dark:text-sky-400",
+  verse: "border-teal-500/30 bg-teal-500/15 text-teal-600 dark:text-teal-400",
+  preChorus: "border-amber-500/30 bg-amber-500/15 text-amber-600 dark:text-amber-400",
+  chorus: "border-primary/40 bg-primary/15 text-primary",
+  bridge: "border-violet-500/30 bg-violet-500/15 text-violet-600 dark:text-violet-400",
+  finalChorus: "border-rose-500/30 bg-rose-500/15 text-rose-600 dark:text-rose-400",
+  outro: "border-slate-500/30 bg-slate-500/15 text-slate-600 dark:text-slate-400",
+}
+
+export function sectionBadgeClass(section: SectionId): string {
+  return SECTION_BADGE_CLASSES[sectionRule(section)]
+}
+
 export const MOOD_OPTIONS: { value: MoodId; label: string }[] = [
   { value: "melancholic", label: "Melancholic" },
   { value: "mysterious", label: "Mysterious" },

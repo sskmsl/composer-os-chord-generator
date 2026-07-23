@@ -4,10 +4,11 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { STYLE_OPTIONS } from "@/features/chord-engine/templates"
+import { cn } from "@/lib/utils"
 import { useAppStore } from "@/store/useAppStore"
 import { usePlayerStore } from "@/store/usePlayerStore"
 import type { SavedProgression } from "@/types/progression"
-import { MOOD_OPTIONS, SECTION_OPTIONS } from "@/types/music"
+import { MOOD_OPTIONS, SECTION_OPTIONS, sectionBadgeClass } from "@/types/music"
 import { formatDate } from "@/utils/date"
 
 interface Props {
@@ -72,7 +73,9 @@ export function SavedProgressionCard({ progression, action }: Props) {
           )}
           <Badge variant="secondary" className="font-normal">{progression.key}</Badge>
           <Badge variant="secondary" className="font-normal">{styleLabel}</Badge>
-          <Badge variant="secondary" className="font-normal">{sectionLabel}</Badge>
+          <Badge variant="outline" className={cn("font-normal", sectionBadgeClass(progression.section))}>
+            {sectionLabel}
+          </Badge>
           <Badge variant="outline" className="font-normal">{moodLabel}</Badge>
         </div>
       </CardHeader>
