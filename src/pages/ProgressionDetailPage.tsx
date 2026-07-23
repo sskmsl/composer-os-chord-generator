@@ -1,10 +1,11 @@
 import { useEffect, useRef, useState } from "react"
 import { Link, useNavigate, useParams } from "react-router-dom"
-import { ArrowLeft, Play, Save, Square, Trash2 } from "lucide-react"
+import { ArrowLeft, Pencil, Play, Save, Square, Trash2, X } from "lucide-react"
 import { toast } from "sonner"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { ConfirmDeleteDialog } from "@/components/ConfirmDeleteDialog"
@@ -17,6 +18,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+import { parseChordSymbol } from "@/features/audio/chordSymbols"
 import { STYLE_OPTIONS } from "@/features/chord-engine/templates"
 import { useAppStore } from "@/store/useAppStore"
 import { usePlayerStore } from "@/store/usePlayerStore"
@@ -58,6 +60,9 @@ export function ProgressionDetailPage() {
     logicProNote: "",
   })
   const [saving, setSaving] = useState(false)
+  const [editingChords, setEditingChords] = useState(false)
+  const [chordInputs, setChordInputs] = useState<string[]>([])
+  const [savingChords, setSavingChords] = useState(false)
   const loadedProgressionIdRef = useRef<string | null>(null)
 
   useEffect(() => {
@@ -108,6 +113,34 @@ export function ProgressionDetailPage() {
     }
   }
 
+  const startEditChords = () => {
+    setChordInputs([...progression.chords])
+    setEditingChords(true)
+  }
+
+  const saveChords = async () => {
+    const trimmed = chordInputs.map((c) => c.trim())
+    if (trimmed.some((c) => c === "")) {
+      toast.error("空のコードがあります")
+      return
+    }
+    const invalid = trimmed.filter((c) => !parseChordSymbol(c))
+    if (invalid.length > 0) {
+      toast.error(`認識できないコードがあります: ${invalid.join(", ")}`)
+      return
+    }
+    setSavingChords(true)
+    try {
+      await updateSaved(progression.id, { chords: trimmed })
+      setEditingChords(false)
+      toast.success("コードを変更しました")
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "保存に失敗しました")
+    } finally {
+      setSavingChords(false)
+    }
+  }
+
   const handleDelete = async () => {
     try {
       await deleteSaved(progression.id)
@@ -136,9 +169,49 @@ export function ProgressionDetailPage() {
         </Button>
         <div className="mt-4 flex flex-wrap items-start justify-between gap-4">
           <div className="min-w-0">
-            <h1 className="font-mono text-2xl font-semibold tracking-tight break-words sm:text-3xl">
-              {progression.chords.join(" – ")}
-            </h1>
+            {editingChords ? (
+              <div className="flex flex-wrap items-center gap-2">
+                {chordInputs.map((c, i) => (
+                  <Input
+                    key={i}
+                    value={c}
+                    onChange={(e) =>
+                      setChordInputs((arr) => arr.map((v, idx) => (idx === i ? e.target.value : v)))
+                    }
+                    aria-label={`コード${i + 1}`}
+                    className="w-28 font-mono"
+                  />
+                ))}
+                <Button size="sm" onClick={() => void saveChords()} disabled={savingChords}>
+                  <Save data-icon="inline-start" />
+                  {savingChords ? "保存中..." : "保存"}
+                </Button>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  onClick={() => setEditingChords(false)}
+                  disabled={savingChords}
+                >
+                  <X data-icon="inline-start" />
+                  キャンセル
+                </Button>
+              </div>
+            ) : (
+              <div className="flex flex-wrap items-center gap-2">
+                <h1 className="font-mono text-2xl font-semibold tracking-tight break-words sm:text-3xl">
+                  {progression.chords.join(" – ")}
+                </h1>
+                <Button
+                  variant="ghost"
+                  size="icon-sm"
+                  aria-label="コードを編集"
+                  className="text-muted-foreground hover:text-foreground"
+                  onClick={startEditChords}
+                >
+                  <Pencil />
+                </Button>
+              </div>
+            )}
             <p className="mt-2 font-mono text-sm text-muted-foreground">
               {progression.romanNumerals.join(" – ")}
             </p>
