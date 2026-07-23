@@ -1,8 +1,9 @@
 import { ArrowRight, Lightbulb } from "lucide-react"
+import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { NEXT_SECTIONS, TYPICAL_SONG_FLOW } from "@/features/chord-engine/songFlow"
+import { NEXT_SECTIONS, resolveKeyMove, TYPICAL_SONG_FLOW } from "@/features/chord-engine/songFlow"
 import { useAppStore } from "@/store/useAppStore"
-import { SECTION_OPTIONS } from "@/types/music"
+import { keyLabel, SECTION_OPTIONS } from "@/types/music"
 import { cn } from "@/lib/utils"
 
 /**
@@ -28,15 +29,17 @@ export function NextSectionSuggestion() {
         </span>
       </div>
       <div className="flex flex-wrap gap-2">
-        {suggestions.map(({ section, reason }) => {
+        {suggestions.map(({ section, reason, keyMove }) => {
           const label = SECTION_OPTIONS.find((s) => s.value === section)?.label
+          const targetKey = keyMove ? resolveKeyMove(params.key, keyMove.type) : params.key
+          const keyChanges = keyMove && keyLabel(targetKey) !== keyLabel(params.key)
           return (
             <Button
               key={section}
               variant="outline"
               className="h-auto flex-col items-start gap-0.5 px-3 py-2 text-left"
               onClick={() => {
-                setParams({ section })
+                setParams(keyChanges ? { section, key: targetKey } : { section })
                 generate()
                 // 新しい結果一覧の先頭が見えるようページ上部へ戻す
                 window.scrollTo({ top: 0, behavior: "smooth" })
@@ -45,8 +48,15 @@ export function NextSectionSuggestion() {
               <span className="flex items-center gap-1.5 font-medium">
                 <ArrowRight className="size-3.5 text-primary" />
                 {label} を生成
+                {keyChanges && (
+                  <Badge variant="outline" className="border-primary/40 font-normal text-primary">
+                    Key: {keyLabel(targetKey)}
+                  </Badge>
+                )}
               </span>
-              <span className="text-xs font-normal text-muted-foreground">{reason}</span>
+              <span className="text-xs font-normal text-muted-foreground">
+                {keyChanges ? `${reason}(${keyMove.reason})` : reason}
+              </span>
             </Button>
           )
         })}
