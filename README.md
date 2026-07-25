@@ -62,10 +62,12 @@ Node.js のインストールやターミナルは不要(ビルド時にElectron
 
 - **ルールベースのコードエンジン**(AI不使用)
   - 7スタイル × マイナー/メジャー別テンプレート(CHORD_ENGINE_SPEC 準拠)
-  - 10セクション(Intro / Verse / Verse 1〜3 / Pre-Chorus / Chorus / Bridge /
-    Final Chorus / Outro)。Verse 1〜3 は Verse ルールを共有、Final Chorus は
-    解放感あるトニック終止を優遇(`sectionRule()` で基底ルールへマップ)
-  - セクションルール(Intro=未解決 / Pre-Chorus=ドミナント終止 / Outro=反復 等)
+  - Composer Arrangerと共通の10 ROLE
+    (イントロ / Aメロ / Bメロ / サビ / 落ちサビ / 大サビ / Cメロ /
+    ブリッジ / 間奏 / アウトロ)
+  - ROLE別ルール
+    (イントロ=未解決 / Bメロ=ドミナント終止 / 落ちサビ=低密度 /
+    大サビ=解放 / Cメロ=対照的な和声 / アウトロ=反復 等)
   - ムードによるテンプレート抽選と装飾(add9 / maj7 / sus / m9 / m11 / スラッシュベース)の重み付け
   - 実用12マイナー+12メジャーキーへの移調(フラット系キーはフラット表記)
   - ローマ数字表記・ベース動線・説明文・5軸スコア(Mylène / Boutonnat / Melancholy / Darkness / Cinematic、ルールベースで説明可能)
@@ -88,12 +90,13 @@ Node.js のインストールやターミナルは不要(ビルド時にElectron
     Track 1 = Chords(コードトーン)、Track 2 = **Bass**(コードのベース音、
     スラッシュコード対応: `Fmaj7/A` なら A)。Logic では Chords / Bass が別トラックに
     読み込まれるので、それぞれに音源を割り当てられる
-  - Logic のマーカーにセクション名(例: `Verse 1 (Am)`)が並ぶ
+  - Logic のマーカーにセクション名(例: `Aメロ (Am)`)が並ぶ
   - 実装: `src/features/midi/`(`smf.ts` = ライブラリ非依存のバイナリエンコーダ、
     `exportSong.ts` = フォルダ→ノート列の組み立て)
 - **Composer Arranger連携**: 曲の構成パネルから `.composer-song.json` を書き出せる。
   セクション順、コード、繰り返し、テンポ、Key、Style、Moodを保持し、
-  Composer Arrangerの通常のImportボタンから新規Composer Projectとして読み込める
+  Composer Arrangerの通常のImportボタンから新規Composer Projectとして読み込める。
+  ROLE識別子と日本語ラベルは両アプリで共通
 
 ## アーキテクチャ
 

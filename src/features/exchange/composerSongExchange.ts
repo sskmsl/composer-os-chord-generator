@@ -1,19 +1,12 @@
 import type { Folder } from "../../types/folder"
-import type { SectionId } from "../../types/music"
+import { SECTION_ROLE_LABELS, type SectionId } from "../../types/music"
 import type { SavedProgression, Scores } from "../../types/progression"
 import { resolveTempo, songSections } from "../midi/exportSong"
 
 export const COMPOSER_SONG_EXCHANGE_FORMAT = "composer-os/song-exchange" as const
 export const COMPOSER_SONG_EXCHANGE_VERSION = 1 as const
 
-export type ExchangeSectionRole =
-  | "intro"
-  | "verse"
-  | "pre-chorus"
-  | "chorus"
-  | "grand-chorus"
-  | "bridge"
-  | "outro"
+export type ExchangeSectionRole = SectionId
 
 export interface ComposerSongExchangeChord {
   symbol: string
@@ -54,27 +47,8 @@ export interface ComposerSongExchangeV1 {
   sections: ComposerSongExchangeSection[]
 }
 
-const SECTION_NAMES: Record<SectionId, string> = {
-  intro: "Intro",
-  verse: "Verse",
-  verse1: "Verse 1",
-  verse2: "Verse 2",
-  verse3: "Verse 3",
-  preChorus: "Pre-Chorus",
-  chorus: "Chorus",
-  bridge: "Bridge",
-  finalChorus: "Final Chorus",
-  outro: "Outro",
-}
-
 export function toExchangeSectionRole(section: SectionId): ExchangeSectionRole {
-  if (section === "intro") return "intro"
-  if (section === "preChorus") return "pre-chorus"
-  if (section === "chorus") return "chorus"
-  if (section === "finalChorus") return "grand-chorus"
-  if (section === "bridge") return "bridge"
-  if (section === "outro") return "outro"
-  return "verse"
+  return section
 }
 
 export function buildComposerSongExchange(
@@ -97,7 +71,7 @@ export function buildComposerSongExchange(
     memo: folder.memo,
     sections: sections.map((section) => ({
       sourceId: section.id,
-      name: SECTION_NAMES[section.section],
+      name: SECTION_ROLE_LABELS[section.section],
       role: toExchangeSectionRole(section.section),
       key: section.key,
       repeatCount: Math.max(1, Math.round(section.repeatCount)),

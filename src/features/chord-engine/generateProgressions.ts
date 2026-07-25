@@ -74,13 +74,17 @@ function selectTemplate(style: StyleId, section: SectionId, mood: MoodId, key: M
     let w = 1
     if (affinity.some((a) => joined.includes(a))) w += 1.5
     if (
-      (rule === "chorus" || rule === "finalChorus") &&
+      (rule === "chorus" || rule === "breakdownChorus" || rule === "grandChorus") &&
       template.some((t) => /^i(\(|1|$)/.test(t) || /^I(a|m|$)/.test(t))
     )
       w += 1
-    // Final Chorus は bVI→bVII 系の解放感あるテンプレートを優遇
-    if (rule === "finalChorus" && joined.includes("bVI") && joined.includes("bVII")) w += 1.5
-    if (rule === "bridge" && /bII|#iv|ivm9|iv(?![ms])/.test(joined)) w += 1.5
+    // 大サビは bVI→bVII 系の解放感あるテンプレートを優遇
+    if (rule === "grandChorus" && joined.includes("bVI") && joined.includes("bVII")) w += 1.5
+    if (
+      (rule === "cMelody" || rule === "bridge" || rule === "instrumental") &&
+      /bII|#iv|ivm9|iv(?![ms])/.test(joined)
+    )
+      w += 1.5
     if (rule === "verse" && !joined.includes("V7")) w += 0.5
     return w
   })
@@ -116,17 +120,40 @@ function adaptToSection(tokens: string[], section: SectionId, key: MusicKey): st
     case "chorus":
       break
 
-    case "finalChorus":
+    case "breakdownChorus":
+      // 落ちサビ: サビの和声感を保ちながら密度と終止感を抑える
+      if (result.length > 3) result = result.slice(0, 3)
+      if (chance(0.65)) {
+        result[result.length - 1] = unresolveToken(result[result.length - 1], minor)
+      }
+      break
+
+    case "grandChorus":
       // 最後のサビ: 半分の確率でトニック終止を保証して解放感を出す
       if (minor && chance(0.5) && !/^i/.test(result[result.length - 1])) {
         result[result.length - 1] = pick(["i", "i(add9)"])
       }
       break
 
+    case "cMelody":
+      // Cメロ: 新しい和声景色を作りつつ、後続サビへ向かう緊張を残す
+      if (minor && !/bII|#iv|ivm9/.test(result.join(" "))) {
+        result[Math.min(1, result.length - 1)] = pick(["bII", "#ivdim", "ivm9"])
+      }
+      if (chance(0.55)) result[result.length - 1] = pick(["V", "Vsus4", "V7sus4"])
+      break
+
     case "bridge":
       // 借用和音・意外な転回を注入する
       if (minor && !/bII|#iv|ivm9/.test(result.join(" ")) && chance(0.35)) {
         result[1] = pick(["bII", "#ivdim", "ivm9"])
+      }
+      break
+
+    case "instrumental":
+      // 間奏: 歌唱終止を要求せず、色彩和音と循環性を優先する
+      if (result.length >= 2 && chance(0.5)) {
+        result[result.length - 1] = result[0]
       }
       break
 

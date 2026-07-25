@@ -1,4 +1,4 @@
-import type { Mode, MoodId, SectionId, StyleId } from "@/types/music"
+import { sectionRule, type Mode, type MoodId, type SectionId, type StyleId } from "@/types/music"
 import type { Scores } from "@/types/progression"
 import type { ParsedChord } from "./degrees"
 import { degreeSemitone } from "./degrees"
@@ -109,8 +109,9 @@ export function computeScores(
   mood: MoodId,
 ): Scores {
   const darkMood = ["dark", "melancholic", "romantic", "mysterious", "tense"].includes(mood)
-  const liftSection = ["preChorus", "chorus", "finalChorus", "outro"].includes(section)
-  const orchestralSection = ["preChorus", "chorus", "finalChorus", "bridge"].includes(section)
+  const rule = sectionRule(section)
+  const liftSection = ["preChorus", "chorus", "grandChorus", "outro"].includes(rule)
+  const orchestralSection = ["preChorus", "chorus", "grandChorus", "cMelody", "bridge"].includes(rule)
   const cinematicStyle = ["cinematic", "finale", "symphonicRock"].includes(style)
 
   const mylene =
