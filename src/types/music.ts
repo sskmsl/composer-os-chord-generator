@@ -14,24 +14,63 @@ export type StyleId =
   | "ritual"
   | "finale"
 
-export type SectionId =
+/** Composer Arrangerと共有する、曲中での音楽的な役割。 */
+export type SectionRole =
   | "intro"
   | "verse"
-  | "verse1"
-  | "verse2"
-  | "verse3"
-  | "preChorus"
+  | "pre-chorus"
   | "chorus"
+  | "breakdown-chorus"
+  | "grand-chorus"
+  | "c-melody"
   | "bridge"
-  | "finalChorus"
+  | "instrumental"
   | "outro"
 
-/** エンジンの生成ルール上の基底セクション(Verse 1/2/3 は verse のルールを使う) */
-export type RuleSection = "intro" | "verse" | "preChorus" | "chorus" | "bridge" | "finalChorus" | "outro"
+/** 既存コードとの互換性を保つ別名。値はArrangerのSectionRoleと一致する。 */
+export type SectionId = SectionRole
+
+/** エンジン内部で使用する生成ルール。 */
+export type RuleSection =
+  | "intro"
+  | "verse"
+  | "preChorus"
+  | "chorus"
+  | "breakdownChorus"
+  | "grandChorus"
+  | "cMelody"
+  | "bridge"
+  | "instrumental"
+  | "outro"
 
 export function sectionRule(section: SectionId): RuleSection {
-  if (section === "verse1" || section === "verse2" || section === "verse3") return "verse"
+  if (section === "pre-chorus") return "preChorus"
+  if (section === "breakdown-chorus") return "breakdownChorus"
+  if (section === "grand-chorus") return "grandChorus"
+  if (section === "c-melody") return "cMelody"
   return section
+}
+
+/** schema v3以前の値を共通ROLEへ移行する。 */
+export function normalizeSectionRole(value: unknown): SectionRole {
+  if (value === "verse1" || value === "verse2" || value === "verse3") return "verse"
+  if (value === "preChorus") return "pre-chorus"
+  if (value === "finalChorus") return "grand-chorus"
+  if (
+    value === "intro" ||
+    value === "verse" ||
+    value === "pre-chorus" ||
+    value === "chorus" ||
+    value === "breakdown-chorus" ||
+    value === "grand-chorus" ||
+    value === "c-melody" ||
+    value === "bridge" ||
+    value === "instrumental" ||
+    value === "outro"
+  ) {
+    return value
+  }
+  return "verse"
 }
 
 export type MoodId =
@@ -85,18 +124,22 @@ export function keyLabel(key: MusicKey): string {
   return key.mode === "minor" ? `${key.tonic}m` : key.tonic
 }
 
-export const SECTION_OPTIONS: { value: SectionId; label: string }[] = [
-  { value: "intro", label: "Intro" },
-  { value: "verse", label: "Verse" },
-  { value: "verse1", label: "Verse 1" },
-  { value: "verse2", label: "Verse 2" },
-  { value: "verse3", label: "Verse 3" },
-  { value: "preChorus", label: "Pre-Chorus" },
-  { value: "chorus", label: "Chorus" },
-  { value: "bridge", label: "Bridge" },
-  { value: "finalChorus", label: "Final Chorus" },
-  { value: "outro", label: "Outro" },
-]
+export const SECTION_ROLE_LABELS: Record<SectionRole, string> = {
+  intro: "イントロ",
+  verse: "Aメロ",
+  "pre-chorus": "Bメロ",
+  chorus: "サビ",
+  "breakdown-chorus": "落ちサビ",
+  "grand-chorus": "大サビ",
+  "c-melody": "Cメロ",
+  bridge: "ブリッジ",
+  instrumental: "間奏",
+  outro: "アウトロ",
+}
+
+export const SECTION_OPTIONS: { value: SectionId; label: string }[] = Object.entries(
+  SECTION_ROLE_LABELS,
+).map(([value, label]) => ({ value: value as SectionId, label }))
 
 /** 曲の流れ(Intro→…→Outro)に沿った、パートごとの識別色(Badge用) */
 const SECTION_BADGE_CLASSES: Record<RuleSection, string> = {
@@ -104,8 +147,11 @@ const SECTION_BADGE_CLASSES: Record<RuleSection, string> = {
   verse: "border-teal-500/30 bg-teal-500/15 text-teal-600 dark:text-teal-400",
   preChorus: "border-amber-500/30 bg-amber-500/15 text-amber-600 dark:text-amber-400",
   chorus: "border-primary/40 bg-primary/15 text-primary",
+  breakdownChorus: "border-blue-500/30 bg-blue-500/15 text-blue-600 dark:text-blue-400",
+  grandChorus: "border-rose-500/30 bg-rose-500/15 text-rose-600 dark:text-rose-400",
+  cMelody: "border-fuchsia-500/30 bg-fuchsia-500/15 text-fuchsia-600 dark:text-fuchsia-400",
   bridge: "border-violet-500/30 bg-violet-500/15 text-violet-600 dark:text-violet-400",
-  finalChorus: "border-rose-500/30 bg-rose-500/15 text-rose-600 dark:text-rose-400",
+  instrumental: "border-cyan-500/30 bg-cyan-500/15 text-cyan-600 dark:text-cyan-400",
   outro: "border-slate-500/30 bg-slate-500/15 text-slate-600 dark:text-slate-400",
 }
 

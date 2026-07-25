@@ -19,55 +19,57 @@ export interface SectionSuggestion {
 
 export const NEXT_SECTIONS: Record<SectionId, SectionSuggestion[]> = {
   intro: [
-    { section: "verse1", reason: "定番。静かな導入からAメロで物語を語り始める" },
+    { section: "verse", reason: "定番。静かな導入からAメロで物語を語り始める" },
     { section: "chorus", reason: "サビ先行型。冒頭で一番強いフックを聴かせる" },
   ],
   verse: [
-    { section: "preChorus", reason: "Bメロで緊張を高めてからサビへ" },
+    { section: "pre-chorus", reason: "Bメロで緊張を高めてからサビへ" },
     { section: "chorus", reason: "Bメロを挟まず直接サビへ(シンプルな構成)" },
   ],
-  verse1: [
-    { section: "preChorus", reason: "Bメロで緊張を高めてからサビへ" },
-    { section: "chorus", reason: "Bメロを挟まず直接サビへ(シンプルな構成)" },
-  ],
-  verse2: [
-    { section: "preChorus", reason: "2番も同じ流れでBメロへ(1番と対にする)" },
-    {
-      section: "bridge",
-      reason: "2番Aメロから間奏・Cメロで景色を変える",
-      keyMove: { type: "relative", reason: "関係調に転調して景色を変える" },
-    },
-  ],
-  verse3: [
-    {
-      section: "finalChorus",
-      reason: "3番から最後のサビへ向かう終盤の定番",
-      keyMove: { type: "up", reason: "ラスサビ転調(全音上げ)で最後の高まりを作る" },
-    },
-    { section: "outro", reason: "静かに締めくくりへ向かう" },
-  ],
-  preChorus: [
+  "pre-chorus": [
     { section: "chorus", reason: "Bメロの高まりをサビで解放する(鉄板の流れ)" },
   ],
   chorus: [
-    { section: "verse2", reason: "2番Aメロへ。1番と同じ景色を別の歌詞で" },
+    { section: "verse", reason: "次のAメロへ。同じ景色を別の歌詞で描く" },
+    { section: "breakdown-chorus", reason: "落ちサビで一度静けさへ引き、最後の解放を準備する" },
     {
-      section: "bridge",
-      reason: "Cメロ・間奏で予期しない場所へ転換する",
+      section: "c-melody",
+      reason: "Cメロで新しい旋律と和声の景色へ転換する",
       keyMove: { type: "relative", reason: "関係調に転調して景色を変える" },
     },
     { section: "outro", reason: "サビの余韻のまま締めくくる(短い曲向き)" },
   ],
-  bridge: [
+  "breakdown-chorus": [
     {
-      section: "finalChorus",
+      section: "grand-chorus",
+      reason: "抑えた落ちサビから大サビへ解放する",
+      keyMove: { type: "up", reason: "全音上げで最後の高まりを作る" },
+    },
+    { section: "chorus", reason: "通常のサビへ戻して解放する" },
+  ],
+  "grand-chorus": [
+    { section: "outro", reason: "大サビの残響をアウトロへつなぐ" },
+  ],
+  "c-melody": [
+    {
+      section: "grand-chorus",
+      reason: "Cメロの転換から大サビへ向かう",
+      keyMove: { type: "up", reason: "全音上げで最後の高まりを作る" },
+    },
+    { section: "chorus", reason: "新しい景色から通常のサビへ回帰する" },
+  ],
+  bridge: [
+    { section: "c-melody", reason: "ブリッジを経てCメロへ入り、物語を深める" },
+    {
+      section: "grand-chorus",
       reason: "転換からの最後のサビ(カタルシスの定番)",
       keyMove: { type: "up", reason: "ラスサビ転調(全音上げ)で最後の高まりを作る" },
     },
-    { section: "chorus", reason: "通常のサビに戻る" },
   ],
-  finalChorus: [
-    { section: "outro", reason: "最後のサビの残響をアウトロで漂わせる" },
+  instrumental: [
+    { section: "verse", reason: "間奏からAメロへ戻り、歌の物語を再開する" },
+    { section: "c-melody", reason: "間奏からCメロへ入り、新しい展開を作る" },
+    { section: "grand-chorus", reason: "間奏から大サビへ直接つなぐ" },
   ],
   outro: [],
 }
@@ -91,13 +93,15 @@ export function resolveKeyMove(key: MusicKey, move: KeyMoveType): MusicKey {
 /** 王道のフル構成(参考表示用) */
 export const TYPICAL_SONG_FLOW: { section: SectionId; label: string }[] = [
   { section: "intro", label: "Intro" },
-  { section: "verse1", label: "A(1番)" },
-  { section: "preChorus", label: "B" },
+  { section: "verse", label: "A(1番)" },
+  { section: "pre-chorus", label: "B" },
   { section: "chorus", label: "サビ" },
-  { section: "verse2", label: "A(2番)" },
-  { section: "preChorus", label: "B" },
+  { section: "verse", label: "A(2番)" },
+  { section: "pre-chorus", label: "B" },
   { section: "chorus", label: "サビ" },
-  { section: "bridge", label: "C" },
-  { section: "finalChorus", label: "落ちサビ/大サビ" },
+  { section: "instrumental", label: "間奏" },
+  { section: "c-melody", label: "Cメロ" },
+  { section: "breakdown-chorus", label: "落ちサビ" },
+  { section: "grand-chorus", label: "大サビ" },
   { section: "outro", label: "Outro" },
 ]

@@ -1,4 +1,4 @@
-import type { Mode, MoodId, SectionId, StyleId } from "./music"
+import { normalizeSectionRole, type Mode, type MoodId, type SectionId, type StyleId } from "./music"
 
 export interface Scores {
   mylene: number
@@ -24,7 +24,7 @@ export interface GeneratedProgression {
   createdAt: string
 }
 
-export const PROGRESSION_SCHEMA_VERSION = 3
+export const PROGRESSION_SCHEMA_VERSION = 4
 
 /** 保存された進行(メモ4欄 + 所属フォルダ + 曲構成情報) */
 export interface SavedProgression extends GeneratedProgression {
@@ -61,10 +61,10 @@ export function toSavedProgression(
 }
 
 export function migrateSavedProgression(raw: SavedProgression): SavedProgression {
-  if (raw.schemaVersion === PROGRESSION_SCHEMA_VERSION) return raw
   const savedAt = raw.savedAt ?? raw.createdAt
   return {
     ...raw,
+    section: normalizeSectionRole(raw.section),
     memo: raw.memo ?? "",
     songIdea: raw.songIdea ?? "",
     arrangementNote: raw.arrangementNote ?? "",
@@ -75,6 +75,7 @@ export function migrateSavedProgression(raw: SavedProgression): SavedProgression
     // v2 → v3: 曲構成情報。並び順は保存時刻、繰り返しは1回で初期化
     order: raw.order ?? (Date.parse(savedAt) || 0),
     repeatCount: raw.repeatCount ?? 1,
+    // v3 → v4: SectionIdをComposer Arrangerと共通のROLEへ正規化
     schemaVersion: PROGRESSION_SCHEMA_VERSION,
   }
 }
