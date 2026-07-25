@@ -91,6 +91,9 @@ Node.js のインストールやターミナルは不要(ビルド時にElectron
   - Logic のマーカーにセクション名(例: `Verse 1 (Am)`)が並ぶ
   - 実装: `src/features/midi/`(`smf.ts` = ライブラリ非依存のバイナリエンコーダ、
     `exportSong.ts` = フォルダ→ノート列の組み立て)
+- **Composer Arranger連携**: 曲の構成パネルから `.composer-song.json` を書き出せる。
+  セクション順、コード、繰り返し、テンポ、Key、Style、Moodを保持し、
+  Composer Arrangerの通常のImportボタンから新規Composer Projectとして読み込める
 
 ## アーキテクチャ
 

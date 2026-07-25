@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react"
 import { Link } from "react-router-dom"
-import { ChevronDown, ChevronUp, Copy, Download, Music, Trash2 } from "lucide-react"
+import { ChevronDown, ChevronUp, Copy, Download, FileJson, Music, Trash2 } from "lucide-react"
 import { toast } from "sonner"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -32,6 +32,7 @@ export function SongPanel({ folder }: { folder: Folder }) {
   const setRepeatCount = useAppStore((s) => s.setRepeatCount)
   const reorderSection = useAppStore((s) => s.reorderSection)
   const exportFolderAsMidi = useAppStore((s) => s.exportFolderAsMidi)
+  const exportFolderForArranger = useAppStore((s) => s.exportFolderForArranger)
   const deleteSaved = useAppStore((s) => s.deleteSaved)
   const duplicateSection = useAppStore((s) => s.duplicateSection)
   const play = usePlayerStore((s) => s.play)
@@ -77,6 +78,19 @@ export function SongPanel({ folder }: { folder: Folder }) {
     }
   }
 
+  const handleArrangerExport = () => {
+    if (sections.length === 0) {
+      toast.info("この曲にはまだセクションがありません")
+      return
+    }
+    try {
+      exportFolderForArranger(folder.id)
+      toast.success("Composer Arranger用JSONを書き出しました")
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "書き出しに失敗しました")
+    }
+  }
+
   const handleDelete = async (id: string, chords: string) => {
     try {
       await deleteSaved(id)
@@ -105,7 +119,7 @@ export function SongPanel({ folder }: { folder: Folder }) {
             <Music className="size-4 text-primary" />
             曲の構成 — {folder.name}
           </CardTitle>
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <div className="flex items-center gap-1.5">
               <Label htmlFor="song-tempo" className="text-xs text-muted-foreground">
                 Tempo
@@ -126,6 +140,10 @@ export function SongPanel({ folder }: { folder: Folder }) {
             <Button onClick={handleExport}>
               <Download data-icon="inline-start" />
               MIDI書き出し
+            </Button>
+            <Button variant="outline" onClick={handleArrangerExport}>
+              <FileJson data-icon="inline-start" />
+              Arranger用JSON
             </Button>
           </div>
         </div>
