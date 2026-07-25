@@ -1,5 +1,6 @@
 import { create } from "zustand"
 import { generateProgressions, type GenerateParams } from "@/features/chord-engine/generateProgressions"
+import { downloadComposerSongExchange } from "@/features/exchange/composerSongExchange"
 import { downloadSongSmf } from "@/features/midi/exportSong"
 import { folderRepository, progressionRepository } from "@/features/storage/progressionRepository"
 import type { Folder } from "@/types/folder"
@@ -52,6 +53,7 @@ interface AppStore {
   reorderSection(progressionId: string, direction: "up" | "down"): Promise<void>
   duplicateSection(progressionId: string): Promise<SavedProgression>
   exportFolderAsMidi(folderId: string): void
+  exportFolderForArranger(folderId: string): void
 }
 
 export const useAppStore = create<AppStore>((set, get) => ({
@@ -238,5 +240,11 @@ export const useAppStore = create<AppStore>((set, get) => ({
     const folder = get().folders.find((f) => f.id === folderId)
     if (!folder) throw new Error("フォルダが見つかりません")
     downloadSongSmf(folder, get().saved)
+  },
+
+  exportFolderForArranger(folderId) {
+    const folder = get().folders.find((f) => f.id === folderId)
+    if (!folder) throw new Error("フォルダが見つかりません")
+    downloadComposerSongExchange(folder, get().saved)
   },
 }))
