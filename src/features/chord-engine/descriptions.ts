@@ -11,6 +11,7 @@ const STYLE_OPENERS: Record<StyleId, string[]> = {
   symphonicRock: ["オーケストラとバンドが交差する重厚な進行。", "ゴシックな力強さを持つ進行。", "劇場の幕が上がるような進行。"],
   ritual: ["儀式のように反復する旋法的な進行。", "古代的な神秘をまとう進行。", "催眠的なドローンの上を漂う進行。"],
   finale: ["最後のサビへ向かう解放の進行。", "暗闇の後の光のようなカタルシスを持つ進行。", "エンドロールにふさわしい進行。"],
+  cool: ["ランウェイを歩くような洗練された進行。", "無駄を削ぎ落としたクールな質感の進行。", "都会の夜に似合うスタイリッシュな進行。"],
 }
 
 const MOOD_PHRASES: Record<MoodId, string> = {
@@ -22,6 +23,7 @@ const MOOD_PHRASES: Record<MoodId, string> = {
   dramatic: "劇的な感情の起伏",
   floating: "浮遊する無重力感",
   tense: "張り詰めた緊張",
+  dance: "都会的な高揚感",
 }
 
 const SECTION_CLOSERS: Record<RuleSection, string[]> = {

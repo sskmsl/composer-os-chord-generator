@@ -105,6 +105,20 @@ export const STYLE_TEMPLATES: Record<StyleId, Record<Mode, string[][]>> = {
       ["I", "vi", "IV", "V"],
     ],
   },
+  cool: {
+    minor: [
+      ["i7", "iv7", "bVII", "i7"],
+      ["im9", "iv7", "bVII7", "bVI"],
+      ["i7", "bIII", "iv7", "bVII7"],
+      ["i", "bVI", "bVII7", "i7"],
+    ],
+    major: [
+      ["I6", "vi7", "ii7", "V7"],
+      ["I", "bVII", "IV", "I"],
+      ["vi7", "IV6", "I", "V7"],
+      ["I6", "IV", "bVII", "I"],
+    ],
+  },
 }
 
 /** スタイルごとの標準テンポ(BPM)。試聴とMIDI書き出しのデフォルトに使う */
@@ -116,6 +130,7 @@ export const STYLE_TEMPO: Record<StyleId, number> = {
   symphonicRock: 96,
   ritual: 70,
   finale: 88,
+  cool: 116,
 }
 
 export const STYLE_OPTIONS: { value: StyleId; label: string; tagline: string }[] = [
@@ -126,6 +141,7 @@ export const STYLE_OPTIONS: { value: StyleId; label: string; tagline: string }[]
   { value: "symphonicRock", label: "Symphonic Rock", tagline: "劇的・ゴシック・重厚" },
   { value: "ritual", label: "Ritual", tagline: "儀式的・旋法的・催眠的" },
   { value: "finale", label: "Finale", tagline: "解放とカタルシス" },
+  { value: "cool", label: "Cool", tagline: "クール・都会的・ランウェイ" },
 ]
 
 interface StylePrefs {
@@ -182,6 +198,12 @@ export const STYLE_PREFS: Record<StyleId, StylePrefs> = {
     minorColors: ["add9"],
     majorColors: ["maj7", "add9"],
   },
+  cool: {
+    decorationProb: 0.4,
+    slashProb: 0.2,
+    minorColors: ["7", "m9", "6"],
+    majorColors: ["7", "6", "add9"],
+  },
 }
 
 interface MoodProfile {
@@ -200,4 +222,5 @@ export const MOOD_PROFILES: Record<MoodId, MoodProfile> = {
   dramatic: { affinity: ["V", "bVI", "bVII"], colors: ["7sus4", "add9"] },
   floating: { affinity: ["add9", "sus", "maj7"], colors: ["add9", "sus2", "m11"] },
   tense: { affinity: ["V7", "dim", "bII", "sus4"], colors: ["sus4", "7sus4"] },
+  dance: { affinity: ["bVII", "i7", "iv7", "vi7"], colors: ["7", "6", "m9"] },
 }

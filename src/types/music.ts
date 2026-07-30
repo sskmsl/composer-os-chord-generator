@@ -13,6 +13,7 @@ export type StyleId =
   | "symphonicRock"
   | "ritual"
   | "finale"
+  | "cool"
 
 /** Composer Arrangerと共有する、曲中での音楽的な役割。 */
 export type SectionRole =
@@ -82,6 +83,7 @@ export type MoodId =
   | "dramatic"
   | "floating"
   | "tense"
+  | "dance"
 
 export type VariationCount = 5 | 10 | 20
 
@@ -168,6 +170,7 @@ export const MOOD_OPTIONS: { value: MoodId; label: string }[] = [
   { value: "dramatic", label: "Dramatic" },
   { value: "floating", label: "Floating" },
   { value: "tense", label: "Tense" },
+  { value: "dance", label: "Dance" },
 ]
 
 export const VARIATION_OPTIONS: VariationCount[] = [5, 10, 20]
