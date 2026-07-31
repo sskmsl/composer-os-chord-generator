@@ -18,6 +18,7 @@ export type StyleId =
   | "neoclassical"
   | "minimalism"
   | "jChanson"
+  | "hiNRG"
 
 /** Composer Arrangerと共有する、曲中での音楽的な役割。 */
 export type SectionRole =

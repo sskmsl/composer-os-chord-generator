@@ -175,6 +175,20 @@ export const STYLE_TEMPLATES: Record<StyleId, Record<Mode, string[][]>> = {
       ["I", "bVI", "V7", "I"],
     ],
   },
+  hiNRG: {
+    minor: [
+      ["i", "bVI", "bVII", "V7"],
+      ["i", "v", "bVI", "bVII"],
+      ["i", "bIII", "bVII", "V7"],
+      ["i", "iv", "V7", "i"],
+    ],
+    major: [
+      ["I", "vi", "IV", "V7"],
+      ["I", "V", "vi", "IV"],
+      ["vi", "IV", "I", "V7"],
+      ["I", "bVII", "IV", "V7"],
+    ],
+  },
 }
 
 /** スタイルごとの標準テンポ(BPM)。試聴とMIDI書き出しのデフォルトに使う */
@@ -191,6 +205,7 @@ export const STYLE_TEMPO: Record<StyleId, number> = {
   neoclassical: 66,
   minimalism: 108,
   jChanson: 92,
+  hiNRG: 132,
 }
 
 export const STYLE_OPTIONS: { value: StyleId; label: string; tagline: string }[] = [
@@ -206,6 +221,7 @@ export const STYLE_OPTIONS: { value: StyleId; label: string; tagline: string }[]
   { value: "neoclassical", label: "Neoclassical", tagline: "ロマン派・劇的・ヨーロピアン" },
   { value: "minimalism", label: "Minimalism", tagline: "反復・オスティナート・静かな高揚" },
   { value: "jChanson", label: "J-Chanson", tagline: "和製シャンソン・エキゾティカ・ミステリアス" },
+  { value: "hiNRG", label: "Hi-NRG", tagline: "疾走・ダーク・ディスコ" },
 ]
 
 interface StylePrefs {
@@ -291,6 +307,12 @@ export const STYLE_PREFS: Record<StyleId, StylePrefs> = {
     slashProb: 0.25,
     minorColors: ["maj7", "m9"],
     majorColors: ["maj7", "add9", "6"],
+  },
+  hiNRG: {
+    decorationProb: 0.3,
+    slashProb: 0.1,
+    minorColors: ["7"],
+    majorColors: ["6", "add9"],
   },
 }
 
