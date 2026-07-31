@@ -133,6 +133,20 @@ export const STYLE_TEMPLATES: Record<StyleId, Record<Mode, string[][]>> = {
       ["I6", "bVII", "IV6", "I6"],
     ],
   },
+  neoclassical: {
+    minor: [
+      ["i", "iiø", "V7", "i"],
+      ["i(add9)", "#ivdim", "bVImaj7/i", "V7sus4"],
+      ["i", "bVII/i", "bVI/i", "V7"],
+      ["i", "iv/bVI", "V7sus4", "i"],
+    ],
+    major: [
+      ["I", "iiø", "V7", "I"],
+      ["Iadd9", "#ivdim", "vi/I", "V7sus4"],
+      ["I", "bVII/I", "IV/I", "V7"],
+      ["I", "iv/bVI", "V7sus4", "I"],
+    ],
+  },
 }
 
 /** スタイルごとの標準テンポ(BPM)。試聴とMIDI書き出しのデフォルトに使う */
@@ -146,6 +160,7 @@ export const STYLE_TEMPO: Record<StyleId, number> = {
   finale: 88,
   cool: 116,
   tripHop: 72,
+  neoclassical: 66,
 }
 
 export const STYLE_OPTIONS: { value: StyleId; label: string; tagline: string }[] = [
@@ -158,6 +173,7 @@ export const STYLE_OPTIONS: { value: StyleId; label: string; tagline: string }[]
   { value: "finale", label: "Finale", tagline: "解放とカタルシス" },
   { value: "cool", label: "Cool", tagline: "クール・都会的・ランウェイ" },
   { value: "tripHop", label: "Trip-Hop", tagline: "ダブ・反復・低音の重み" },
+  { value: "neoclassical", label: "Neoclassical", tagline: "ロマン派・劇的・ヨーロピアン" },
 ]
 
 interface StylePrefs {
@@ -225,6 +241,12 @@ export const STYLE_PREFS: Record<StyleId, StylePrefs> = {
     slashProb: 0.15,
     minorColors: ["7", "m9"],
     majorColors: ["7", "6"],
+  },
+  neoclassical: {
+    decorationProb: 0.6,
+    slashProb: 0.45,
+    minorColors: ["add9", "m9", "maj7"],
+    majorColors: ["maj7", "add9"],
   },
 }
 

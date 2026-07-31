@@ -15,6 +15,7 @@ export type StyleId =
   | "finale"
   | "cool"
   | "tripHop"
+  | "neoclassical"
 
 /** Composer Arrangerと共有する、曲中での音楽的な役割。 */
 export type SectionRole =
