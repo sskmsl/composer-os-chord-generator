@@ -147,6 +147,20 @@ export const STYLE_TEMPLATES: Record<StyleId, Record<Mode, string[][]>> = {
       ["I", "iv/bVI", "V7sus4", "I"],
     ],
   },
+  minimalism: {
+    minor: [
+      ["i", "bVI", "bVII", "i"],
+      ["i", "iv", "i", "iv"],
+      ["i", "bVII", "i", "bVII"],
+      ["i", "bIII", "iv", "bVII"],
+    ],
+    major: [
+      ["I", "bVI", "bVII", "I"],
+      ["I", "IV", "I", "IV"],
+      ["I", "bVII", "I", "bVII"],
+      ["I", "iii", "IV", "bVII"],
+    ],
+  },
 }
 
 /** スタイルごとの標準テンポ(BPM)。試聴とMIDI書き出しのデフォルトに使う */
@@ -161,6 +175,7 @@ export const STYLE_TEMPO: Record<StyleId, number> = {
   cool: 116,
   tripHop: 72,
   neoclassical: 66,
+  minimalism: 108,
 }
 
 export const STYLE_OPTIONS: { value: StyleId; label: string; tagline: string }[] = [
@@ -174,6 +189,7 @@ export const STYLE_OPTIONS: { value: StyleId; label: string; tagline: string }[]
   { value: "cool", label: "Cool", tagline: "クール・都会的・ランウェイ" },
   { value: "tripHop", label: "Trip-Hop", tagline: "ダブ・反復・低音の重み" },
   { value: "neoclassical", label: "Neoclassical", tagline: "ロマン派・劇的・ヨーロピアン" },
+  { value: "minimalism", label: "Minimalism", tagline: "反復・オスティナート・静かな高揚" },
 ]
 
 interface StylePrefs {
@@ -247,6 +263,12 @@ export const STYLE_PREFS: Record<StyleId, StylePrefs> = {
     slashProb: 0.45,
     minorColors: ["add9", "m9", "maj7"],
     majorColors: ["maj7", "add9"],
+  },
+  minimalism: {
+    decorationProb: 0.15,
+    slashProb: 0.15,
+    minorColors: ["sus2"],
+    majorColors: ["6"],
   },
 }
 
