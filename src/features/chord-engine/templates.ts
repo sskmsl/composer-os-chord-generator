@@ -119,6 +119,20 @@ export const STYLE_TEMPLATES: Record<StyleId, Record<Mode, string[][]>> = {
       ["I6", "IV", "bVII", "I"],
     ],
   },
+  tripHop: {
+    minor: [
+      ["i7", "bVII7", "i7", "bVII7"],
+      ["im9", "iv7", "im9", "iv7"],
+      ["i7", "iv7", "bVII7", "i7"],
+      ["i", "bVI", "i", "bVI"],
+    ],
+    major: [
+      ["vi7", "IV6", "vi7", "IV6"],
+      ["I", "bVII", "I", "bVII"],
+      ["vi7", "bVII", "vi7", "IV"],
+      ["I6", "bVII", "IV6", "I6"],
+    ],
+  },
 }
 
 /** スタイルごとの標準テンポ(BPM)。試聴とMIDI書き出しのデフォルトに使う */
@@ -131,6 +145,7 @@ export const STYLE_TEMPO: Record<StyleId, number> = {
   ritual: 70,
   finale: 88,
   cool: 116,
+  tripHop: 72,
 }
 
 export const STYLE_OPTIONS: { value: StyleId; label: string; tagline: string }[] = [
@@ -142,6 +157,7 @@ export const STYLE_OPTIONS: { value: StyleId; label: string; tagline: string }[]
   { value: "ritual", label: "Ritual", tagline: "儀式的・旋法的・催眠的" },
   { value: "finale", label: "Finale", tagline: "解放とカタルシス" },
   { value: "cool", label: "Cool", tagline: "クール・都会的・ランウェイ" },
+  { value: "tripHop", label: "Trip-Hop", tagline: "ダブ・反復・低音の重み" },
 ]
 
 interface StylePrefs {
@@ -203,6 +219,12 @@ export const STYLE_PREFS: Record<StyleId, StylePrefs> = {
     slashProb: 0.2,
     minorColors: ["7", "m9", "6"],
     majorColors: ["7", "6", "add9"],
+  },
+  tripHop: {
+    decorationProb: 0.35,
+    slashProb: 0.15,
+    minorColors: ["7", "m9"],
+    majorColors: ["7", "6"],
   },
 }
 
