@@ -161,6 +161,20 @@ export const STYLE_TEMPLATES: Record<StyleId, Record<Mode, string[][]>> = {
       ["I", "iii", "IV", "bVII"],
     ],
   },
+  jChanson: {
+    minor: [
+      ["i", "bII", "V7", "i"],
+      ["i7", "iv7", "bVII7", "bIIImaj7"],
+      ["i", "iiø", "bII", "V7"],
+      ["i(add9)", "bVImaj7", "V7sus4", "i"],
+    ],
+    major: [
+      ["I", "bII", "V7", "I"],
+      ["Imaj7", "vi7", "ii7", "V7"],
+      ["Imaj7", "bIIImaj7", "IV", "V7"],
+      ["I", "bVI", "V7", "I"],
+    ],
+  },
 }
 
 /** スタイルごとの標準テンポ(BPM)。試聴とMIDI書き出しのデフォルトに使う */
@@ -176,6 +190,7 @@ export const STYLE_TEMPO: Record<StyleId, number> = {
   tripHop: 72,
   neoclassical: 66,
   minimalism: 108,
+  jChanson: 92,
 }
 
 export const STYLE_OPTIONS: { value: StyleId; label: string; tagline: string }[] = [
@@ -190,6 +205,7 @@ export const STYLE_OPTIONS: { value: StyleId; label: string; tagline: string }[]
   { value: "tripHop", label: "Trip-Hop", tagline: "ダブ・反復・低音の重み" },
   { value: "neoclassical", label: "Neoclassical", tagline: "ロマン派・劇的・ヨーロピアン" },
   { value: "minimalism", label: "Minimalism", tagline: "反復・オスティナート・静かな高揚" },
+  { value: "jChanson", label: "J-Chanson", tagline: "和製シャンソン・エキゾティカ・ミステリアス" },
 ]
 
 interface StylePrefs {
@@ -269,6 +285,12 @@ export const STYLE_PREFS: Record<StyleId, StylePrefs> = {
     slashProb: 0.15,
     minorColors: ["sus2"],
     majorColors: ["6"],
+  },
+  jChanson: {
+    decorationProb: 0.55,
+    slashProb: 0.25,
+    minorColors: ["maj7", "m9"],
+    majorColors: ["maj7", "add9", "6"],
   },
 }
 

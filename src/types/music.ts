@@ -17,6 +17,7 @@ export type StyleId =
   | "tripHop"
   | "neoclassical"
   | "minimalism"
+  | "jChanson"
 
 /** Composer Arrangerと共有する、曲中での音楽的な役割。 */
 export type SectionRole =
