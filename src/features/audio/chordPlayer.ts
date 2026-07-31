@@ -117,7 +117,7 @@ const STYLE_VOICES: Partial<Record<StyleId, Partial<VoiceProfile>>> = {
     filterBase: 350,
     filterPeak: 650,
     attack: 0.15,
-    release: 1.4,
+    release: 0.6,
     chordGain: 0.045,
     bassGain: 0.3,
   },
