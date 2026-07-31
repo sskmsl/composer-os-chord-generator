@@ -22,6 +22,7 @@ export const usePlayerStore = create<PlayerStore>((set, get) => ({
     void chordPlayer
       .play(chords, {
         bpm: STYLE_TEMPO[style],
+        style,
         onEnded: () => {
           if (get().playingId === id) set({ playingId: null })
         },
