@@ -83,26 +83,26 @@
     --sidebar-ring: oklch(0.708 0 0);
 }
 
-/* Cinematic dark theme: 深い紫黒の背景 + ワインレッドのアクセント */
+/* Warm charcoal テーマ(Warpデザイン言語を参考): 温かみのあるチャコール背景 + オフホワイトの主色 */
 .dark {
-    --background: oklch(0.15 0.014 310);
-    --foreground: oklch(0.92 0.008 340);
-    --card: oklch(0.19 0.016 310);
-    --card-foreground: oklch(0.92 0.008 340);
-    --popover: oklch(0.2 0.016 310);
-    --popover-foreground: oklch(0.92 0.008 340);
-    --primary: oklch(0.62 0.13 10);
-    --primary-foreground: oklch(0.97 0.01 340);
-    --secondary: oklch(0.26 0.02 310);
-    --secondary-foreground: oklch(0.92 0.008 340);
-    --muted: oklch(0.24 0.018 310);
-    --muted-foreground: oklch(0.67 0.015 320);
-    --accent: oklch(0.27 0.025 310);
-    --accent-foreground: oklch(0.95 0.01 340);
+    --background: #2b2622;
+    --foreground: #f7f5f0;
+    --card: #383330;
+    --card-foreground: #f7f5f0;
+    --popover: #383330;
+    --popover-foreground: #f7f5f0;
+    --primary: #f7f5f0;
+    --primary-foreground: #2b2622;
+    --secondary: #383330;
+    --secondary-foreground: #f7f5f0;
+    --muted: #383330;
+    --muted-foreground: #aea69c;
+    --accent: #3f3a36;
+    --accent-foreground: #f7f5f0;
     --destructive: oklch(0.6 0.19 25);
-    --border: oklch(0.95 0.01 340 / 10%);
-    --input: oklch(0.95 0.01 340 / 14%);
-    --ring: oklch(0.6 0.1 10);
+    --border: #3f3a36;
+    --input: #3f3a36;
+    --ring: #dad2c1;
     --chart-1: oklch(0.87 0 0);
     --chart-2: oklch(0.556 0 0);
     --chart-3: oklch(0.439 0 0);
