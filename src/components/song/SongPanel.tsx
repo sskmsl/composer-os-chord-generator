@@ -173,94 +173,98 @@ export function SongPanel({ folder }: { folder: Folder }) {
           return (
             <div
               key={section.id}
-              className="flex items-center gap-3 rounded-lg border border-border/60 bg-card px-3 py-2"
+              className="flex flex-col gap-2 rounded-lg border border-border/60 bg-card px-3 py-2 sm:flex-row sm:items-center sm:gap-3"
             >
-              <div className="flex flex-col">
-                <button
-                  type="button"
-                  aria-label="上へ移動"
-                  disabled={i === 0}
-                  onClick={() => void reorderSection(section.id, "up")}
-                  className="text-muted-foreground hover:text-foreground disabled:opacity-30"
-                >
-                  <ChevronUp className="size-4" />
-                </button>
-                <button
-                  type="button"
-                  aria-label="下へ移動"
-                  disabled={i === sections.length - 1}
-                  onClick={() => void reorderSection(section.id, "down")}
-                  className="text-muted-foreground hover:text-foreground disabled:opacity-30"
-                >
-                  <ChevronDown className="size-4" />
-                </button>
-              </div>
-              <span className="w-6 shrink-0 text-center text-xs tabular-nums text-muted-foreground">
-                {i + 1}
-              </span>
-              <div className="min-w-0 flex-1">
-                <div className="flex flex-wrap items-center gap-2">
-                  <Badge variant="secondary" className="font-normal">{label}</Badge>
-                  <Badge variant="outline" className="font-normal">{section.key}</Badge>
-                  <Link
-                    to={`/saved/${section.id}`}
-                    className="truncate font-mono text-sm hover:text-primary hover:underline"
+              <div className="flex min-w-0 items-center gap-3 sm:flex-1">
+                <div className="flex shrink-0 flex-col">
+                  <button
+                    type="button"
+                    aria-label="上へ移動"
+                    disabled={i === 0}
+                    onClick={() => void reorderSection(section.id, "up")}
+                    className="text-muted-foreground hover:text-foreground disabled:opacity-30"
                   >
-                    {section.chords.join(" – ")}
-                  </Link>
+                    <ChevronUp className="size-4" />
+                  </button>
+                  <button
+                    type="button"
+                    aria-label="下へ移動"
+                    disabled={i === sections.length - 1}
+                    onClick={() => void reorderSection(section.id, "down")}
+                    className="text-muted-foreground hover:text-foreground disabled:opacity-30"
+                  >
+                    <ChevronDown className="size-4" />
+                  </button>
+                </div>
+                <span className="w-6 shrink-0 text-center text-xs tabular-nums text-muted-foreground">
+                  {i + 1}
+                </span>
+                <div className="min-w-0 flex-1">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <Badge variant="secondary" className="font-normal">{label}</Badge>
+                    <Badge variant="outline" className="font-normal">{section.key}</Badge>
+                    <Link
+                      to={`/saved/${section.id}`}
+                      className="truncate font-mono text-sm hover:text-primary hover:underline"
+                    >
+                      {section.chords.join(" – ")}
+                    </Link>
+                  </div>
                 </div>
               </div>
-              <button
-                type="button"
-                aria-label="このセクションを試聴"
-                onClick={() => play(section.id, section.chords, section.style)}
-                className="shrink-0 rounded-md px-2 py-1 text-xs text-muted-foreground hover:bg-accent hover:text-foreground"
-              >
-                {playingId === section.id ? "停止" : "試聴"}
-              </button>
-              <div className="flex shrink-0 items-center gap-1.5">
-                <Label className="text-xs text-muted-foreground">繰返</Label>
-                <Select
-                  items={REPEAT_OPTIONS.map((r) => ({ value: String(r), label: `×${r}` }))}
-                  value={String(section.repeatCount)}
-                  onValueChange={(v) => void setRepeatCount(section.id, Number(v))}
+              <div className="flex flex-wrap items-center gap-2 sm:shrink-0">
+                <button
+                  type="button"
+                  aria-label="このセクションを試聴"
+                  onClick={() => play(section.id, section.chords, section.style)}
+                  className="shrink-0 rounded-md px-2 py-1 text-xs text-muted-foreground hover:bg-accent hover:text-foreground"
                 >
-                  <SelectTrigger size="sm" aria-label="繰り返し回数">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {REPEAT_OPTIONS.map((r) => (
-                      <SelectItem key={r} value={String(r)}>
-                        ×{r}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <Button
-                variant="ghost"
-                size="icon-sm"
-                aria-label="このセクションを複製"
-                className="shrink-0 text-muted-foreground hover:text-foreground"
-                onClick={() => void handleDuplicate(section.id)}
-              >
-                <Copy />
-              </Button>
-              <ConfirmDeleteDialog
-                title="セクションを削除しますか?"
-                description={`「${section.chords.join(" – ")}」を曲の構成から削除します。この操作は取り消せません。`}
-                onConfirm={() => void handleDelete(section.id, section.chords.join(" – "))}
-                trigger={
-                  <Button
-                    variant="ghost"
-                    size="icon-sm"
-                    aria-label="このセクションを削除"
-                    className="shrink-0 text-muted-foreground hover:text-destructive"
+                  {playingId === section.id ? "停止" : "試聴"}
+                </button>
+                <div className="flex shrink-0 items-center gap-1.5">
+                  <Label className="text-xs text-muted-foreground">繰返</Label>
+                  <Select
+                    items={REPEAT_OPTIONS.map((r) => ({ value: String(r), label: `×${r}` }))}
+                    value={String(section.repeatCount)}
+                    onValueChange={(v) => void setRepeatCount(section.id, Number(v))}
                   >
-                    <Trash2 />
-                  </Button>
-                }
-              />
+                    <SelectTrigger size="sm" aria-label="繰り返し回数">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {REPEAT_OPTIONS.map((r) => (
+                        <SelectItem key={r} value={String(r)}>
+                          ×{r}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <Button
+                  variant="ghost"
+                  size="icon-sm"
+                  aria-label="このセクションを複製"
+                  className="shrink-0 text-muted-foreground hover:text-foreground"
+                  onClick={() => void handleDuplicate(section.id)}
+                >
+                  <Copy />
+                </Button>
+                <ConfirmDeleteDialog
+                  title="セクションを削除しますか?"
+                  description={`「${section.chords.join(" – ")}」を曲の構成から削除します。この操作は取り消せません。`}
+                  onConfirm={() => void handleDelete(section.id, section.chords.join(" – "))}
+                  trigger={
+                    <Button
+                      variant="ghost"
+                      size="icon-sm"
+                      aria-label="このセクションを削除"
+                      className="shrink-0 text-muted-foreground hover:text-destructive"
+                    >
+                      <Trash2 />
+                    </Button>
+                  }
+                />
+              </div>
             </div>
           )
         })}
