@@ -5,9 +5,9 @@ import type { ParsedChord } from "./degrees"
 import { bassNoteName, buildToken, chordName, parseToken } from "./degrees"
 import { decorateProgression } from "./decorate"
 import { buildDescription } from "./descriptions"
-import { chance, pick, weightedPick } from "./random"
+import { chance, pick } from "./random"
 import { computeScores, extractFeatures } from "./scoring"
-import { MOOD_PROFILES, STYLE_TEMPLATES } from "./templates"
+import { generateChain } from "./transitions"
 
 export interface GenerateParams {
   key: MusicKey
@@ -40,7 +40,7 @@ export function generateProgressions(params: GenerateParams): GeneratedProgressi
 function generateOne(params: GenerateParams): GeneratedProgression {
   const { key, style, section, mood } = params
 
-  const tokens = adaptToSection(selectTemplate(style, section, mood, key), section, key)
+  const tokens = adaptToSection(generateChain(style, key.mode, mood), section, key)
   const parsed = decorateProgression(tokens.map(parseToken), style, mood)
 
   const chords = parsed.map((c) => chordName(c, key))
@@ -61,35 +61,6 @@ function generateOne(params: GenerateParams): GeneratedProgression {
     scores: computeScores(features, style, section, mood),
     createdAt: new Date().toISOString(),
   }
-}
-
-/** ムード親和性とセクション適性による重み付きテンプレート抽選 */
-function selectTemplate(style: StyleId, section: SectionId, mood: MoodId, key: MusicKey): string[] {
-  const templates = STYLE_TEMPLATES[style][key.mode]
-  const affinity = MOOD_PROFILES[mood].affinity
-  const rule = sectionRule(section)
-
-  const weights = templates.map((template) => {
-    const joined = template.join(" ")
-    let w = 1
-    if (affinity.some((a) => joined.includes(a))) w += 1.5
-    if (
-      (rule === "chorus" || rule === "breakdownChorus" || rule === "grandChorus") &&
-      template.some((t) => /^i(\(|1|$)/.test(t) || /^I(a|m|$)/.test(t))
-    )
-      w += 1
-    // 大サビは bVI→bVII 系の解放感あるテンプレートを優遇
-    if (rule === "grandChorus" && joined.includes("bVI") && joined.includes("bVII")) w += 1.5
-    if (
-      (rule === "cMelody" || rule === "bridge" || rule === "instrumental") &&
-      /bII|#iv|ivm9|iv(?![ms])/.test(joined)
-    )
-      w += 1.5
-    if (rule === "verse" && !joined.includes("V7")) w += 0.5
-    return w
-  })
-
-  return [...weightedPick(templates, weights)]
 }
 
 /** CHORD_ENGINE_SPEC §6 のセクションルールでテンプレートを変形する */
