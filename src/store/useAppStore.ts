@@ -5,7 +5,7 @@ import { downloadSongSmf } from "@/features/midi/exportSong"
 import { folderRepository, progressionRepository } from "@/features/storage/progressionRepository"
 import type { Folder } from "@/types/folder"
 import { createFolder as buildFolder } from "@/types/folder"
-import type { MoodId, MusicKey, SectionId, StyleId, VariationCount } from "@/types/music"
+import type { ChordCount, MoodId, MusicKey, SectionId, StyleId, VariationCount } from "@/types/music"
 import type { GeneratedProgression, SavedProgression } from "@/types/progression"
 import { toSavedProgression } from "@/types/progression"
 
@@ -15,6 +15,7 @@ interface GeneratorParams {
   section: SectionId
   mood: MoodId
   count: VariationCount
+  length: ChordCount
 }
 
 interface AppStore {
@@ -63,6 +64,7 @@ export const useAppStore = create<AppStore>((set, get) => ({
     section: "chorus",
     mood: "melancholic",
     count: 5,
+    length: 4,
   },
   results: [],
   previousResults: null,

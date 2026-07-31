@@ -13,6 +13,7 @@ import {
 import { STYLE_OPTIONS } from "@/features/chord-engine/templates"
 import { useAppStore } from "@/store/useAppStore"
 import {
+  CHORD_COUNT_OPTIONS,
   MAJOR_KEYS,
   MINOR_KEYS,
   MOOD_OPTIONS,
@@ -20,6 +21,7 @@ import {
   VARIATION_OPTIONS,
   keyId,
   keyLabel,
+  type ChordCount,
   type MoodId,
   type SectionId,
   type StyleId,
@@ -31,6 +33,7 @@ const ALL_KEYS = [...MINOR_KEYS, ...MAJOR_KEYS]
 const KEY_ITEMS = ALL_KEYS.map((k) => ({ value: keyId(k), label: keyLabel(k) }))
 const STYLE_ITEMS = STYLE_OPTIONS.map((s) => ({ value: s.value, label: s.label }))
 const COUNT_ITEMS = VARIATION_OPTIONS.map((c) => ({ value: String(c), label: `${c}件` }))
+const LENGTH_ITEMS = CHORD_COUNT_OPTIONS.map((c) => ({ value: String(c), label: `${c}コード` }))
 
 export function GeneratorForm() {
   const params = useAppStore((s) => s.params)
@@ -43,7 +46,7 @@ export function GeneratorForm() {
 
   return (
     <div className="flex flex-col gap-4 rounded-xl border border-border/60 bg-card/50 p-4 sm:p-5">
-      <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
+      <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
         <Field label="Style">
           <Select
             items={STYLE_ITEMS}
@@ -125,6 +128,21 @@ export function GeneratorForm() {
             <SelectTrigger className="w-full"><SelectValue /></SelectTrigger>
             <SelectContent>
               {COUNT_ITEMS.map((c) => (
+                <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </Field>
+
+        <Field label="コード数">
+          <Select
+            items={LENGTH_ITEMS}
+            value={String(params.length)}
+            onValueChange={(v) => setParams({ length: Number(v) as ChordCount })}
+          >
+            <SelectTrigger className="w-full"><SelectValue /></SelectTrigger>
+            <SelectContent>
+              {LENGTH_ITEMS.map((c) => (
                 <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>
               ))}
             </SelectContent>

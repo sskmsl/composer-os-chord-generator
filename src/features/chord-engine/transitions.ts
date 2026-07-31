@@ -50,14 +50,11 @@ function getTransitionData(style: StyleId, mode: Mode): TransitionData {
   return data
 }
 
-/** 生成する進行の長さ。4を中心に、たまに3や5にも揺らぐ */
+/** 明示指定がない場合の進行の長さ。4を中心に、たまに3や5にも揺らぐ */
 const CHAIN_LENGTHS = [3, 4, 4, 4, 5]
 
-export function generateChain(style: StyleId, mode: Mode, mood: MoodId): string[] {
-  const { starts, table } = getTransitionData(style, mode)
-  const affinity = MOOD_PROFILES[mood].affinity
-  const targetLen = pick(CHAIN_LENGTHS)
-
+/** 遷移テーブルを1回たどって進行を1本組み立てる */
+function walk(starts: string[], table: Record<string, string[]>, affinity: string[], targetLen: number): string[] {
   let current = pick(starts)
   const chain = [current]
   while (chain.length < targetLen) {
@@ -68,7 +65,22 @@ export function generateChain(style: StyleId, mode: Mode, mood: MoodId): string[
     current = pick(pool)
     chain.push(current)
   }
+  return chain
+}
+
+/** @param length 指定するとその長さちょうどを狙って生成する(行き止まりに備えて複数回試行) */
+export function generateChain(style: StyleId, mode: Mode, mood: MoodId, length?: number): string[] {
+  const { starts, table } = getTransitionData(style, mode)
+  const affinity = MOOD_PROFILES[mood].affinity
+  const targetLen = length ?? pick(CHAIN_LENGTHS)
+
+  let best: string[] = []
+  for (let attempt = 0; attempt < 25; attempt++) {
+    const chain = walk(starts, table, affinity, targetLen)
+    if (chain.length === targetLen) return chain
+    if (chain.length > best.length) best = chain
+  }
 
   // 行き止まりで短くなりすぎた場合は、手作りテンプレートそのものにフォールバックする
-  return chain.length >= 3 ? chain : pick(STYLE_TEMPLATES[style][mode])
+  return best.length >= Math.min(3, targetLen) ? best : pick(STYLE_TEMPLATES[style][mode])
 }

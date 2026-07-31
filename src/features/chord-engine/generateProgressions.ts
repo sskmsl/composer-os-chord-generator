@@ -15,6 +15,8 @@ export interface GenerateParams {
   section: SectionId
   mood: MoodId
   count: number
+  /** 進行のコード数(2〜5)。省略時は3〜5でランダムに揺らぐ */
+  length?: number
 }
 
 /**
@@ -38,9 +40,9 @@ export function generateProgressions(params: GenerateParams): GeneratedProgressi
 }
 
 function generateOne(params: GenerateParams): GeneratedProgression {
-  const { key, style, section, mood } = params
+  const { key, style, section, mood, length } = params
 
-  const tokens = adaptToSection(generateChain(style, key.mode, mood), section, key)
+  const tokens = adaptToSection(generateChain(style, key.mode, mood, length), section, key)
   const parsed = decorateProgression(tokens.map(parseToken), style, mood)
 
   const chords = parsed.map((c) => chordName(c, key))

@@ -92,6 +92,10 @@ export type MoodId =
 
 export type VariationCount = 5 | 10 | 20
 
+/** 進行のコード数(2〜5から選択) */
+export type ChordCount = 2 | 3 | 4 | 5
+export const CHORD_COUNT_OPTIONS: ChordCount[] = [2, 3, 4, 5]
+
 /** 実用重視のキーリスト(マイナー優先・一般的な綴りのみ) */
 export const MINOR_KEYS: MusicKey[] = [
   { tonic: "A", mode: "minor" },
