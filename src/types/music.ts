@@ -19,6 +19,7 @@ export type StyleId =
   | "minimalism"
   | "jChanson"
   | "hiNRG"
+  | "dorian"
 
 /** Composer Arrangerと共有する、曲中での音楽的な役割。 */
 export type SectionRole =

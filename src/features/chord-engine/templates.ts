@@ -189,6 +189,20 @@ export const STYLE_TEMPLATES: Record<StyleId, Record<Mode, string[][]>> = {
       ["I", "bVII", "IV", "V7"],
     ],
   },
+  dorian: {
+    minor: [
+      ["i", "IV", "bVII", "i"],
+      ["i", "IV", "i", "IV"],
+      ["i", "bVII", "IV", "i"],
+      ["im9", "IV", "bVII", "IV"],
+    ],
+    major: [
+      ["I", "IV", "bVII", "I"],
+      ["I", "bVII", "I", "bVII"],
+      ["vi", "IV", "I", "bVII"],
+      ["I", "V", "IV", "I"],
+    ],
+  },
 }
 
 /** スタイルごとの標準テンポ(BPM)。試聴とMIDI書き出しのデフォルトに使う */
@@ -206,6 +220,7 @@ export const STYLE_TEMPO: Record<StyleId, number> = {
   minimalism: 108,
   jChanson: 92,
   hiNRG: 132,
+  dorian: 88,
 }
 
 export const STYLE_OPTIONS: { value: StyleId; label: string; tagline: string }[] = [
@@ -222,6 +237,7 @@ export const STYLE_OPTIONS: { value: StyleId; label: string; tagline: string }[]
   { value: "minimalism", label: "Minimalism", tagline: "反復・オスティナート・静かな高揚" },
   { value: "jChanson", label: "J-Chanson", tagline: "和製シャンソン・エキゾティカ・ミステリアス" },
   { value: "hiNRG", label: "Hi-NRG", tagline: "疾走・ダーク・ディスコ" },
+  { value: "dorian", label: "Dorian", tagline: "旋法・フォークロック・郷愁" },
 ]
 
 interface StylePrefs {
@@ -313,6 +329,12 @@ export const STYLE_PREFS: Record<StyleId, StylePrefs> = {
     slashProb: 0.1,
     minorColors: ["7"],
     majorColors: ["6", "add9"],
+  },
+  dorian: {
+    decorationProb: 0.4,
+    slashProb: 0.2,
+    minorColors: ["m9", "sus2"],
+    majorColors: ["6", "sus2"],
   },
 }
 
