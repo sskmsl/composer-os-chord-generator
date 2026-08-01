@@ -16,20 +16,18 @@ export function DashboardPage() {
   return (
     <div className="flex flex-col gap-10">
       <div className="flex flex-col items-start gap-6 py-6">
-        <div>
-          <p className="text-xs tracking-[0.3em] text-muted-foreground uppercase">
-            Composer OS
-          </p>
-          <h1 className="mt-2 text-4xl font-semibold tracking-wide">Chord Generator</h1>
-          <p className="mt-3 max-w-xl leading-relaxed text-muted-foreground">
-            Style・Key・Section・Mood を選んで、ダークで映画的なコード進行の候補を
-            まとめて生成し、比較して、気に入ったものだけを残す。
-          </p>
+        <h1 className="text-4xl font-semibold tracking-wide">Chord Generator</h1>
+        <div className="flex flex-wrap items-center gap-3">
+          <Button variant="secondary" className="h-12 px-6 text-base" render={<Link to="/" />}>
+            Dashboard
+          </Button>
+          <Button variant="secondary" className="h-12 px-6 text-base" render={<Link to="/generator" />}>
+            Generator
+          </Button>
+          <Button variant="secondary" className="h-12 px-6 text-base" render={<Link to="/saved" />}>
+            Saved
+          </Button>
         </div>
-        <Button size="lg" onClick={() => navigate("/generator")}>
-          <Sparkles data-icon="inline-start" />
-          進行を生成する
-        </Button>
       </div>
 
       {error && (

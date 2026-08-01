@@ -1,7 +1,6 @@
 import { useEffect, useState, type ReactNode } from "react"
 import type { Session } from "@supabase/supabase-js"
 import { toast } from "sonner"
-import { Waves } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -64,8 +63,6 @@ function LoginForm() {
     <div className="flex min-h-dvh items-center justify-center px-4">
       <form onSubmit={(e) => void handleSubmit(e)} className="flex w-full max-w-xs flex-col gap-5">
         <div className="flex flex-col items-center gap-2 text-center">
-          <Waves className="size-6 text-primary" />
-          <p className="text-xs tracking-[0.3em] text-muted-foreground uppercase">Composer OS</p>
           <h1 className="text-xl font-semibold tracking-wide">ログイン</h1>
         </div>
         <div className="flex flex-col gap-1.5">

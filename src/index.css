@@ -72,7 +72,7 @@
     --chart-3: oklch(0.439 0 0);
     --chart-4: oklch(0.371 0 0);
     --chart-5: oklch(0.269 0 0);
-    --radius: 0.625rem;
+    --radius: 0.5rem;
     --sidebar: oklch(0.985 0 0);
     --sidebar-foreground: oklch(0.145 0 0);
     --sidebar-primary: oklch(0.205 0 0);
@@ -83,26 +83,26 @@
     --sidebar-ring: oklch(0.708 0 0);
 }
 
-/* Warm charcoal テーマ(Warpデザイン言語を参考): 温かみのあるチャコール背景 + オフホワイトの主色 */
+/* Spotifyデザイン言語を参考: 近黒の没入型ダーク背景 + Spotify Greenのアクセント */
 .dark {
-    --background: #2b2622;
-    --foreground: #f7f5f0;
-    --card: #383330;
-    --card-foreground: #f7f5f0;
-    --popover: #383330;
-    --popover-foreground: #f7f5f0;
-    --primary: #f7f5f0;
-    --primary-foreground: #2b2622;
-    --secondary: #383330;
-    --secondary-foreground: #f7f5f0;
-    --muted: #383330;
-    --muted-foreground: #aea69c;
-    --accent: #3f3a36;
-    --accent-foreground: #f7f5f0;
-    --destructive: oklch(0.6 0.19 25);
-    --border: #3f3a36;
-    --input: #3f3a36;
-    --ring: #dad2c1;
+    --background: #121212;
+    --foreground: #ffffff;
+    --card: #181818;
+    --card-foreground: #ffffff;
+    --popover: #181818;
+    --popover-foreground: #ffffff;
+    --primary: #1ed760;
+    --primary-foreground: #000000;
+    --secondary: #1f1f1f;
+    --secondary-foreground: #ffffff;
+    --muted: #1f1f1f;
+    --muted-foreground: #b3b3b3;
+    --accent: #282828;
+    --accent-foreground: #ffffff;
+    --destructive: #f3727f;
+    --border: #4d4d4d;
+    --input: #1f1f1f;
+    --ring: #1ed760;
     --chart-1: oklch(0.87 0 0);
     --chart-2: oklch(0.556 0 0);
     --chart-3: oklch(0.439 0 0);
