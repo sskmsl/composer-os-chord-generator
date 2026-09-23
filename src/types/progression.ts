@@ -25,9 +25,9 @@ export interface GeneratedProgression {
   /**
    * 各コードの長さ(拍数、4/4の四分音符単位)。chords と同じ長さの配列。
    * 既定は4拍=1小節だが、経過的な転回(声部進行)は短く、終止の着地は
-   * 長く持たせるなど、和声のリズムに緩急を作る。試聴とMIDI書き出しでのみ使用し、
+   * 長く持たせるなど、和声のリズムに緩急を作る。試聴・MIDI書き出しに加え、
    * Composer OS内の他アプリとの受け渡し形式(exchange/composerSongExchange.ts、
-   * version 1)は「1コード=1小節」を明示した既存契約のため対象外とする。
+   * version 2)の startBeat / durationBeats にもそのまま反映される。
    */
   beats: number[]
 }
