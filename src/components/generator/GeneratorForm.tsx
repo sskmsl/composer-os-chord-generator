@@ -11,6 +11,7 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { STYLE_OPTIONS } from "@/features/chord-engine/templates"
+import { MIN_SAVES_FOR_PREFERENCE } from "@/features/preference/preferenceModel"
 import { useAppStore } from "@/store/useAppStore"
 import {
   CHORD_COUNT_OPTIONS,
@@ -44,6 +45,8 @@ export function GeneratorForm() {
   const previousResults = useAppStore((s) => s.previousResults)
 
   const currentStyle = STYLE_OPTIONS.find((s) => s.value === params.style)
+  const preference = useAppStore((s) => s.preference)
+  const feedbackSavedCount = useAppStore((s) => s.feedbackSavedCount)
 
   return (
     <div className="flex flex-col gap-4 rounded-xl border border-border/60 bg-card/50 p-4 sm:p-5">
@@ -152,9 +155,16 @@ export function GeneratorForm() {
       </div>
 
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <p className="text-xs text-muted-foreground">
-          {currentStyle ? `${currentStyle.label} — ${currentStyle.tagline}` : ""}
-        </p>
+        <div className="flex flex-col gap-1">
+          <p className="text-xs text-muted-foreground">
+            {currentStyle ? `${currentStyle.label} — ${currentStyle.tagline}` : ""}
+          </p>
+          <p className="text-[0.7rem] text-muted-foreground/70">
+            {preference
+              ? `好みを候補の順位に反映中(保存した${feedbackSavedCount}件から学習)`
+              : `好みの学習: 保存 ${feedbackSavedCount} / ${MIN_SAVES_FOR_PREFERENCE}件で候補の順位に反映します`}
+          </p>
+        </div>
         <div className="flex items-center gap-2">
           {previousResults && (
             <Button variant="outline" onClick={restorePrevious}>

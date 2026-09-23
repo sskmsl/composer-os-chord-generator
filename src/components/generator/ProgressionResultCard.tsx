@@ -16,6 +16,9 @@ interface Props {
   onSave: () => void
 }
 
+/** この補正値以上なら「好みに近い」を表示する(補正値は -2〜+2) */
+const PERSONAL_FIT_BADGE_THRESHOLD = 0.75
+
 export function ProgressionResultCard({ progression, saved, onSave }: Props) {
   const styleLabel = STYLE_OPTIONS.find((s) => s.value === progression.style)?.label
   const sectionLabel = SECTION_OPTIONS.find((s) => s.value === progression.section)?.label
@@ -33,6 +36,11 @@ export function ProgressionResultCard({ progression, saved, onSave }: Props) {
           <Badge variant="secondary" className="font-normal">{styleLabel}</Badge>
           <Badge variant="secondary" className="font-normal">{sectionLabel}</Badge>
           <Badge variant="outline" className="font-normal">{moodLabel}</Badge>
+          {(progression.personalFit ?? 0) >= PERSONAL_FIT_BADGE_THRESHOLD && (
+            <Badge variant="outline" className="border-primary/50 font-normal text-primary" title="これまでに保存した進行と似た特徴を持つ候補です">
+              好みに近い
+            </Badge>
+          )}
         </div>
         <p className="font-mono text-lg leading-snug font-medium tracking-tight break-words">
           {progression.chords.join(" – ")}

@@ -19,6 +19,7 @@ import {
   tonicTokens,
 } from "./styleGrammar"
 import { continuationsOf, generateChain } from "./transitions"
+import { featureTags, preferenceBonus, type PreferenceModel } from "@/features/preference/preferenceModel"
 import { applyVoiceLeadingBass } from "./voiceLeading"
 
 export interface GenerateParams {
@@ -34,6 +35,8 @@ export interface GenerateParams {
    * 同じ骨格の候補を減点し、数百曲作っても同じ進行の型に偏らないようにする。
    */
   usedSkeletons?: ReadonlySet<string>
+  /** 保存の傾向から学んだ好み。渡すと、好みに近い候補を順位で少し優遇する(表示する点数は変えない) */
+  preference?: PreferenceModel | null
 }
 
 /**
@@ -65,7 +68,7 @@ export function generateProgressions(params: GenerateParams): GeneratedProgressi
     pool.push(progression)
   }
 
-  const selected = rankAndSelect(pool, params.style, params.key.mode, params.count, params.usedSkeletons)
+  const selected = rankAndSelect(pool, params.style, params.key.mode, params.count, params.usedSkeletons, params.preference)
   if (!REPETITIVE_STYLES.has(params.style)) {
     const bucket = skeletonBucket(params.style, params.key.mode)
     for (const p of selected) recordSkeleton(bucket, rootSkeletonOf(p.romanNumerals))
@@ -124,6 +127,7 @@ function rankAndSelect(
   mode: MusicKey["mode"],
   count: number,
   usedSkeletons?: ReadonlySet<string>,
+  preference?: PreferenceModel | null,
 ): GeneratedProgression[] {
   // スコアは決定的な整数なので同点が多い。1未満の乱数を足して同点内の順序だけを
   // 揺らし、同じ条件で何度生成しても同じ顔ぶれに偏らないようにする
@@ -136,7 +140,10 @@ function rankAndSelect(
     if (wasRecentlyUsed(bucket, skeleton)) return 3
     return usedSkeletons?.has(skeleton) ? 2 : 0
   }
-  const ranked = pool.map((p) => ({ p, rank: p.scores.boutonnat - penalty(p) + Math.random() * 0.99 }))
+  const ranked = pool.map((p) => {
+    const personalFit = preferenceBonus(preference, p.featureTags ?? [])
+    return { p: preference ? { ...p, personalFit } : p, rank: p.scores.boutonnat - penalty(p) + personalFit + Math.random() * 0.99 }
+  })
   return ranked
     .sort((a, b) => b.rank - a.rank)
     .slice(0, count)
@@ -171,6 +178,7 @@ function generateOne(params: GenerateParams): GeneratedProgression {
     bassMovement: describeBassMovement(parsed, key),
     description: (isPeriod ? PERIOD_DESCRIPTION : "") + buildDescription(style, mood, section, features),
     scores: computeScores(features),
+    featureTags: featureTags(features),
     // 8小節フレーズは4小節+4小節の形そのものが構造なので、1和音=1小節に揃える
     beats: isPeriod ? parsed.map(() => 4) : computeHarmonicRhythm(parsed.length, style, invertedIndices, features.cadence),
     createdAt: new Date().toISOString(),
