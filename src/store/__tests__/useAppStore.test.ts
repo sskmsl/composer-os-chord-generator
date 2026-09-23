@@ -152,6 +152,49 @@ describe("useAppStore: 取り消し(元に戻す)", () => {
     expect(useAppStore.getState().saved.find((p) => p.id === "g1")?.folderId).toBe(folder.id)
   })
 
+  it("コードの書き換えを戻しても、その後に編集したメモは残す(変わった項目だけを戻す)", async () => {
+    await useAppStore.getState().saveProgression(fakeGenerated("g1"))
+    const token = await useAppStore.getState().updateSaved("g1", { chords: ["Dm", "E7"] })
+    await useAppStore.getState().updateSaved("g1", { memo: "後から書いたメモ" })
+    await useAppStore.getState().undo(token)
+    const p = useAppStore.getState().saved.find((x) => x.id === "g1")
+    expect(p?.chords).toEqual(["Am", "F"])
+    expect(p?.memo).toBe("後から書いたメモ")
+  })
+
+  it("操作履歴は新しい順に並び、最後の操作から戻せる(並べ替え・複製・メモも対象)", async () => {
+    const folder = await useAppStore.getState().createFolder("Song")
+    useAppStore.getState().setSaveTargetFolder(folder.id)
+    await useAppStore.getState().saveProgression(fakeGenerated("a"))
+    await useAppStore.getState().saveProgression(fakeGenerated("b"))
+    const orderOf = (id: string) => useAppStore.getState().saved.find((p) => p.id === id)!.order
+    const before = { a: orderOf("a"), b: orderOf("b") }
+    await useAppStore.getState().reorderSection("b", before.b > before.a ? "up" : "down")
+    const copy = await useAppStore.getState().duplicateSection("a")
+    await useAppStore.getState().updateSaved("a", { memo: "メモ" })
+
+    expect(useAppStore.getState().undoHistory.map((h) => h.label.replace(/\(.*$/, ""))).toEqual([
+      "メモを編集",
+      "セクションを複製",
+      "セクションを並べ替え",
+    ])
+    expect(await useAppStore.getState().undoLatest()).toMatch(/^メモを編集/)
+    expect(useAppStore.getState().saved.find((p) => p.id === "a")?.memo).toBe("")
+    expect(await useAppStore.getState().undoLatest()).toBe("セクションを複製")
+    expect(useAppStore.getState().saved.find((p) => p.id === copy.id)).toBeUndefined()
+    expect(await useAppStore.getState().undoLatest()).toBe("セクションを並べ替え")
+    expect({ a: orderOf("a"), b: orderOf("b") }).toEqual(before)
+    expect(await useAppStore.getState().undoLatest()).toBeNull()
+  })
+
+  it("操作履歴は30件まで。古い記録は取り消せなくなる", async () => {
+    await useAppStore.getState().saveProgression(fakeGenerated("g1"))
+    const first = await useAppStore.getState().updateSaved("g1", { memo: "0" })
+    for (let i = 1; i <= 30; i++) await useAppStore.getState().updateSaved("g1", { memo: String(i) })
+    expect(useAppStore.getState().undoHistory).toHaveLength(30)
+    expect(await useAppStore.getState().undo(first)).toBe(false)
+  })
+
   it("同じ取り消しは1回だけ。知らないトークンは false", async () => {
     await useAppStore.getState().saveProgression(fakeGenerated("g1"))
     const token = await useAppStore.getState().updateSaved("g1", { memo: "x" })

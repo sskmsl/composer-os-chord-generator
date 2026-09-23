@@ -84,6 +84,22 @@ export function ProgressionDetailPage() {
     })
   }, [progression])
 
+  // 元に戻す・別端末との同期などで保存済みのメモが外から変わったら、入力欄もそれに合わせる
+  // (合わせないと、古い文字が残ったまま入力欄から離れたときに自動保存で書き戻してしまう)
+  const savedMemo = progression?.memo
+  const savedSongIdea = progression?.songIdea
+  const savedArrangementNote = progression?.arrangementNote
+  const savedLogicProNote = progression?.logicProNote
+  useEffect(() => {
+    if (savedMemo === undefined) return
+    setFields({
+      memo: savedMemo,
+      songIdea: savedSongIdea ?? "",
+      arrangementNote: savedArrangementNote ?? "",
+      logicProNote: savedLogicProNote ?? "",
+    })
+  }, [savedMemo, savedSongIdea, savedArrangementNote, savedLogicProNote])
+
   if (!loaded) {
     return <p className="py-12 text-center text-muted-foreground">読み込み中...</p>
   }
