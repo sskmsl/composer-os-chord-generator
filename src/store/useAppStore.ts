@@ -6,7 +6,8 @@ import { downloadBackup, parseBackup } from "@/features/storage/backup"
 import { feedbackRepository } from "@/features/storage/feedbackRepository"
 import { learnPreference, type PreferenceModel } from "@/features/preference/preferenceModel"
 import { folderRepository, progressionRepository } from "@/features/storage/progressionRepository"
-import { pushFolder, pushProgression } from "@/features/sync/supabaseSync"
+import { clearRemoteDeletions, pushFolder, pushProgression } from "@/features/sync/supabaseSync"
+import { deletionRepository } from "@/features/storage/deletionRepository"
 import type { Folder } from "@/types/folder"
 import { createFolder as buildFolder } from "@/types/folder"
 import type { ChordCount, MoodId, MusicKey, SectionId, StyleId, VariationCount } from "@/types/music"
@@ -301,6 +302,12 @@ export const useAppStore = create<AppStore>((set, get) => ({
       folders: [...folders].sort((a, b) => a.createdAt.localeCompare(b.createdAt)),
     }
     set({ saved: sorted.saved, folders: sorted.folders })
+
+    // 復元した項目は意図して戻したものなので、過去の削除の記録を解除する
+    // (残っていると、次の同期で「削除済み」として再び消えてしまう)
+    const restoredIds = [...folders.map((f) => f.id), ...progressions.map((p) => p.id)]
+    await deletionRepository.clear(restoredIds)
+    void clearRemoteDeletions(restoredIds)
 
     // replaceAllはローカルのみの更新なので、次回ログイン同期でリモートの古い状態に
     // 上書きされないよう、復元した内容をリモートへも反映しておく(ベストエフォート)
