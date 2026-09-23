@@ -6,14 +6,14 @@ import type { StyleId } from "@/types/music"
 interface PlayerStore {
   /** 再生中の進行のid(なければnull) */
   playingId: string | null
-  play(id: string, chords: string[], style: StyleId): void
+  play(id: string, chords: string[], style: StyleId, beats?: number[]): void
   stop(): void
 }
 
 export const usePlayerStore = create<PlayerStore>((set, get) => ({
   playingId: null,
 
-  play(id, chords, style) {
+  play(id, chords, style, beats) {
     if (get().playingId === id) {
       get().stop()
       return
@@ -23,6 +23,7 @@ export const usePlayerStore = create<PlayerStore>((set, get) => ({
       .play(chords, {
         bpm: STYLE_TEMPO[style],
         style,
+        beats,
         onEnded: () => {
           if (get().playingId === id) set({ playingId: null })
         },

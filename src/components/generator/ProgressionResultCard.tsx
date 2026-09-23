@@ -71,7 +71,7 @@ export function ProgressionResultCard({ progression, saved, onSave }: Props) {
         <Button
           variant="outline"
           className="shrink-0"
-          onClick={() => play(progression.id, progression.chords, progression.style)}
+          onClick={() => play(progression.id, progression.chords, progression.style, progression.beats)}
           aria-label={playing ? "停止" : "試聴"}
         >
           {playing ? (

@@ -148,8 +148,8 @@ export function SongPanel({ folder }: { folder: Folder }) {
           </div>
         </div>
         <p className="text-xs text-muted-foreground">
-          {sections.length}セクション / 全{bars}小節 · SMF Type 1 (.mid) · 1コード=1小節 · Logic
-          Proにインポート可能
+          {sections.length}セクション / 約{bars}小節 · SMF Type 1 (.mid) · 和声のリズムは可変
+          (基本4拍、経過和音は短く終止は長く) · Logic Proにインポート可能
           {!folder.tempo && `(テンポ未設定のため ${effectiveTempo} BPM で書き出し)`}
         </p>
         <div className="flex flex-col gap-1.5">
@@ -216,7 +216,7 @@ export function SongPanel({ folder }: { folder: Folder }) {
                 <button
                   type="button"
                   aria-label="このセクションを試聴"
-                  onClick={() => play(section.id, section.chords, section.style)}
+                  onClick={() => play(section.id, section.chords, section.style, section.beats)}
                   className="shrink-0 rounded-md px-2 py-1 text-xs text-muted-foreground hover:bg-accent hover:text-foreground"
                 >
                   {playingId === section.id ? "停止" : "試聴"}

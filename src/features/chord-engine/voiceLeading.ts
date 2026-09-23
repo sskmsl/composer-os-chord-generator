@@ -4,6 +4,12 @@ import { bassSemitoneOf, buildToken, chordIntervals, degreeForSemitone, degreeSe
 import { STYLE_PREFS } from "./templates"
 import { chance } from "./random"
 
+export interface VoiceLeadingResult {
+  chords: ParsedChord[]
+  /** applyVoiceLeadingBass が実際に転回を選んだコードの添字(和声のリズム調整に使う) */
+  invertedIndices: Set<number>
+}
+
 /**
  * コード記号(ルート位置)しか持たないエンジンに、実際のベース選択で
  * 声部進行の滑らかさを作る。前のコードのベースと最短距離になる転回形
@@ -11,9 +17,10 @@ import { chance } from "./random"
  * 差し替える。先頭・末尾のコードは(進行の輪郭を保つため)対象外。
  * 既に借用和音のペダル(decorate.ts)でスラッシュが付いている場合は触らない。
  */
-export function applyVoiceLeadingBass(chords: ParsedChord[], style: StyleId): ParsedChord[] {
+export function applyVoiceLeadingBass(chords: ParsedChord[], style: StyleId): VoiceLeadingResult {
   const prob = STYLE_PREFS[style].slashProb
   const result = chords.map((c) => ({ ...c, bass: c.bass ? { ...c.bass } : undefined }))
+  const invertedIndices = new Set<number>()
 
   for (let i = 1; i < result.length - 1; i++) {
     const cur = result[i]
@@ -40,9 +47,10 @@ export function applyVoiceLeadingBass(chords: ParsedChord[], style: StyleId): Pa
       const accStr = deg.acc === -1 ? "b" : deg.acc === 1 ? "#" : ""
       cur.bass = { acc: deg.acc, roman: deg.roman, raw: `${accStr}${deg.roman.toLowerCase()}` }
       cur.token = buildToken(cur)
+      invertedIndices.add(i)
     }
   }
-  return result
+  return { chords: result, invertedIndices }
 }
 
 function shortestDistance(a: number, b: number): number {

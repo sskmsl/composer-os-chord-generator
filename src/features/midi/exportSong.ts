@@ -5,8 +5,8 @@ import { SECTION_OPTIONS } from "@/types/music"
 import type { SavedProgression } from "@/types/progression"
 import { buildSmf, TICKS_PER_QUARTER, type MidiMarker, type MidiNote } from "./smf"
 
-/** 1コード = 1小節(4/4) */
-const BAR_TICKS = TICKS_PER_QUARTER * 4
+/** 1拍(4分音符)のtick数。既定は1コード=4拍=1小節だが、和声のリズムに合わせてコードごとに変える */
+const BEAT_TICKS = TICKS_PER_QUARTER
 
 /** フォルダ内の進行を並び順で取り出す(= 曲のセクション列) */
 export function songSections(
@@ -18,9 +18,13 @@ export function songSections(
     .sort((a, b) => a.order - b.order)
 }
 
-/** 曲全体の小節数(繰り返し込み) */
+/** 曲全体のおおよその小節数(繰り返し込み。和声のリズムが可変のため4拍=1小節換算) */
 export function songBarCount(sections: SavedProgression[]): number {
-  return sections.reduce((sum, s) => sum + s.chords.length * Math.max(1, s.repeatCount), 0)
+  const totalBeats = sections.reduce((sum, s) => {
+    const sectionBeats = s.beats.reduce((a, b) => a + b, 0)
+    return sum + sectionBeats * Math.max(1, s.repeatCount)
+  }, 0)
+  return Math.round(totalBeats / 4)
 }
 
 export function resolveTempo(folder: Folder, sections: SavedProgression[]): number {
@@ -36,7 +40,8 @@ function sectionLabel(p: SavedProgression): string {
 
 /**
  * フォルダ(曲)をSMF Type 1 バイナリに変換する。
- * 各コード=1小節、セクションは repeatCount 回繰り返す。
+ * 各コードの長さは beats(和声のリズム。既定4拍、経過和音は短く終止は長く)に従い、
+ * セクションは repeatCount 回繰り返す。
  * Chords(コードトーン)と Bass(コードのベース音、スラッシュコード対応)を
  * 別トラックに分け、Logic側で個別に音源を割り当てられるようにする。
  */
@@ -57,10 +62,11 @@ export function buildSongSmf(folder: Folder, progressions: SavedProgression[]): 
         tick,
         text: repeat > 1 ? `${sectionLabel(section)} #${r + 1}` : sectionLabel(section),
       })
-      for (const chord of section.chords) {
+      section.chords.forEach((chord, index) => {
+        const chordTicks = (section.beats[index] ?? 4) * BEAT_TICKS
         const voicing = parseChordSymbol(chord)
         if (voicing) {
-          const duration = BAR_TICKS - 10 // 小節末にわずかな隙間を残す
+          const duration = chordTicks - 10 // コード末にわずかな隙間を残す
           for (const pitch of dedupe(voicing.notes)) {
             chordNotes.push({ pitch, start: tick, duration, velocity: 78, channel: 0 })
           }
@@ -72,8 +78,8 @@ export function buildSongSmf(folder: Folder, progressions: SavedProgression[]): 
             channel: 1,
           })
         }
-        tick += BAR_TICKS
-      }
+        tick += chordTicks
+      })
     }
   }
 

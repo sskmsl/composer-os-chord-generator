@@ -56,7 +56,7 @@ export function SavedProgressionCard({ progression, action }: Props) {
               aria-label={playing ? "停止" : "試聴"}
               onClick={(e) => {
                 e.stopPropagation()
-                play(progression.id, progression.chords, progression.style)
+                play(progression.id, progression.chords, progression.style, progression.beats)
               }}
             >
               {playing ? <Square /> : <Play />}

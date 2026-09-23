@@ -6,7 +6,7 @@ import { bassNoteName, buildToken, chordName, parseToken } from "./degrees"
 import { decorateProgression } from "./decorate"
 import { buildDescription } from "./descriptions"
 import { chance, pick } from "./random"
-import { computeScores, extractFeatures } from "./scoring"
+import { computeScores, extractFeatures, type CadenceType } from "./scoring"
 import { generateChain } from "./transitions"
 import { applyVoiceLeadingBass } from "./voiceLeading"
 
@@ -49,7 +49,7 @@ function generateOne(params: GenerateParams): GeneratedProgression {
 
   const tokens = adaptToSection(generateChain(style, key.mode, mood, length), section, key)
   const decorated = decorateProgression(tokens.map(parseToken), style, mood)
-  const parsed = applyVoiceLeadingBass(decorated, style)
+  const { chords: parsed, invertedIndices } = applyVoiceLeadingBass(decorated, style)
 
   const chords = parsed.map((c) => chordName(c, key))
   const romanNumerals = parsed.map((c) => c.token)
@@ -67,8 +67,38 @@ function generateOne(params: GenerateParams): GeneratedProgression {
     bassMovement: describeBassMovement(parsed, key),
     description: buildDescription(style, mood, section, features),
     scores: computeScores(features, style, section, mood),
+    beats: computeHarmonicRhythm(parsed.length, style, invertedIndices, features.cadence),
     createdAt: new Date().toISOString(),
   }
+}
+
+/**
+ * 常に4拍固定だった和声のリズムに緩急を作る。声部進行で転回した経過的な
+ * コードは短く軽く通過させ、機能和声的にしっかり着地する終止は長く持たせて
+ * 「一度和声を引いてから解放する」呼吸を生む。Minimalism/Trip-Hop/Ritualは
+ * 均等な反復そのものが持ち味のスタイルなので対象外とする。
+ */
+const STATIC_RHYTHM_STYLES = new Set<StyleId>(["minimalism", "tripHop", "ritual"])
+
+function computeHarmonicRhythm(
+  length: number,
+  style: StyleId,
+  invertedIndices: Set<number>,
+  cadence: CadenceType,
+): number[] {
+  const beats = Array.from({ length }, () => 4)
+  if (STATIC_RHYTHM_STYLES.has(style)) return beats
+
+  for (const i of invertedIndices) {
+    if (chance(0.7)) beats[i] = 2
+  }
+
+  const lastIdx = length - 1
+  if (lastIdx > 0 && (cadence === "authentic" || cadence === "plagal") && chance(0.6)) {
+    beats[lastIdx] = 8
+  }
+
+  return beats
 }
 
 /** CHORD_ENGINE_SPEC §6 のセクションルールでテンプレートを変形する */

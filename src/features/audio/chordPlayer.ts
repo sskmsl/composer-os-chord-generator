@@ -10,6 +10,8 @@ export interface PlayOptions {
   bpm: number
   style: StyleId
   onEnded: () => void
+  /** 各コードの長さ(拍数)。省略時・配列長が足りない分は4拍として扱う */
+  beats?: number[]
 }
 
 interface VoiceProfile {
@@ -181,7 +183,7 @@ class ChordPlayer {
   private ctx: AudioContext | null = null
   private endTimer: number | null = null
 
-  async play(chords: string[], { bpm, style, onEnded }: PlayOptions): Promise<void> {
+  async play(chords: string[], { bpm, style, onEnded, beats }: PlayOptions): Promise<void> {
     this.stop()
 
     const ctx = new AudioContext()
@@ -198,17 +200,21 @@ class ChordPlayer {
     master.connect(ctx.destination)
 
     const voice = getVoice(style)
-    const chordDur = (60 / bpm) * 4 // 4拍
+    const beatDur = 60 / bpm
     const start = ctx.currentTime + 0.06
 
+    let elapsed = 0
     chords.forEach((symbol, i) => {
+      const dur = (beats?.[i] ?? 4) * beatDur
       const voicing = parseChordSymbol(symbol)
-      if (!voicing) return
-      const t0 = start + i * chordDur
-      this.scheduleChord(ctx, compressor, voicing.bass, voicing.notes, t0, chordDur, voice)
+      if (voicing) {
+        const t0 = start + elapsed
+        this.scheduleChord(ctx, compressor, voicing.bass, voicing.notes, t0, dur, voice)
+      }
+      elapsed += dur
     })
 
-    const total = chords.length * chordDur + voice.release + 0.7 // リリースの余韻ぶん
+    const total = elapsed + voice.release + 0.7 // リリースの余韻ぶん
     this.endTimer = window.setTimeout(() => {
       this.dispose()
       onEnded()

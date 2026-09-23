@@ -225,7 +225,7 @@ export function ProgressionDetailPage() {
           <div className="flex items-center gap-2">
             <Button
               variant="outline"
-              onClick={() => play(progression.id, progression.chords, progression.style)}
+              onClick={() => play(progression.id, progression.chords, progression.style, progression.beats)}
             >
               {playingId === progression.id ? (
                 <>
