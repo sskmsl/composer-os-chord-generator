@@ -2,6 +2,7 @@ import { useEffect } from "react"
 import { NavLink, Outlet } from "react-router-dom"
 import { Toaster } from "@/components/ui/sonner"
 import { AuthGate } from "@/features/sync/AuthGate"
+import { UndoHistoryMenu } from "./UndoHistoryMenu"
 import { useAppStore } from "@/store/useAppStore"
 import { cn } from "@/lib/utils"
 
@@ -51,6 +52,7 @@ export function AppShell() {
                 </NavLink>
               ))}
             </nav>
+            <UndoHistoryMenu />
           </div>
         </header>
         <main className="mx-auto max-w-6xl px-4 py-8 sm:px-8 sm:py-12">

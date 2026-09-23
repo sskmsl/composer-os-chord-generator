@@ -15,26 +15,60 @@ import type { GeneratedProgression, SavedProgression } from "@/types/progression
 import { toSavedProgression } from "@/types/progression"
 
 /**
- * 取り消し(元に戻す)1回分。操作の直前の状態を持ち、戻すときはその状態を
- * 「今の時刻で保存し直す」形で書き戻す(同期でも新しい方=戻した状態が残る)。
+ * 取り消し(元に戻す)1回分。戻すときは「その操作で変わった項目だけ」を操作前の値へ戻し、
+ * 今の時刻で保存し直す(同期でも戻した状態が新しい方として残る)。進行やフォルダを
+ * 丸ごと書き戻さないので、後から行った別の編集(例: 自動保存したメモ)を巻き戻さない。
  */
 interface UndoEntry {
-  /** 操作前の状態に戻す進行(削除した進行もここに入る) */
-  progressions: SavedProgression[]
-  /** 操作前の状態に戻すフォルダ(削除したフォルダもここに入る) */
-  folders: Folder[]
+  label: string
+  /** 変わった項目の操作前の値(進行ごと) */
+  progressionPatches: { id: string; before: Partial<SavedProgression> }[]
+  /** 削除した進行(丸ごと戻す) */
+  deletedProgressions: SavedProgression[]
+  /** この操作で作った進行(戻すときは削除する) */
+  createdProgressionIds: string[]
+  folderPatches: { id: string; before: Partial<Folder> }[]
+  deletedFolders: Folder[]
 }
 
-/** 取り消しの記録。画面の再描画に関わらないので store の state には置かない */
+export interface UndoHistoryItem {
+  token: string
+  label: string
+  /** 操作した時刻(ISO) */
+  at: string
+}
+
+/** 取り消しの記録本体。履歴の表示(undoHistory)とは別に、store の外に持つ */
 const undoEntries = new Map<string, UndoEntry>()
 const UNDO_LIMIT = 30
 
-function recordUndo(entry: UndoEntry): string {
-  const token = crypto.randomUUID()
-  undoEntries.set(token, entry)
-  // 古いものから捨てる(Mapは挿入順)
-  while (undoEntries.size > UNDO_LIMIT) undoEntries.delete(undoEntries.keys().next().value as string)
-  return token
+function pick<T extends object>(source: T, keys: readonly (keyof T)[]): Partial<T> {
+  const picked: Partial<T> = {}
+  for (const key of keys) picked[key] = source[key]
+  return picked
+}
+
+const FIELD_LABELS: Partial<Record<keyof SavedProgression, string>> = {
+  chords: "コードを変更",
+  key: "移調",
+  folderId: "フォルダを移動",
+  repeatCount: "繰り返し回数を変更",
+  memo: "メモを編集",
+  songIdea: "メモを編集",
+  arrangementNote: "メモを編集",
+  logicProNote: "メモを編集",
+  order: "セクションを並べ替え",
+}
+
+/** 変えた項目から操作履歴の名前を決める(例: "コードを変更(Am – F – …)") */
+function labelForPatch(keys: readonly (keyof SavedProgression)[], existing: SavedProgression): string {
+  const name = keys.map((key) => FIELD_LABELS[key]).find(Boolean) ?? "進行を編集"
+  const chords = existing.chords.join(" – ")
+  return `${name}(${chords.length > 28 ? `${chords.slice(0, 28)}…` : chords})`
+}
+
+function emptyEntry(label: string): UndoEntry {
+  return { label, progressionPatches: [], deletedProgressions: [], createdProgressionIds: [], folderPatches: [], deletedFolders: [] }
 }
 
 interface GeneratorParams {
@@ -62,11 +96,18 @@ interface AppStore {
   error: string | null
   load(): Promise<void>
   saveProgression(generated: GeneratedProgression): Promise<void>
-  /** 戻り値は取り消し用のトークン(undo に渡すと、この変更の直前の状態へ戻す) */
-  updateSaved(id: string, patch: Partial<SavedProgression>): Promise<string>
+  /**
+   * 戻り値は取り消し用のトークン(undo に渡すと、この変更の直前の状態へ戻す)。
+   * label は操作履歴に出す名前(省略時は変えた項目から決める)
+   */
+  updateSaved(id: string, patch: Partial<SavedProgression>, label?: string): Promise<string>
   deleteSaved(id: string): Promise<string>
   /** トークンの操作を取り消す。取り消せなければ false(古すぎて記録が残っていない等) */
   undo(token: string): Promise<boolean>
+  /** 最後の操作を取り消す。戻した操作の名前を返す(何もなければ null) */
+  undoLatest(): Promise<string | null>
+  /** 取り消せる操作の履歴(新しい順、最大30件) */
+  undoHistory: UndoHistoryItem[]
 
   // 好みの学習(表示した候補と保存の記録から、順位の補正に使う)
   /** 保存数が MIN_SAVES_FOR_PREFERENCE 未満の間は null */
@@ -83,6 +124,8 @@ interface AppStore {
   createFolder(name: string): Promise<Folder>
   renameFolder(id: string, name: string): Promise<void>
   deleteFolder(id: string): Promise<string>
+  /** 記録を残して、戻り値の取り消し用トークンを返す(内部用) */
+  recordUndo(entry: UndoEntry): string
   moveToFolder(progressionId: string, folderId: string | null): Promise<string>
 
   // 曲構成(フォルダ = 1曲)
@@ -180,36 +223,80 @@ export const useAppStore = create<AppStore>((set, get) => ({
     })
   },
 
-  async updateSaved(id, patch) {
+  async updateSaved(id, patch, label) {
     const existing = get().saved.find((p) => p.id === id)
     if (!existing) throw new Error("進行が見つかりません")
     const updated = { ...existing, ...patch, updatedAt: new Date().toISOString() }
     await progressionRepository.save(updated)
     set({ saved: get().saved.map((p) => (p.id === id ? updated : p)) })
-    return recordUndo({ progressions: [existing], folders: [] })
+    const keys = Object.keys(patch) as (keyof SavedProgression)[]
+    return get().recordUndo({
+      ...emptyEntry(label ?? labelForPatch(keys, existing)),
+      progressionPatches: [{ id, before: pick(existing, keys) }],
+    })
   },
 
   async deleteSaved(id) {
     const existing = get().saved.find((p) => p.id === id)
     await progressionRepository.delete(id)
     set({ saved: get().saved.filter((p) => p.id !== id) })
-    return recordUndo({ progressions: existing ? [existing] : [], folders: [] })
+    return get().recordUndo({
+      ...emptyEntry(`進行を削除(${existing?.chords.join(" – ") ?? ""})`),
+      deletedProgressions: existing ? [existing] : [],
+    })
+  },
+
+  undoHistory: [],
+
+  recordUndo(entry) {
+    const token = crypto.randomUUID()
+    undoEntries.set(token, entry)
+    const history = [{ token, label: entry.label, at: new Date().toISOString() }, ...get().undoHistory]
+    for (const dropped of history.slice(UNDO_LIMIT)) undoEntries.delete(dropped.token)
+    set({ undoHistory: history.slice(0, UNDO_LIMIT) })
+    return token
+  },
+
+  async undoLatest() {
+    const latest = get().undoHistory[0]
+    if (!latest) return null
+    return (await get().undo(latest.token)) ? latest.label : null
   },
 
   async undo(token) {
     const entry = undoEntries.get(token)
     if (!entry) return false
     undoEntries.delete(token)
+    set({ undoHistory: get().undoHistory.filter((item) => item.token !== token) })
     const now = new Date().toISOString()
-    // 戻した状態を「今の編集」として保存し直す。削除した項目は削除の記録も消す
-    // (記録より新しい保存なので同期でも残るが、記録自体も残さない)
-    const folders = entry.folders.map((f) => ({ ...f, updatedAt: now }))
-    const progressions = entry.progressions.map((p) => ({ ...p, updatedAt: now }))
+
+    // 1. 削除したものを丸ごと戻す(削除の記録も消す)
+    const restoredFolders = entry.deletedFolders.map((f) => ({ ...f, updatedAt: now }))
+    const restoredProgressions = entry.deletedProgressions.map((p) => ({ ...p, updatedAt: now }))
+    // 2. 変わった項目だけを操作前の値へ戻す(その後に消されたものは戻さない)
+    const folderById = new Map(get().folders.map((f) => [f.id, f]))
+    const patchedFolders = entry.folderPatches.flatMap(({ id, before }) => {
+      const current = folderById.get(id)
+      return current ? [{ ...current, ...before, updatedAt: now }] : []
+    })
+    const progressionById = new Map(get().saved.map((p) => [p.id, p]))
+    const patchedProgressions = entry.progressionPatches.flatMap(({ id, before }) => {
+      const current = progressionById.get(id)
+      return current ? [{ ...current, ...before, updatedAt: now }] : []
+    })
+
+    const folders = [...restoredFolders, ...patchedFolders]
+    const progressions = [...restoredProgressions, ...patchedProgressions]
     await Promise.all(folders.map((f) => folderRepository.save(f)))
     if (progressions.length > 0) await progressionRepository.saveMany(progressions)
-    const ids = [...folders.map((f) => f.id), ...progressions.map((p) => p.id)]
-    await deletionRepository.clear(ids)
-    void clearRemoteDeletions(ids)
+    const restoredIds = [...restoredFolders.map((f) => f.id), ...restoredProgressions.map((p) => p.id)]
+    if (restoredIds.length > 0) {
+      await deletionRepository.clear(restoredIds)
+      void clearRemoteDeletions(restoredIds)
+    }
+    // 3. この操作で作ったもの(複製したセクション等)を消す
+    const created = new Set(entry.createdProgressionIds.filter((id) => progressionById.has(id)))
+    await Promise.all([...created].map((id) => progressionRepository.delete(id)))
 
     const folderIds = new Set(folders.map((f) => f.id))
     const progressionIds = new Set(progressions.map((p) => p.id))
@@ -217,8 +304,8 @@ export const useAppStore = create<AppStore>((set, get) => ({
       folders: [...get().folders.filter((f) => !folderIds.has(f.id)), ...folders].sort((a, b) =>
         a.createdAt.localeCompare(b.createdAt),
       ),
-      saved: [...get().saved.filter((p) => !progressionIds.has(p.id)), ...progressions].sort((a, b) =>
-        b.savedAt.localeCompare(a.savedAt),
+      saved: [...get().saved.filter((p) => !progressionIds.has(p.id) && !created.has(p.id)), ...progressions].sort(
+        (a, b) => b.savedAt.localeCompare(a.savedAt),
       ),
     })
     return true
@@ -251,6 +338,7 @@ export const useAppStore = create<AppStore>((set, get) => ({
     const updated = { ...folder, name: trimmed, updatedAt: new Date().toISOString() }
     await folderRepository.save(updated)
     set({ folders: get().folders.map((f) => (f.id === id ? updated : f)) })
+    get().recordUndo({ ...emptyEntry(`フォルダ名を変更(${folder.name} → ${trimmed})`), folderPatches: [{ id, before: { name: folder.name } }] })
   },
 
   async deleteFolder(id) {
@@ -267,7 +355,11 @@ export const useAppStore = create<AppStore>((set, get) => ({
       saved: get().saved.map((p) => (movedIds.has(p.id) ? { ...p, folderId: null, updatedAt: now } : p)),
       saveTargetFolderId: get().saveTargetFolderId === id ? null : get().saveTargetFolderId,
     })
-    return recordUndo({ progressions: affected, folders: folder ? [folder] : [] })
+    return get().recordUndo({
+      ...emptyEntry(`フォルダを削除(${folder?.name ?? ""})`),
+      deletedFolders: folder ? [folder] : [],
+      progressionPatches: affected.map((p) => ({ id: p.id, before: { folderId: p.folderId } })),
+    })
   },
 
   async moveToFolder(progressionId, folderId) {
@@ -280,6 +372,10 @@ export const useAppStore = create<AppStore>((set, get) => ({
     const updated = { ...folder, tempo, updatedAt: new Date().toISOString() }
     await folderRepository.save(updated)
     set({ folders: get().folders.map((f) => (f.id === id ? updated : f)) })
+    get().recordUndo({
+      ...emptyEntry(`曲のテンポを変更(${folder.name})`),
+      folderPatches: [{ id, before: { tempo: folder.tempo } }],
+    })
   },
 
   async setFolderMemo(id, memo) {
@@ -288,10 +384,14 @@ export const useAppStore = create<AppStore>((set, get) => ({
     const updated = { ...folder, memo, updatedAt: new Date().toISOString() }
     await folderRepository.save(updated)
     set({ folders: get().folders.map((f) => (f.id === id ? updated : f)) })
+    get().recordUndo({
+      ...emptyEntry(`曲のメモを編集(${folder.name})`),
+      folderPatches: [{ id, before: { memo: folder.memo } }],
+    })
   },
 
   async setRepeatCount(progressionId, count) {
-    await get().updateSaved(progressionId, { repeatCount: Math.max(1, Math.round(count)) })
+    await get().updateSaved(progressionId, { repeatCount: Math.max(1, Math.round(count)) }, "繰り返し回数を変更")
   },
 
   async reorderSection(progressionId, direction) {
@@ -311,6 +411,13 @@ export const useAppStore = create<AppStore>((set, get) => ({
     await progressionRepository.saveMany([a, b])
     set({
       saved: get().saved.map((p) => (p.id === a.id ? a : p.id === b.id ? b : p)),
+    })
+    get().recordUndo({
+      ...emptyEntry("セクションを並べ替え"),
+      progressionPatches: [
+        { id: target.id, before: { order: target.order } },
+        { id: other.id, before: { order: other.order } },
+      ],
     })
   },
 
@@ -334,6 +441,7 @@ export const useAppStore = create<AppStore>((set, get) => ({
     }
     await progressionRepository.save(copy)
     set({ saved: [...get().saved, copy] })
+    get().recordUndo({ ...emptyEntry("セクションを複製"), createdProgressionIds: [copy.id] })
     return copy
   },
 
