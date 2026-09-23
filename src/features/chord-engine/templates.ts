@@ -321,6 +321,81 @@ export const STYLE_TEMPLATES: Record<StyleId, Record<Mode, string[][]>> = {
       ["IV", "I", "bVII", "IV"],
     ],
   },
+  electronica: {
+    // エレクトロニカ: 機能和声の解決(V→i)を避け、7th/9th系のパッドで2つの響きを
+    // 行き来するループが核。短調では導音を持たない短調のv7、長調ではリディアンの
+    // II(長三和音)で、ドミナントの引力を持たない浮遊感を作る。
+    minor: [
+      ["im9", "bVImaj7", "im9", "bVImaj7"],
+      ["im9", "v7", "bVImaj7", "v7"],
+      ["i11", "bIIImaj7", "bVImaj7", "bVIImaj7"],
+      ["ivm9", "im9", "ivm9", "v7"],
+      ["bVImaj7", "bVIImaj7", "im9", "im9"],
+      ["im9", "bIIImaj7", "ivm9", "bVImaj7"],
+      ["i11", "v7", "i11", "bVIImaj7"],
+      ["bVImaj7", "v7", "im9", "ivm9"],
+    ],
+    major: [
+      ["Imaj7", "IImaj7", "Imaj7", "IImaj7"],
+      ["Imaj7", "iii7", "IVmaj7", "iii7"],
+      ["IVmaj7", "Imaj7", "IVmaj7", "Imaj7"],
+      ["vim9", "IVmaj7", "Imaj7", "IImaj7"],
+      ["Imaj7", "v7", "IVmaj7", "IVmaj7"],
+      ["iii7", "vim9", "IVmaj7", "IImaj7"],
+      ["Imaj7", "IVmaj7", "iii7", "vim9"],
+      ["IVmaj7", "IImaj7", "Imaj7", "vim9"],
+    ],
+  },
+  slowcore: {
+    // サッドコア/スロウコア: 遅いテンポで、飾らない三和音を少数だけ反復する。
+    // ドミナント(V7)の解決に頼らず、短調のv・変終止(IV→I)・下降するベース
+    // (i → i/bVII → bVI)で、沈み込むような哀しみを作る。
+    minor: [
+      ["i", "bVI", "i", "bVI"],
+      ["i", "v/bVII", "bVI", "bVI"],
+      ["i", "iv", "iv", "i"],
+      ["i", "bVI", "bIII", "v"],
+      ["i", "v", "bVI", "iv"],
+      ["bVI", "i", "bVI", "i"],
+      ["i", "i/bVII", "bVI", "v"],
+      ["iv", "i", "v", "i"],
+    ],
+    major: [
+      ["I", "vi", "I", "vi"],
+      ["I", "iii", "vi", "IV"],
+      ["I", "IV", "I", "IV"],
+      ["vi", "IV", "I", "I"],
+      ["I", "I/VII", "vi", "IV"],
+      ["IV", "I", "iii", "vi"],
+      ["I", "iii", "IV", "I"],
+      ["vi", "iii", "IV", "I"],
+    ],
+  },
+  frenchPop: {
+    // フレンチ・ポップ: maj7/m7/6thの柔らかい和音と、ii–V や副属七(VI7 / III7 / II7)
+    // による循環コードが核。短調では5度圏を下る循環(iv7 → bVII7 → bIIImaj7)と
+    // iiø–V7 を、軽やかさの中の憂いとして使う。
+    minor: [
+      ["i7", "iv7", "bVII7", "bIIImaj7"],
+      ["bIIImaj7", "bVImaj7", "iiø", "V7"],
+      ["i6", "iv7", "i6", "V7"],
+      ["im9", "iv7", "V7", "bVImaj7"],
+      ["bVImaj7", "iv7", "iiø", "V7"],
+      ["i7", "bIIImaj7", "iv7", "V7"],
+      ["iv7", "bVII7", "bIIImaj7", "bVImaj7"],
+      ["i6", "iiø", "V7", "i6"],
+    ],
+    major: [
+      ["Imaj7", "VI7", "ii7", "V7"],
+      ["Imaj7", "III7", "vi7", "II7"],
+      ["ii7", "V7", "Imaj7", "VI7"],
+      ["IVmaj7", "iii7", "VI7", "ii7"],
+      ["I6", "II7", "IVmaj7", "I6"],
+      ["Imaj7", "ii7", "III7", "vi7"],
+      ["iii7", "VI7", "ii7", "V7"],
+      ["IVmaj7", "V7", "iii7", "VI7"],
+    ],
+  },
 }
 
 /** スタイルごとの標準テンポ(BPM)。試聴とMIDI書き出しのデフォルトに使う */
@@ -339,6 +414,9 @@ export const STYLE_TEMPO: Record<StyleId, number> = {
   jChanson: 92,
   hiNRG: 132,
   dorian: 88,
+  electronica: 100,
+  slowcore: 60,
+  frenchPop: 104,
 }
 
 export const STYLE_OPTIONS: { value: StyleId; label: string; tagline: string }[] = [
@@ -356,6 +434,9 @@ export const STYLE_OPTIONS: { value: StyleId; label: string; tagline: string }[]
   { value: "jChanson", label: "J-Chanson", tagline: "和製シャンソン・エキゾティカ・ミステリアス" },
   { value: "hiNRG", label: "Hi-NRG", tagline: "疾走・ダーク・ディスコ" },
   { value: "dorian", label: "Dorian", tagline: "旋法・フォークロック・郷愁" },
+  { value: "electronica", label: "Electronica", tagline: "7th系パッドのループ・解決しない浮遊感" },
+  { value: "slowcore", label: "Sadcore / Slowcore", tagline: "遅く静かに、少ない三和音で沈んでいく" },
+  { value: "frenchPop", label: "French Pop", tagline: "maj7と循環コード・洒脱で軽やかな憂い" },
 ]
 
 interface StylePrefs {
@@ -460,6 +541,25 @@ export const STYLE_PREFS: Record<StyleId, StylePrefs> = {
     slashProb: 0.2,
     minorColors: ["m9", "sus2"],
     majorColors: ["6", "sus2"],
+  },
+  electronica: {
+    decorationProb: 0.7,
+    slashProb: 0.1,
+    minorColors: ["m9", "m9", "m11"],
+    majorColors: ["maj7", "maj7"],
+  },
+  slowcore: {
+    // 装飾は控えめにし、素の三和音の響きを残す(時々ギター的な開いたadd9/sus2)
+    decorationProb: 0.2,
+    slashProb: 0.15,
+    minorColors: ["add9", "sus2"],
+    majorColors: ["add9", "sus2"],
+  },
+  frenchPop: {
+    decorationProb: 0.6,
+    slashProb: 0.15,
+    minorColors: ["7", "7", "6"],
+    majorColors: ["maj7", "maj7", "6"],
   },
 }
 

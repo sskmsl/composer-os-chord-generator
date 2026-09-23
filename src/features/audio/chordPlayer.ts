@@ -173,6 +173,35 @@ const STYLE_VOICES: Partial<Record<StyleId, Partial<VoiceProfile>>> = {
     release: 0.6,
     chordGain: 0.05,
   },
+  electronica: {
+    waveform: "sawtooth",
+    detune: 14,
+    filterBase: 450,
+    filterPeak: 1700,
+    attack: 0.4,
+    release: 1.4,
+    chordGain: 0.04,
+  },
+  slowcore: {
+    waveform: "triangle",
+    detune: 4,
+    filterBase: 600,
+    filterPeak: 900,
+    attack: 0.25,
+    release: 1.6,
+    chordGain: 0.05,
+  },
+  frenchPop: {
+    waveform: "triangle",
+    detune: 3,
+    filterBase: 1000,
+    filterPeak: 1600,
+    attack: 0.02,
+    sustainLevel: 0.5,
+    decay: 0.3,
+    release: 0.5,
+    chordGain: 0.045,
+  },
 }
 
 function getVoice(style: StyleId): VoiceProfile {

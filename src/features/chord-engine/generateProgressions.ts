@@ -7,7 +7,15 @@ import { decorateProgression } from "./decorate"
 import { buildDescription } from "./descriptions"
 import { chance, pick } from "./random"
 import { computeScores, extractFeatures, type CadenceType } from "./scoring"
-import { openColors, rootKey, spiceTokens, styleVocabulary, tensionTokens, tonicTokens } from "./styleGrammar"
+import {
+  matchesStyleSignature,
+  openColors,
+  rootKey,
+  spiceTokens,
+  styleVocabulary,
+  tensionTokens,
+  tonicTokens,
+} from "./styleGrammar"
 import { generateChain } from "./transitions"
 import { applyVoiceLeadingBass } from "./voiceLeading"
 
@@ -33,7 +41,7 @@ export interface GenerateParams {
  */
 export function generateProgressions(params: GenerateParams): GeneratedProgression[] {
   const poolTarget = Math.min(params.count * 3, 60)
-  const maxAttempts = poolTarget * 6
+  const maxAttempts = poolTarget * 10
   const pool: GeneratedProgression[] = []
   const seen = new Set<string>()
 
@@ -42,6 +50,8 @@ export function generateProgressions(params: GenerateParams): GeneratedProgressi
     const dedupKey = progression.chords.join("|")
     if (seen.has(dedupKey)) continue
     seen.add(dedupKey)
+    // そのスタイルの性格(シグネチャー)を欠いた候補は、点数に関わらず出さない
+    if (!matchesStyleSignature(params.style, progression.romanNumerals.map(parseToken), params.key.mode)) continue
     pool.push(progression)
   }
 
@@ -88,10 +98,10 @@ function wasRecentlyUsed(bucket: string, skeleton: string): boolean {
 }
 
 /**
- * Minimalism/Trip-Hop/Ritualは同じ骨格を反復すること自体が持ち味のスタイルなので、
+ * Minimalism/Trip-Hop/Ritual/Electronica/Slowcoreは同じ骨格を反復すること自体が持ち味のスタイルなので、
  * 和声のリズム変化(§computeHarmonicRhythm)と骨格反復の抑制のどちらも対象外とする。
  */
-const REPETITIVE_STYLES = new Set<StyleId>(["minimalism", "tripHop", "ritual"])
+const REPETITIVE_STYLES = new Set<StyleId>(["minimalism", "tripHop", "ritual", "electronica", "slowcore"])
 
 function rankAndSelect(
   pool: GeneratedProgression[],
@@ -178,6 +188,14 @@ function adaptToSection(tokens: string[], section: SectionId, key: MusicKey, sty
     const spiceRoots = new Set(spiceTokens(style, mode).map(rootKey))
     return result.some((t) => spiceRoots.has(rootKey(t)))
   }
+  // 末尾を差し替える。直前2つと同じ和音にして3連続(停滞)になる候補は除き、
+  // 候補が残らなければ差し替えない
+  const replaceLast = (candidates: string[]) => {
+    const n = result.length
+    const avoid = n >= 3 && rootKey(result[n - 2]) === rootKey(result[n - 3]) ? rootKey(result[n - 2]) : null
+    const usable = candidates.filter((t) => rootKey(t) !== avoid)
+    if (usable.length > 0) result[n - 1] = pick(usable)
+  }
 
   switch (rule) {
     case "intro":
@@ -195,7 +213,7 @@ function adaptToSection(tokens: string[], section: SectionId, key: MusicKey, sty
 
     case "preChorus":
       // 末尾を、そのスタイルが実際に使う「トニック以外の終わり方」にして緊張を作る
-      result[last()] = pick(tensionTokens(style, mode))
+      replaceLast(tensionTokens(style, mode))
       break
 
     case "chorus":
@@ -213,7 +231,7 @@ function adaptToSection(tokens: string[], section: SectionId, key: MusicKey, sty
       // 最後のサビ: 半分の確率でトニック終止を保証して解放感を出す
       const tonics = tonicTokens(style, mode)
       if (mode === "minor" && tonics.length > 0 && chance(0.5) && rootKey(result[last()]) !== "i") {
-        result[last()] = pick(tonics)
+        replaceLast(tonics)
       }
       break
     }
@@ -221,7 +239,7 @@ function adaptToSection(tokens: string[], section: SectionId, key: MusicKey, sty
     case "cMelody":
       // Cメロ: そのスタイルにとっての色彩和音で新しい景色を作り、後続サビへの緊張を残す
       if (!hasSpice()) result[Math.min(1, last())] = pick(spiceTokens(style, mode))
-      if (chance(0.55)) result[last()] = pick(tensionTokens(style, mode))
+      if (chance(0.55)) replaceLast(tensionTokens(style, mode))
       break
 
     case "bridge":
@@ -234,7 +252,7 @@ function adaptToSection(tokens: string[], section: SectionId, key: MusicKey, sty
     case "instrumental":
       // 間奏: 歌唱終止を要求せず、色彩和音と循環性を優先する
       if (result.length >= 2 && chance(0.5)) {
-        result[last()] = result[0]
+        replaceLast([result[0]])
       }
       break
 

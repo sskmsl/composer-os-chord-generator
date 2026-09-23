@@ -1,4 +1,5 @@
 import type { Mode, StyleId } from "@/types/music"
+import type { ParsedChord } from "./degrees"
 import { parseToken } from "./degrees"
 import { STYLE_PREFS, STYLE_TEMPLATES } from "./templates"
 
@@ -107,4 +108,80 @@ export function dominantColors(style: StyleId, mode: Mode): string[] {
       .filter((s) => s !== "")
     return onV.length > 0 ? onV : STYLE_PREFS[style].majorColors
   })
+}
+
+// ---------------------------------------------------------------------------
+// スタイルのシグネチャー
+// ---------------------------------------------------------------------------
+
+const SEVENTH_FAMILY = new Set(["maj7", "m9", "m11", "7", "11"])
+const OPEN_COLORS = new Set(["sus2", "add9", "m11", "11", "maj7"])
+
+function chordRoot(c: ParsedChord): string {
+  const acc = c.acc === -1 ? "b" : c.acc === 1 ? "#" : ""
+  return `${acc}${c.lower ? c.roman.toLowerCase() : c.roman}`
+}
+
+const has = (chords: ParsedChord[], ...roots: string[]) => chords.some((c) => roots.includes(chordRoot(c)))
+const isMajorV = (c: ParsedChord) => chordRoot(c) === "V"
+/** 属七(長三和音+短7度)。V7だけでなく副属七(VI7/III7/II7)やbVII7も含む */
+const isDominantSeventh = (c: ParsedChord) => !c.lower && c.suffix === "7"
+const share = (chords: ParsedChord[], pred: (c: ParsedChord) => boolean) =>
+  chords.filter(pred).length / chords.length
+const distinctRoots = (chords: ParsedChord[]) => new Set(chords.map(chordRoot)).size
+const colored = (c: ParsedChord) => c.suffix !== ""
+
+/**
+ * そのスタイルに「聞こえる」ための最低条件。語彙(styleVocabulary)に収まって
+ * いても、組み合わせ次第ではスタイルの性格が抜け落ちる(French Popなのに副属七も
+ * ii–Vも無い、Slowcoreなのに7th和音が並ぶ等)。生成時にこの条件を満たさない候補は
+ * 捨てる。条件は特定の曲ではなく、各ジャンルに共通する一般的な和声的特徴で定める。
+ */
+const STYLE_SIGNATURES: Record<StyleId, (chords: ParsedChord[], mode: Mode) => boolean> = {
+  // 開いた響き(sus2/add9/11/maj7)があり、属七の引力を持たない
+  ethereal: (cs) => cs.some((c) => OPEN_COLORS.has(c.suffix)) && !cs.some(isDominantSeventh),
+  // 暗い引力: 短調ではV系・bII・#ivdim、長調では借用iv・V7系・ii7
+  romanticDark: (cs, mode) =>
+    mode === "minor" ? has(cs, "V", "bII", "#iv") : has(cs, "iv", "V", "ii"),
+  // 映画的な借用・旋法和音(bVI/bVII/bIII)
+  cinematic: (cs) => has(cs, "bVI", "bVII", "bIII") || has(cs, "V"),
+  // 明快な三和音主体(色彩は6thを除いて1つまで)
+  newWave: (cs) => cs.filter((c) => colored(c) && c.suffix !== "6").length <= 1,
+  // 長調中の短調的な下属和音(借用iv)/短調のiv
+  sadcorePop: (cs) => has(cs, "iv"),
+  // 同じ和音へ戻ってくる反復(ドローン・オスティナート)があり、長調のVを使わない。
+  // 2コードでは「戻る」余地がないので反復は3コード以上でだけ求める
+  ritual: (cs) => (cs.length < 3 || distinctRoots(cs) < cs.length) && !cs.some(isMajorV),
+  // 解放: トニックへの着地を含む
+  finale: (cs, mode) => has(cs, mode === "minor" ? "i" : "I"),
+  // 7th/6th/9thの都会的な色彩か、ミクソリディアンのbVIIの乾いた響き
+  cool: (cs) => cs.some((c) => ["7", "6", "m9", "maj7"].includes(c.suffix)) || has(cs, "bVII"),
+  // 少ない和音の催眠的な反復
+  tripHop: (cs) => distinctRoots(cs) <= 3,
+  // 機能和声・半音階的な和音(V7/iiø/dim/bII)
+  neoclassical: (cs) => cs.some((c) => isMajorV(c) || c.suffix === "ø" || c.suffix === "dim") || has(cs, "bII"),
+  // 簡素な骨格: 色彩は1つまで
+  minimalism: (cs) => cs.filter(colored).length <= 1,
+  // 異国情緒・機能的な引力(aug/bII/ø/V系/属七)
+  jChanson: (cs) =>
+    cs.some((c) => c.suffix === "aug" || c.suffix === "ø" || isMajorV(c) || isDominantSeventh(c)) || has(cs, "bII"),
+  // 三和音主体で、V または bVII の推進力
+  hiNRG: (cs) => has(cs, "V", "bVII") && cs.filter((c) => colored(c) && c.suffix !== "7" && c.suffix !== "6").length <= 1,
+  // 短調ではドリアンのIV(長三和音)か短調のv、長調ではミクソリディアンのbVII。長調のVを使わない(短調)
+  dorian: (cs, mode) => (mode === "minor" ? has(cs, "IV", "v") && !cs.some(isMajorV) : has(cs, "bVII", "IV")),
+  // 7th/9th/11th系のパッドが半分以上で、長調のV(ドミナントの解決)を使わない
+  electronica: (cs) => share(cs, (c) => SEVENTH_FAMILY.has(c.suffix)) >= 0.5 && !cs.some(isMajorV),
+  // 飾らない三和音(7th系を使わず、色彩は1つまで)で、長調のVを使わない
+  slowcore: (cs) =>
+    !cs.some((c) => SEVENTH_FAMILY.has(c.suffix) || c.suffix === "6") &&
+    cs.filter(colored).length <= 1 &&
+    !cs.some(isMajorV),
+  // 属七(V7・副属七・bVII7)かiiøの引力があり、7th/6th系の柔らかい和音が半分以上
+  frenchPop: (cs) =>
+    cs.some((c) => isDominantSeventh(c) || c.suffix === "ø") &&
+    share(cs, (c) => ["maj7", "7", "6", "m9", "ø"].includes(c.suffix)) >= 0.5,
+}
+
+export function matchesStyleSignature(style: StyleId, chords: ParsedChord[], mode: Mode): boolean {
+  return STYLE_SIGNATURES[style](chords, mode)
 }
