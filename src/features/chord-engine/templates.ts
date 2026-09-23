@@ -74,15 +74,17 @@ export const STYLE_TEMPLATES: Record<StyleId, Record<Mode, string[][]>> = {
     ],
   },
   newWave: {
+    // add9/maj7に頼らず、明快な三和音+時々の6thでシンセポップの脈動を作る
+    // (これがethereal/romanticDark等の「色彩の濃いスタイル」との違い)
     minor: [
       ["i", "bVII", "bVI", "bVII"],
       ["i", "bVI", "bIII", "bVII"],
-      ["i(add9)", "bVII", "iv", "bVI"],
+      ["i", "bVII", "iv", "bVI"],
       ["i", "bIII", "bVII", "bVI"],
       ["i", "bIII", "iv", "bVII"],
       ["i", "v", "bVI", "bVII"],
       ["i", "bVII", "v", "bVI"],
-      ["i(add9)", "bVI", "bVII", "i"],
+      ["i", "bVI", "bVII", "i"],
     ],
     major: [
       ["I", "V", "vi", "IV"],
@@ -121,25 +123,26 @@ export const STYLE_TEMPLATES: Record<StyleId, Record<Mode, string[][]>> = {
     ],
   },
   ritual: {
+    // add9ではなくsus2/ivsus2の「解決しない開いた響き」でドローン感を作る
     minor: [
-      ["i", "i(add9)", "bII", "i"],
+      ["i", "isus2", "bII", "i"],
       ["i", "bVII", "i", "bVI"],
-      ["i(add9)", "ivsus2", "i", "bVII"],
+      ["isus2", "ivsus2", "i", "bVII"],
       ["i", "bVI", "i", "bII"],
       ["i", "bVII", "bVI", "bVII"],
       ["i", "ivsus2", "bVII", "i"],
       ["i", "bII", "i", "bVII"],
-      ["i(add9)", "bVI", "bVII", "i"],
+      ["isus2", "bVI", "bVII", "i"],
     ],
     major: [
-      ["I", "Iadd9", "bVII", "I"],
+      ["I", "Isus2", "bVII", "I"],
       ["I", "bVII", "I", "IV"],
-      ["Iadd9", "IVsus2", "I", "bVII"],
+      ["Isus2", "IVsus2", "I", "bVII"],
       ["I", "iv", "I", "bVII"],
       ["I", "bVII", "IV", "bVII"],
       ["Isus2", "bVII", "I", "IV"],
       ["I", "IV", "bVII", "I"],
-      ["Iadd9", "bVII", "IV", "I"],
+      ["Isus2", "bVII", "IV", "I"],
     ],
   },
   finale: {
@@ -366,54 +369,61 @@ interface StylePrefs {
   majorColors: string[]
 }
 
+/**
+ * 色彩の配列は pick() で一様抽選されるため、同じ要素を複数回並べることで
+ * 簡易的な重み付け(そのスタイルの「シグネチャー」を強める)に使っている。
+ * add9/maj7をどのスタイルにも足しがちだった結果、装飾だけ聴くとスタイルの
+ * 判別がつきにくくなっていたため、各スタイルの性格に強く紐づく色彩へ絞り込み、
+ * 汎用的な選択肢は削るか低頻度に留めた。
+ */
 export const STYLE_PREFS: Record<StyleId, StylePrefs> = {
   ethereal: {
     decorationProb: 0.75,
     slashProb: 0.3,
-    minorColors: ["add9", "m9", "m11", "sus2"],
-    majorColors: ["add9", "maj7", "sus2"],
+    minorColors: ["sus2", "sus2", "m11", "add9"],
+    majorColors: ["sus2", "sus2", "add9"],
   },
   romanticDark: {
     decorationProb: 0.6,
     slashProb: 0.2,
-    minorColors: ["add9", "m9", "aug"],
-    majorColors: ["maj7", "add9"],
+    minorColors: ["m9", "m9", "aug"],
+    majorColors: ["maj7", "maj7", "add9"],
   },
   cinematic: {
     decorationProb: 0.55,
     slashProb: 0.25,
-    minorColors: ["add9", "m9", "aug"],
-    majorColors: ["maj7", "add9"],
+    minorColors: ["sus4", "m9", "aug"],
+    majorColors: ["sus4", "sus4", "maj7"],
   },
   newWave: {
     decorationProb: 0.35,
     slashProb: 0.1,
-    minorColors: ["add9"],
-    majorColors: ["add9", "6"],
+    minorColors: ["6"],
+    majorColors: ["6", "6", "add9"],
   },
   sadcorePop: {
     decorationProb: 0.55,
     slashProb: 0.3,
-    minorColors: ["add9", "maj7", "m9"],
-    majorColors: ["maj7", "add9", "6"],
+    minorColors: ["maj7", "maj7", "m9"],
+    majorColors: ["maj7", "maj7", "6"],
   },
   ritual: {
     decorationProb: 0.45,
     slashProb: 0.1,
-    minorColors: ["add9", "sus2"],
-    majorColors: ["sus2", "add9"],
+    minorColors: ["sus2", "sus2", "11"],
+    majorColors: ["sus2", "sus2", "sus4"],
   },
   finale: {
     decorationProb: 0.5,
     slashProb: 0.2,
-    minorColors: ["add9"],
-    majorColors: ["maj7", "add9"],
+    minorColors: ["sus4", "7sus4"],
+    majorColors: ["sus4", "maj7"],
   },
   cool: {
     decorationProb: 0.4,
     slashProb: 0.2,
-    minorColors: ["7", "m9", "6"],
-    majorColors: ["7", "6", "add9"],
+    minorColors: ["6", "m9", "7"],
+    majorColors: ["6", "6", "7"],
   },
   tripHop: {
     decorationProb: 0.35,
@@ -424,8 +434,8 @@ export const STYLE_PREFS: Record<StyleId, StylePrefs> = {
   neoclassical: {
     decorationProb: 0.6,
     slashProb: 0.45,
-    minorColors: ["add9", "m9", "maj7", "aug"],
-    majorColors: ["maj7", "add9"],
+    minorColors: ["m9", "maj7", "aug"],
+    majorColors: ["maj7", "m9"],
   },
   minimalism: {
     decorationProb: 0.15,
@@ -436,14 +446,14 @@ export const STYLE_PREFS: Record<StyleId, StylePrefs> = {
   jChanson: {
     decorationProb: 0.55,
     slashProb: 0.25,
-    minorColors: ["maj7", "m9", "aug"],
-    majorColors: ["maj7", "add9", "6"],
+    minorColors: ["aug", "aug", "m9"],
+    majorColors: ["maj7", "6"],
   },
   hiNRG: {
     decorationProb: 0.3,
     slashProb: 0.1,
     minorColors: ["7"],
-    majorColors: ["6", "add9"],
+    majorColors: ["6", "7"],
   },
   dorian: {
     decorationProb: 0.4,
