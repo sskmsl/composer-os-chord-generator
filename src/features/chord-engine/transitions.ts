@@ -3,7 +3,7 @@ import { MOOD_PROFILES, STYLE_TEMPLATES } from "./templates"
 import { chance, pick } from "./random"
 
 /**
- * STYLE_TEMPLATES(スタイルごとに手作りした12パターン=長調/短調各6)を
+ * STYLE_TEMPLATES(スタイルごとに手作りした16パターン=長調/短調各8)を
  * 「教師データ」として、ディグリー間の遷移確率テーブルを組み立て、
  * そこからその場で新しい進行を生成する。固定パターンの使い回しではなく、
  * スタイルの語彙を保ったまま組み合わせを大きく広げるのが狙い。
