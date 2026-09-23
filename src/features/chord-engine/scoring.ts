@@ -225,7 +225,7 @@ export function computeScores(
   const darkMood = ["dark", "melancholic", "romantic", "mysterious", "tense"].includes(mood)
   const rule = sectionRule(section)
   const liftSection = ["preChorus", "chorus", "grandChorus", "outro"].includes(rule)
-  const cinematicStyle = ["cinematic", "finale", "symphonicRock"].includes(style)
+  const cinematicStyle = ["cinematic", "finale", "sadcorePop"].includes(style)
 
   const mylene =
     4 +

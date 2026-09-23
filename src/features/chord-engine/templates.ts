@@ -79,22 +79,25 @@ export const STYLE_TEMPLATES: Record<StyleId, Record<Mode, string[][]>> = {
       ["I", "V", "IV", "vi"],
     ],
   },
-  symphonicRock: {
+  sadcorePop: {
+    // 退廃的でノスタルジックな「ハリウッド・サッドコア/シネマティック・ポップ」。
+    // 借用iv(長調中の短調的な下属和音)を随所に置き、輝きの奥に滲む
+    // 哀愁・郷愁を作るのが核。強いドミナント解決には頼らない。
     minor: [
-      ["i", "bVI", "bIII", "bVII"],
-      ["i", "V", "bVI", "bVII"],
-      ["i(add9)", "bVImaj7", "V", "i"],
-      ["bVI", "bVII", "i", "i"],
-      ["i", "bIII", "V", "bVI"],
-      ["iv", "bVII", "i", "V"],
+      ["i(add9)", "bVImaj7", "iv", "i"],
+      ["i", "bIII", "bVImaj7", "iv"],
+      ["ivm9", "bVImaj7", "bIII", "i(add9)"],
+      ["i", "iv", "bVI", "bVII"],
+      ["i(add9)", "iv", "bIII", "bVII"],
+      ["bVImaj7", "iv", "i(add9)", "iv"],
     ],
     major: [
-      ["I", "V", "vi", "iv"],
-      ["vi", "IV", "V", "I"],
-      ["I", "bVII", "IV", "V"],
-      ["IV", "V", "vi", "I"],
-      ["I", "bVII", "V", "IV"],
-      ["vi", "bVII", "IV", "I"],
+      ["I", "vi", "IV", "iv"],
+      ["Imaj7", "vi(add9)", "IV", "iv"],
+      ["vi", "IV", "I", "iv"],
+      ["I", "iii", "IV", "iv"],
+      ["Iadd9", "vi", "ii7", "iv"],
+      ["IVmaj7", "iv", "I", "vi"],
     ],
   },
   ritual: {
@@ -267,7 +270,7 @@ export const STYLE_TEMPO: Record<StyleId, number> = {
   romanticDark: 84,
   cinematic: 80,
   newWave: 112,
-  symphonicRock: 96,
+  sadcorePop: 72,
   ritual: 70,
   finale: 88,
   cool: 116,
@@ -284,7 +287,7 @@ export const STYLE_OPTIONS: { value: StyleId; label: string; tagline: string }[]
   { value: "romanticDark", label: "Romantic Dark", tagline: "暗い官能とエレガンス" },
   { value: "cinematic", label: "Cinematic", tagline: "映画的・壮大・感情の起伏" },
   { value: "newWave", label: "New Wave", tagline: "80s/90s シンセポップの脈動" },
-  { value: "symphonicRock", label: "Symphonic Rock", tagline: "劇的・ゴシック・重厚" },
+  { value: "sadcorePop", label: "Hollywood Sadcore", tagline: "退廃的でノスタルジックなシネマティック・ポップ" },
   { value: "ritual", label: "Ritual", tagline: "儀式的・旋法的・催眠的" },
   { value: "finale", label: "Finale", tagline: "解放とカタルシス" },
   { value: "cool", label: "Cool", tagline: "クール・都会的・ランウェイ" },
@@ -332,11 +335,11 @@ export const STYLE_PREFS: Record<StyleId, StylePrefs> = {
     minorColors: ["add9"],
     majorColors: ["add9", "6"],
   },
-  symphonicRock: {
-    decorationProb: 0.35,
-    slashProb: 0.15,
-    minorColors: ["add9"],
-    majorColors: ["maj7"],
+  sadcorePop: {
+    decorationProb: 0.55,
+    slashProb: 0.3,
+    minorColors: ["add9", "maj7", "m9"],
+    majorColors: ["maj7", "add9", "6"],
   },
   ritual: {
     decorationProb: 0.45,

@@ -77,14 +77,14 @@ const STYLE_VOICES: Partial<Record<StyleId, Partial<VoiceProfile>>> = {
     release: 0.25,
     chordGain: 0.035,
   },
-  symphonicRock: {
-    detune: 8,
-    filterBase: 400,
-    filterPeak: 1100,
-    attack: 0.08,
-    release: 0.6,
-    chordGain: 0.06,
-    bassGain: 0.26,
+  sadcorePop: {
+    waveform: "triangle",
+    detune: 11,
+    filterBase: 450,
+    filterPeak: 1600,
+    attack: 0.3,
+    release: 1.3,
+    chordGain: 0.05,
   },
   ritual: {
     waveform: "sine",
