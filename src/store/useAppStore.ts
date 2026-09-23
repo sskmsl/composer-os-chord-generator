@@ -2,7 +2,9 @@ import { create } from "zustand"
 import { generateProgressions, type GenerateParams } from "@/features/chord-engine/generateProgressions"
 import { downloadComposerSongExchange } from "@/features/exchange/composerSongExchange"
 import { downloadSongSmf } from "@/features/midi/exportSong"
+import { downloadBackup, parseBackup } from "@/features/storage/backup"
 import { folderRepository, progressionRepository } from "@/features/storage/progressionRepository"
+import { pushFolder, pushProgression } from "@/features/sync/supabaseSync"
 import type { Folder } from "@/types/folder"
 import { createFolder as buildFolder } from "@/types/folder"
 import type { ChordCount, MoodId, MusicKey, SectionId, StyleId, VariationCount } from "@/types/music"
@@ -55,6 +57,10 @@ interface AppStore {
   duplicateSection(progressionId: string): Promise<SavedProgression>
   exportFolderAsMidi(folderId: string): void
   exportFolderForArranger(folderId: string): void
+
+  // バックアップ(同期に依存しない、手元で確保する保険)
+  exportAllAsBackup(): void
+  restoreFromBackup(text: string): Promise<void>
 }
 
 export const useAppStore = create<AppStore>((set, get) => ({
@@ -153,7 +159,7 @@ export const useAppStore = create<AppStore>((set, get) => ({
     if (trimmed === "") throw new Error("フォルダ名を入力してください")
     const folder = get().folders.find((f) => f.id === id)
     if (!folder) throw new Error("フォルダが見つかりません")
-    const updated = { ...folder, name: trimmed }
+    const updated = { ...folder, name: trimmed, updatedAt: new Date().toISOString() }
     await folderRepository.save(updated)
     set({ folders: get().folders.map((f) => (f.id === id ? updated : f)) })
   },
@@ -179,7 +185,7 @@ export const useAppStore = create<AppStore>((set, get) => ({
   async setFolderTempo(id, tempo) {
     const folder = get().folders.find((f) => f.id === id)
     if (!folder) throw new Error("フォルダが見つかりません")
-    const updated = { ...folder, tempo }
+    const updated = { ...folder, tempo, updatedAt: new Date().toISOString() }
     await folderRepository.save(updated)
     set({ folders: get().folders.map((f) => (f.id === id ? updated : f)) })
   },
@@ -187,7 +193,7 @@ export const useAppStore = create<AppStore>((set, get) => ({
   async setFolderMemo(id, memo) {
     const folder = get().folders.find((f) => f.id === id)
     if (!folder) throw new Error("フォルダが見つかりません")
-    const updated = { ...folder, memo }
+    const updated = { ...folder, memo, updatedAt: new Date().toISOString() }
     await folderRepository.save(updated)
     set({ folders: get().folders.map((f) => (f.id === id ? updated : f)) })
   },
@@ -248,5 +254,25 @@ export const useAppStore = create<AppStore>((set, get) => ({
     const folder = get().folders.find((f) => f.id === folderId)
     if (!folder) throw new Error("フォルダが見つかりません")
     downloadComposerSongExchange(folder, get().saved)
+  },
+
+  exportAllAsBackup() {
+    downloadBackup(get().folders, get().saved)
+  },
+
+  async restoreFromBackup(text) {
+    const { folders, progressions } = parseBackup(text)
+    await folderRepository.replaceAll(folders)
+    await progressionRepository.replaceAll(progressions)
+
+    const sorted = {
+      saved: [...progressions].sort((a, b) => b.savedAt.localeCompare(a.savedAt)),
+      folders: [...folders].sort((a, b) => a.createdAt.localeCompare(b.createdAt)),
+    }
+    set({ saved: sorted.saved, folders: sorted.folders })
+
+    // replaceAllはローカルのみの更新なので、次回ログイン同期でリモートの古い状態に
+    // 上書きされないよう、復元した内容をリモートへも反映しておく(ベストエフォート)
+    void Promise.all([...folders.map(pushFolder), ...progressions.map(pushProgression)])
   },
 }))

@@ -15,9 +15,3 @@ export function weightedPick<T>(items: readonly T[], weights: readonly number[])
   }
   return items[items.length - 1]
 }
-
-/** -1 / 0 / +1 の小さな揺らぎ */
-export function jitter(): number {
-  const r = Math.random()
-  return r < 0.25 ? -1 : r < 0.75 ? 0 : 1
-}

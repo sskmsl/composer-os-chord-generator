@@ -1,8 +1,7 @@
-import { sectionRule, type Mode, type MoodId, type SectionId, type StyleId } from "@/types/music"
+import type { Mode } from "@/types/music"
 import type { Scores } from "@/types/progression"
 import type { ParsedChord } from "./degrees"
-import { degreeSemitone } from "./degrees"
-import { jitter } from "./random"
+import { chordPitchClasses, degreeSemitone, upperPitchClasses } from "./degrees"
 
 /** 進行から検出した音楽的特徴。スコアと説明文の両方の根拠になる */
 export interface Features {
@@ -12,6 +11,7 @@ export interface Features {
   hasV7: boolean
   hasBVI: boolean
   hasBVII: boolean
+  hasAug: boolean
   hasBviBviiTonic: boolean
   hasBorrowed: boolean
   hasSlash: boolean
@@ -24,9 +24,28 @@ export interface Features {
   endsUnresolved: boolean
   dominantPrep: boolean
   largeArc: boolean
+  /** 隣接コード間で共有される構成音の平均数(声部の滑らかさ・共通音の効果) */
+  commonToneStrength: number
+  /** ベース以外の構成音が半音で動いた遷移の数(内声の半音進行) */
+  chromaticInnerSteps: number
+  /** dim/bII/aug/借用/#IVなど、耳を引く"毒"の要素数 */
+  surpriseCount: number
+  /** 色彩和音も借用もスラッシュもペダルも意外性もない、教科書的で平板な進行 */
+  plainDiatonic: boolean
+  /** 装飾・借用・意外性が詰め込まれすぎて、シンプルさを失っている */
+  overDecorated: boolean
+  /** 終止の型(理論的な説明・分析用) */
+  cadence: CadenceType
 }
 
-const COLOR_SUFFIXES = ["add9", "maj7", "m9", "m11", "11", "sus2", "sus4", "7sus4", "6"]
+/**
+ * 終止の型。 authentic=完全終止(V→I) / half=半終止(Vで止める) /
+ * deceptive=偽終止(Vから予想外の和音へ) / plagal=変終止(IV→I) /
+ * modal=機能和声に依らない終止(旋法的・借用和音的な着地)
+ */
+export type CadenceType = "authentic" | "half" | "deceptive" | "plagal" | "modal"
+
+const COLOR_SUFFIXES = ["add9", "maj7", "m9", "m11", "11", "sus2", "sus4", "7sus4", "6", "aug"]
 const SOFT_COLORS = ["add9", "maj7", "m9", "m11", "11"]
 
 function bassSemitone(c: ParsedChord): number {
@@ -37,6 +56,56 @@ function bassSemitone(c: ParsedChord): number {
 function isDescStep(prev: number, cur: number): boolean {
   if (prev === cur) return false
   return (prev - cur + 12) % 12 <= 5
+}
+
+function shortestDistance(a: number, b: number): number {
+  const d = Math.abs(a - b) % 12
+  return Math.min(d, 12 - d)
+}
+
+/**
+ * 抜けていく声それぞれについて「最も近い、入ってくる声」との距離を貪欲法で求める。
+ * どの組み合わせでも半音差がありさえすれば true にすると、密度の高いコード
+ * (add9/m9等)同士では偶然の半音接近がほぼ必ず起きてしまい指標として機能しない。
+ * 実際に鳴らすなら選ぶはずの「一番近い相手」同士のペアだけを見て、
+ * その中に半音移動があるかどうかを判定する。
+ */
+function hasNearestNeighborHalfStep(departing: number[], arriving: number[]): boolean {
+  const remaining = [...arriving]
+  for (const p of departing) {
+    if (remaining.length === 0) break
+    let bestIdx = 0
+    let bestDist = shortestDistance(p, remaining[0])
+    for (let i = 1; i < remaining.length; i++) {
+      const d = shortestDistance(p, remaining[i])
+      if (d < bestDist) {
+        bestDist = d
+        bestIdx = i
+      }
+    }
+    if (bestDist === 1) return true
+    remaining.splice(bestIdx, 1)
+  }
+  return false
+}
+
+/** 末尾2和音の関係から終止の型を判定する(機能和声の一般的な分類。特定楽曲への依存なし) */
+function detectCadence(chords: ParsedChord[], minor: boolean): CadenceType {
+  if (chords.length < 2) return "modal"
+  const last = chords[chords.length - 1]
+  const prev = chords[chords.length - 2]
+  const lastSemi = degreeSemitone(last.acc, last.roman)
+  const prevSemi = degreeSemitone(prev.acc, prev.roman)
+
+  const lastIsTonic = lastSemi === 0 && last.lower === minor
+  const lastIsDominant = !last.lower && lastSemi === 7
+  const prevIsDominant = !prev.lower && prevSemi === 7
+  const prevIsSubdominant = prevSemi === 5 && prev.lower === minor
+
+  if (lastIsDominant) return "half"
+  if (prevIsDominant) return lastIsTonic ? "authentic" : "deceptive"
+  if (prevIsSubdominant && lastIsTonic) return "plagal"
+  return "modal"
 }
 
 export function extractFeatures(chords: ParsedChord[], mode: Mode): Features {
@@ -52,6 +121,8 @@ export function extractFeatures(chords: ParsedChord[], mode: Mode): Features {
   )
   const hasBVI = semis.includes(8)
   const hasBVII = semis.includes(10)
+  const hasAug = chords.some((c) => c.suffix === "aug")
+  const hasSharpIV = chords.some((c) => c.acc === 1 && c.roman === "IV")
 
   let hasBviBviiTonic = false
   for (let i = 0; i + 2 < semis.length; i++) {
@@ -77,6 +148,41 @@ export function extractFeatures(chords: ParsedChord[], mode: Mode): Features {
 
   const range = Math.max(...semis) - Math.min(...semis)
 
+  const hasSlash = chords.some((c) => c.bass != null)
+  const colorCount = chords.filter((c) => COLOR_SUFFIXES.includes(c.suffix)).length
+  const pedalBass = pedalSteps >= 2
+
+  // 隣接コード間の共通音(声部の滑らかさ)と、内声(ベース以外)の半音進行を検出する
+  let commonToneTotal = 0
+  let chromaticInnerSteps = 0
+  for (let i = 1; i < chords.length; i++) {
+    const prevAll = chordPitchClasses(chords[i - 1])
+    const curAll = chordPitchClasses(chords[i])
+    commonToneTotal += prevAll.filter((pc) => curAll.includes(pc)).length
+
+    // 「実際にそこにあった声」が半音で動いた場合だけを数える。共通音(=動いていない)を
+    // 除き、かつ「最も近い相手」同士のペアだけを見る。そうしないと密度の高いコード
+    // (add9/m9等)同士では偶然の半音接近がほぼ必ず起き、指標として意味をなさなくなる。
+    const prevUpper = upperPitchClasses(chords[i - 1])
+    const curUpper = upperPitchClasses(chords[i])
+    const departing = prevUpper.filter((p) => !curUpper.includes(p))
+    const arriving = curUpper.filter((q) => !prevUpper.includes(q))
+    if (hasNearestNeighborHalfStep(departing, arriving)) chromaticInnerSteps++
+  }
+  const commonToneStrength = commonToneTotal / Math.max(1, chords.length - 1)
+
+  // 耳を引く"毒"の要素(dim/bII/aug/借用/#IV等)を数える。Boutonnat的には0でも多すぎても良くない
+  const surpriseCount =
+    (hasDim ? 1 : 0) +
+    (hasBII ? 1 : 0) +
+    (hasAug ? 1 : 0) +
+    (hasSharpIV ? 1 : 0) +
+    (minor && hasV7 ? 1 : 0) +
+    (!minor && hasBorrowed ? 1 : 0)
+
+  const plainDiatonic = colorCount === 0 && !hasBorrowed && !hasSlash && !pedalBass && surpriseCount === 0
+  const overDecorated = colorCount >= chords.length && surpriseCount >= 2
+
   return {
     minor,
     hasDim,
@@ -84,61 +190,76 @@ export function extractFeatures(chords: ParsedChord[], mode: Mode): Features {
     hasV7,
     hasBVI,
     hasBVII,
+    hasAug,
     hasBviBviiTonic,
     hasBorrowed,
-    hasSlash: chords.some((c) => c.bass != null),
-    colorCount: chords.filter((c) => COLOR_SUFFIXES.includes(c.suffix)).length,
+    hasSlash,
+    colorCount,
     softColorCount: chords.filter((c) => SOFT_COLORS.includes(c.suffix)).length,
     descendingBass: descSteps >= basses.length - 2 && descSteps > 0,
     ascendingBass: ascSteps >= basses.length - 2 && ascSteps > 0,
-    pedalBass: pedalSteps >= 2,
+    pedalBass,
     endsOnTonic,
     endsUnresolved,
     dominantPrep,
     largeArc: range >= 7,
+    commonToneStrength,
+    chromaticInnerSteps,
+    surpriseCount,
+    plainDiatonic,
+    overDecorated,
+    cadence: detectCadence(chords, minor),
   }
 }
 
 const clamp = (n: number) => Math.max(1, Math.min(10, Math.round(n)))
 
-/** CHORD_ENGINE_SPEC §7 のルールをコード化した決定的スコア + 小さな揺らぎ */
-export function computeScores(
-  f: Features,
-  style: StyleId,
-  section: SectionId,
-  mood: MoodId,
-): Scores {
-  const darkMood = ["dark", "melancholic", "romantic", "mysterious", "tense"].includes(mood)
-  const rule = sectionRule(section)
-  const liftSection = ["preChorus", "chorus", "grandChorus", "outro"].includes(rule)
-  const orchestralSection = ["preChorus", "chorus", "grandChorus", "cMelody", "bridge"].includes(rule)
-  const cinematicStyle = ["cinematic", "finale", "symphonicRock"].includes(style)
-
+/**
+ * 進行そのものの特徴だけから決まる、決定的なスコア。
+ *
+ * 以前はムード・セクション・スタイルといった「生成条件」でも加点し、さらに
+ * ±1の乱数を足していた。条件由来の加点は同じ条件で生成した候補すべてに同じだけ
+ * 乗るため候補間の差を生まず、値を9〜10に張り付かせるだけだった。乱数は
+ * 同じ進行に毎回違う点を付け、表示された差の意味を曖昧にしていた。
+ * そのため両方を取り除き、同じ進行には常に同じ点が付くようにしている
+ * (候補の多様性は生成側の乱数と、選抜時の同点の並べ替えで確保する)。
+ */
+export function computeScores(f: Features): Scores {
   const mylene =
-    4 +
-    (darkMood ? 2 : 0) +
+    3 +
     (f.minor ? 1 : 0) +
     (f.endsUnresolved ? 1 : 0) +
-    (f.softColorCount >= 2 ? 1 : 0) +
-    (f.hasBviBviiTonic || liftSection ? 1 : 0) +
-    jitter()
+    Math.min(f.softColorCount, 2) +
+    (f.hasBviBviiTonic ? 1 : 0) +
+    (f.pedalBass || f.descendingBass ? 1 : 0) +
+    (f.commonToneStrength >= 1.4 ? 1 : 0)
 
+  // Boutonnat的な審美眼: 少ないコードで深く・過剰にせず・1〜2箇所だけ毒を残す進行を最上位で評価する。
+  // 「安全だが平凡」(plainDiatonic)と「詰め込みすぎ」(overDecorated)の両方を減点し、
+  // 共通音・内声の半音進行・ペダル・スラッシュ・ちょうど良い意外性(1〜2箇所)を加点する。
+  const idealSurprise = f.surpriseCount === 1 || f.surpriseCount === 2
   const boutonnat =
-    3 +
-    (f.hasBviBviiTonic ? 2 : 0) +
-    (f.minor && (f.hasV7 || (f.hasBVI && f.hasBVII)) ? 2 : 0) +
-    (orchestralSection || cinematicStyle ? 1 : 0) +
+    2 +
+    (f.hasBviBviiTonic ? 1 : 0) +
+    (f.minor && (f.hasV7 || (f.hasBVI && f.hasBVII)) ? 1 : 0) +
     (f.hasSlash ? 1 : 0) +
-    (f.largeArc ? 1 : 0) +
-    jitter()
+    (f.pedalBass ? 1 : 0) +
+    (f.commonToneStrength >= 1.4 ? 1 : 0) +
+    (f.chromaticInnerSteps > 0 ? 1 : 0) +
+    (idealSurprise ? 2 : 0) +
+    (f.endsUnresolved ? 1 : 0) +
+    (f.plainDiatonic ? -3 : 0) +
+    (f.overDecorated ? -2 : 0) +
+    (f.surpriseCount >= 3 ? -2 : 0)
 
   const melancholy =
-    3 +
+    2 +
     (f.minor ? 2 : 0) +
     Math.min(f.softColorCount, 2) +
+    (f.hasBVI ? 1 : 0) +
     (f.descendingBass ? 1 : 0) +
     (f.endsUnresolved ? 1 : 0) +
-    jitter()
+    (f.chromaticInnerSteps > 0 ? 1 : 0)
 
   const darkness =
     2 +
@@ -146,17 +267,16 @@ export function computeScores(
     (f.hasDim ? 2 : 0) +
     (f.hasBII ? 2 : 0) +
     (f.hasV7 ? 1 : 0) +
-    (["dark", "tense"].includes(mood) ? 1 : 0) +
-    jitter()
+    (f.hasAug ? 1 : 0)
 
   const cinematic =
     3 +
     (f.hasBviBviiTonic ? 3 : 0) +
+    (f.hasBVI || f.hasBVII ? 1 : 0) +
     (f.largeArc ? 1 : 0) +
-    (liftSection ? 1 : 0) +
-    (cinematicStyle ? 1 : 0) +
-    (f.dominantPrep ? 1 : 0) +
-    jitter()
+    (f.ascendingBass ? 1 : 0) +
+    (f.pedalBass || f.hasSlash ? 1 : 0) +
+    (f.dominantPrep ? 1 : 0)
 
   return {
     mylene: clamp(mylene),

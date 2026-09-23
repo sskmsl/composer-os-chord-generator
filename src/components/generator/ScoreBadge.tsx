@@ -2,8 +2,8 @@ import type { Scores } from "@/types/progression"
 import { cn } from "@/lib/utils"
 
 const SCORE_LABELS: { key: keyof Scores; label: string }[] = [
-  { key: "mylene", label: "Mylène" },
-  { key: "boutonnat", label: "Boutonnat" },
+  { key: "mylene", label: "Atmosphere" },
+  { key: "boutonnat", label: "Craft" },
   { key: "melancholy", label: "Melancholy" },
   { key: "darkness", label: "Darkness" },
   { key: "cinematic", label: "Cinematic" },

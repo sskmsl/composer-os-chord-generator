@@ -22,9 +22,17 @@ export interface GeneratedProgression {
   description: string
   scores: Scores
   createdAt: string
+  /**
+   * 各コードの長さ(拍数、4/4の四分音符単位)。chords と同じ長さの配列。
+   * 既定は4拍=1小節だが、経過的な転回(声部進行)は短く、終止の着地は
+   * 長く持たせるなど、和声のリズムに緩急を作る。試聴とMIDI書き出しでのみ使用し、
+   * Composer OS内の他アプリとの受け渡し形式(exchange/composerSongExchange.ts、
+   * version 1)は「1コード=1小節」を明示した既存契約のため対象外とする。
+   */
+  beats: number[]
 }
 
-export const PROGRESSION_SCHEMA_VERSION = 4
+export const PROGRESSION_SCHEMA_VERSION = 5
 
 /** 保存された進行(メモ4欄 + 所属フォルダ + 曲構成情報) */
 export interface SavedProgression extends GeneratedProgression {
@@ -76,6 +84,8 @@ export function migrateSavedProgression(raw: SavedProgression): SavedProgression
     order: raw.order ?? (Date.parse(savedAt) || 0),
     repeatCount: raw.repeatCount ?? 1,
     // v3 → v4: SectionIdをComposer Arrangerと共通のROLEへ正規化
+    // v4 → v5: 和声のリズム(拍数)。既存データは全コード4拍(=旧仕様と同じ響き)で初期化
+    beats: raw.beats ?? raw.chords.map(() => 4),
     schemaVersion: PROGRESSION_SCHEMA_VERSION,
   }
 }

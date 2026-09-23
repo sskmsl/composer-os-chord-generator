@@ -6,8 +6,9 @@ import { bassNoteName, buildToken, chordName, parseToken } from "./degrees"
 import { decorateProgression } from "./decorate"
 import { buildDescription } from "./descriptions"
 import { chance, pick } from "./random"
-import { computeScores, extractFeatures } from "./scoring"
+import { computeScores, extractFeatures, type CadenceType } from "./scoring"
 import { generateChain } from "./transitions"
+import { applyVoiceLeadingBass } from "./voiceLeading"
 
 export interface GenerateParams {
   key: MusicKey
@@ -22,28 +23,100 @@ export interface GenerateParams {
 /**
  * メインエントリポイント。
  * テンプレート選択 → セクション変形 → 装飾 → 移調 → スコア/説明文 の
- * パイプラインで、重複しない進行を最大 count 件生成する。
+ * パイプラインで重複しない候補プールを作り、Boutonnat的な審美眼(boutonnat
+ * スコア)を最終フィルタとして上位 count 件だけを返す。
+ * 「安全だが平凡」な候補だけが並ばないよう、候補評価を出力選定に直結させる。
+ * さらに、同じ style×調 を繰り返し使ったときにルート進行の「骨格」
+ * (色彩・スラッシュを無視した度数の並び)が何度も出てこないよう、
+ * セッション内の直近履歴で軽く減点する(§骨格反復の抑制)。
  */
 export function generateProgressions(params: GenerateParams): GeneratedProgression[] {
-  const results: GeneratedProgression[] = []
+  const poolTarget = Math.min(params.count * 3, 60)
+  const maxAttempts = poolTarget * 6
+  const pool: GeneratedProgression[] = []
   const seen = new Set<string>()
-  const maxAttempts = params.count * 12
 
-  for (let attempt = 0; attempt < maxAttempts && results.length < params.count; attempt++) {
+  for (let attempt = 0; attempt < maxAttempts && pool.length < poolTarget; attempt++) {
     const progression = generateOne(params)
     const dedupKey = progression.chords.join("|")
     if (seen.has(dedupKey)) continue
     seen.add(dedupKey)
-    results.push(progression)
+    pool.push(progression)
   }
-  return results
+
+  const selected = rankAndSelect(pool, params.style, params.key.mode, params.count)
+  if (!REPETITIVE_STYLES.has(params.style)) {
+    const bucket = skeletonBucket(params.style, params.key.mode)
+    for (const p of selected) recordSkeleton(bucket, rootSkeletonOf(p.romanNumerals))
+  }
+  return selected
+}
+
+/**
+ * 骨格反復の抑制はstyle×調(=Markovの語彙プールと同じ単位)ごとに履歴を持つ。
+ * ブラウザセッション中(タブを開いている間)だけ効く軽量な仕組みで、
+ * 保存済みライブラリ全体との突き合わせまでは行わない。
+ */
+const SKELETON_HISTORY_LIMIT = 40
+const skeletonHistory = new Map<string, string[]>()
+
+function skeletonBucket(style: StyleId, mode: MusicKey["mode"]): string {
+  return `${style}-${mode}`
+}
+
+/** 色彩(サフィックス)・スラッシュベースを無視した、度数だけのルート進行 */
+export function rootSkeletonOf(romanNumerals: string[]): string {
+  return romanNumerals
+    .map((token) => {
+      const p = parseToken(token)
+      const accStr = p.acc === -1 ? "b" : p.acc === 1 ? "#" : ""
+      return accStr + (p.lower ? p.roman.toLowerCase() : p.roman)
+    })
+    .join("-")
+}
+
+function recordSkeleton(bucket: string, skeleton: string): void {
+  const list = skeletonHistory.get(bucket) ?? []
+  list.push(skeleton)
+  if (list.length > SKELETON_HISTORY_LIMIT) list.shift()
+  skeletonHistory.set(bucket, list)
+}
+
+function wasRecentlyUsed(bucket: string, skeleton: string): boolean {
+  return skeletonHistory.get(bucket)?.includes(skeleton) ?? false
+}
+
+/**
+ * Minimalism/Trip-Hop/Ritualは同じ骨格を反復すること自体が持ち味のスタイルなので、
+ * 和声のリズム変化(§computeHarmonicRhythm)と骨格反復の抑制のどちらも対象外とする。
+ */
+const REPETITIVE_STYLES = new Set<StyleId>(["minimalism", "tripHop", "ritual"])
+
+function rankAndSelect(
+  pool: GeneratedProgression[],
+  style: StyleId,
+  mode: MusicKey["mode"],
+  count: number,
+): GeneratedProgression[] {
+  // スコアは決定的な整数なので同点が多い。1未満の乱数を足して同点内の順序だけを
+  // 揺らし、同じ条件で何度生成しても同じ顔ぶれに偏らないようにする
+  // (異なる点数の大小関係は崩さない)。
+  const bucket = skeletonBucket(style, mode)
+  const penalty = (p: GeneratedProgression) =>
+    !REPETITIVE_STYLES.has(style) && wasRecentlyUsed(bucket, rootSkeletonOf(p.romanNumerals)) ? 3 : 0
+  const ranked = pool.map((p) => ({ p, rank: p.scores.boutonnat - penalty(p) + Math.random() * 0.99 }))
+  return ranked
+    .sort((a, b) => b.rank - a.rank)
+    .slice(0, count)
+    .map(({ p }) => p)
 }
 
 function generateOne(params: GenerateParams): GeneratedProgression {
   const { key, style, section, mood, length } = params
 
   const tokens = adaptToSection(generateChain(style, key.mode, mood, length), section, key)
-  const parsed = decorateProgression(tokens.map(parseToken), style, mood)
+  const decorated = decorateProgression(tokens.map(parseToken), style, mood)
+  const { chords: parsed, invertedIndices } = applyVoiceLeadingBass(decorated, style)
 
   const chords = parsed.map((c) => chordName(c, key))
   const romanNumerals = parsed.map((c) => c.token)
@@ -60,9 +133,37 @@ function generateOne(params: GenerateParams): GeneratedProgression {
     romanNumerals,
     bassMovement: describeBassMovement(parsed, key),
     description: buildDescription(style, mood, section, features),
-    scores: computeScores(features, style, section, mood),
+    scores: computeScores(features),
+    beats: computeHarmonicRhythm(parsed.length, style, invertedIndices, features.cadence),
     createdAt: new Date().toISOString(),
   }
+}
+
+/**
+ * 常に4拍固定だった和声のリズムに緩急を作る。声部進行で転回した経過的な
+ * コードは短く軽く通過させ、機能和声的にしっかり着地する終止は長く持たせて
+ * 「一度和声を引いてから解放する」呼吸を生む。REPETITIVE_STYLESは
+ * 均等な反復そのものが持ち味のスタイルなので対象外とする。
+ */
+function computeHarmonicRhythm(
+  length: number,
+  style: StyleId,
+  invertedIndices: Set<number>,
+  cadence: CadenceType,
+): number[] {
+  const beats = Array.from({ length }, () => 4)
+  if (REPETITIVE_STYLES.has(style)) return beats
+
+  for (const i of invertedIndices) {
+    if (chance(0.7)) beats[i] = 2
+  }
+
+  const lastIdx = length - 1
+  if (lastIdx > 0 && (cadence === "authentic" || cadence === "plagal") && chance(0.6)) {
+    beats[lastIdx] = 8
+  }
+
+  return beats
 }
 
 /** CHORD_ENGINE_SPEC §6 のセクションルールでテンプレートを変形する */

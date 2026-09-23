@@ -10,7 +10,7 @@ export type StyleId =
   | "romanticDark"
   | "cinematic"
   | "newWave"
-  | "symphonicRock"
+  | "sadcorePop"
   | "ritual"
   | "finale"
   | "cool"

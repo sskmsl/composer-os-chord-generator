@@ -1,14 +1,23 @@
 import type { MoodId, RuleSection, SectionId, StyleId } from "@/types/music"
 import { sectionRule } from "@/types/music"
-import type { Features } from "./scoring"
+import type { CadenceType, Features } from "./scoring"
 import { pick } from "./random"
+
+/** 終止の型ごとの一言解説(音楽理論用語+効果の説明) */
+const CADENCE_LABELS: Record<CadenceType, string> = {
+  authentic: "完全終止(V→I)でしっかり着地",
+  half: "半終止(Vで止め)、続きへの期待を残す",
+  deceptive: "偽終止(Vから意外な和音へ)、予想を外して耳を引く",
+  plagal: "変終止(IV→I)で、教会的な穏やかな着地",
+  modal: "機能和声に頼らない、旋法的・借用和音的な着地",
+}
 
 const STYLE_OPENERS: Record<StyleId, string[]> = {
   ethereal: ["霧の中を漂うような浮遊感のある進行。", "輪郭の溶けた透明な響き。", "重力から解き放たれたような進行。"],
   romanticDark: ["夜の官能をまとった暗いロマンスの進行。", "優雅さと影が同居する進行。", "ビロードのような暗い甘さを持つ進行。"],
   cinematic: ["スクリーンが広がるような映画的な進行。", "情景が立ち上がるドラマティックな進行。", "カメラが引いていくような壮大さを持つ進行。"],
   newWave: ["シンセの脈動が似合う80s的な進行。", "機械的でありながら感情的な進行。", "ドライブ感のあるニューウェイヴ進行。"],
-  symphonicRock: ["オーケストラとバンドが交差する重厚な進行。", "ゴシックな力強さを持つ進行。", "劇場の幕が上がるような進行。"],
+  sadcorePop: ["黄金時代のハリウッド映画が持つ、色褪せた郷愁の進行。", "煌びやかさの奥に退廃を滲ませる、ノスタルジックな進行。", "美しく朽ちていくような、シネマティックな哀愁を纏う進行。"],
   ritual: ["儀式のように反復する旋法的な進行。", "古代的な神秘をまとう進行。", "催眠的なドローンの上を漂う進行。"],
   finale: ["最後のサビへ向かう解放の進行。", "暗闇の後の光のようなカタルシスを持つ進行。", "エンドロールにふさわしい進行。"],
   cool: ["ランウェイを歩くような洗練された進行。", "無駄を削ぎ落としたクールな質感の進行。", "都会の夜に似合うスタイリッシュな進行。"],
@@ -45,28 +54,41 @@ const SECTION_CLOSERS: Record<RuleSection, string[]> = {
   outro: ["余韻を残したまま景色をフェードさせます。", "終わりきらない残響を漂わせます。"],
 }
 
+/**
+ * 検出された特徴を「際立ち度」順に並べる。終止の解決/未解決については
+ * ここでは触れない(下の cadence の一文だけが担当する)。同じことを
+ * 別の言い方で二重に言ったり、矛盾した内容が並んだりしないようにするため。
+ */
+function collectFeaturePhrases(f: Features): string[] {
+  const phrases: string[] = []
+  if (f.hasAug) phrases.push("オーギュメントの浮遊する違和感")
+  if (f.hasBII) phrases.push("bII の翳り")
+  if (f.hasDim) phrases.push("ディミニッシュの不穏な影")
+  // 1箇所だけならこの語彙圏では珍しくないので、複数箇所で初めて「際立った特徴」として挙げる
+  if (f.chromaticInnerSteps >= 2) phrases.push("内声がにじむように半音で動く気配")
+  if (f.hasBviBviiTonic) phrases.push("bVI→bVII→i の映画的な上昇")
+  if (f.hasSlash) phrases.push("スラッシュベースの滑らかな声部連結")
+  if (f.pedalBass) phrases.push("持続するペダルベース")
+  if (f.descendingBass) phrases.push("下降するベースライン")
+  if (f.ascendingBass) phrases.push("上昇していくベースの推進力")
+  if (f.chromaticInnerSteps === 0 && f.commonToneStrength >= 1.4) phrases.push("共通音でつながる滑らかな接続")
+  if (f.softColorCount >= 2) phrases.push("add9/maj7 の柔らかな色彩")
+  return phrases
+}
+
 export function buildDescription(
   style: StyleId,
   mood: MoodId,
   section: SectionId,
   f: Features,
 ): string {
-  const featurePhrases: string[] = []
-  if (f.descendingBass) featurePhrases.push("下降するベースライン")
-  if (f.ascendingBass) featurePhrases.push("上昇していくベースの推進力")
-  if (f.pedalBass) featurePhrases.push("持続するペダルベース")
-  if (f.hasBviBviiTonic) featurePhrases.push("bVI→bVII→i の映画的な上昇")
-  if (f.hasBII) featurePhrases.push("bII の翳り")
-  if (f.hasDim) featurePhrases.push("ディミニッシュの不穏な影")
-  if (f.hasSlash) featurePhrases.push("スラッシュベースの滑らかな声部連結")
-  if (f.softColorCount >= 2) featurePhrases.push("add9/maj7 の柔らかな色彩")
-  if (f.endsUnresolved) featurePhrases.push("解決しない終止")
-  else if (f.dominantPrep) featurePhrases.push("ドミナントからの確かな解決")
+  // ランダムに1つ拾うのではなく、際立った特徴を上から最大2つ具体的に挙げる
+  const picked = collectFeaturePhrases(f).slice(0, 2)
 
   const middle =
-    featurePhrases.length > 0
-      ? `${pick(featurePhrases)}が${MOOD_PHRASES[mood]}を描き、`
+    picked.length > 0
+      ? `${picked.join("と")}が${MOOD_PHRASES[mood]}を描き、`
       : `${MOOD_PHRASES[mood]}をたたえながら、`
 
-  return `${pick(STYLE_OPENERS[style])}${middle}${pick(SECTION_CLOSERS[sectionRule(section)])}`
+  return `${pick(STYLE_OPENERS[style])}${middle}${pick(SECTION_CLOSERS[sectionRule(section)])}終止は${CADENCE_LABELS[f.cadence]}。`
 }

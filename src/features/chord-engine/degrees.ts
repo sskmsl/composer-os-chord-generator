@@ -43,7 +43,7 @@ const FLAT_KEYS = new Set([
   "D-minor", "G-minor", "C-minor", "F-minor", "Bb-minor", "Eb-minor",
 ])
 
-const TOKEN_RE = /^([b#]?)(i{1,3}|iv|v|vi{0,2}|I{1,3}|IV|V|VI{0,2})((?:maj7|add9|m9|m11|7sus4|sus2|sus4|dim|11|7|6|ø)?)$/
+const TOKEN_RE = /^([b#]?)(i{1,3}|iv|v|vi{0,2}|I{1,3}|IV|V|VI{0,2})((?:maj7|add9|m9|m11|7sus4|sus2|sus4|dim|aug|11|7|6|ø)?)$/
 
 export function parseToken(token: string): ParsedChord {
   const [main, bassPart] = token.replace(/[()]/g, "").split("/")
@@ -109,6 +109,9 @@ export function chordName(parsed: ParsedChord, key: MusicKey): string {
     case "dim":
       quality = "dim"
       break
+    case "aug":
+      quality = "aug"
+      break
     case "ø":
       quality = "m7b5"
       break
@@ -152,4 +155,89 @@ export function chordName(parsed: ParsedChord, key: MusicKey): string {
 
 export function bassNoteName(parsed: ParsedChord, key: MusicKey): string {
   return noteName(bassPc(parsed, key), key)
+}
+
+/**
+ * サフィックスからルート起点の構成音(半音インターバル)を返す。
+ * chordName() の quality 判定と対になる、声部進行分析(共通音・半音進行)用の
+ * 共有ユーティリティ。実際の再生用ボイシング(audio/chordSymbols.ts)とは
+ * 独立しているが、和音の定義は一致させてある。
+ */
+export function chordIntervals(parsed: ParsedChord): number[] {
+  const { suffix, lower } = parsed
+  switch (suffix) {
+    case "dim":
+      return [0, 3, 6]
+    case "ø":
+      return [0, 3, 6, 10]
+    case "aug":
+      return [0, 4, 8]
+    case "maj7":
+      return lower ? [0, 3, 7, 11] : [0, 4, 7, 11]
+    case "add9":
+      return lower ? [0, 3, 7, 14] : [0, 4, 7, 14]
+    case "m9":
+      return [0, 3, 7, 10, 14]
+    case "m11":
+      return [0, 3, 7, 10, 14, 17]
+    case "11":
+      return lower ? [0, 3, 7, 10, 14, 17] : [0, 4, 7, 10, 14, 17]
+    case "sus2":
+      return [0, 2, 7]
+    case "sus4":
+      return [0, 5, 7]
+    case "7sus4":
+      return [0, 5, 7, 10]
+    case "7":
+      return lower ? [0, 3, 7, 10] : [0, 4, 7, 10]
+    case "6":
+      return lower ? [0, 3, 7, 9] : [0, 4, 7, 9]
+    default:
+      return lower ? [0, 3, 7] : [0, 4, 7]
+  }
+}
+
+/** キーのトニックを基準にした、和音の構成音(スラッシュベース含む)のピッチクラス集合 */
+export function chordPitchClasses(parsed: ParsedChord): number[] {
+  const rootSemi = degreeSemitone(parsed.acc, parsed.roman)
+  const pcs = new Set(chordIntervals(parsed).map((iv) => (rootSemi + iv) % 12))
+  pcs.add(bassSemitoneOf(parsed))
+  return [...pcs]
+}
+
+/** 響きの根拠となるベース音(スラッシュがあればそちら)のピッチクラス */
+export function bassSemitoneOf(parsed: ParsedChord): number {
+  return parsed.bass
+    ? degreeSemitone(parsed.bass.acc, parsed.bass.roman)
+    : degreeSemitone(parsed.acc, parsed.roman)
+}
+
+/** ベース以外の構成音(内声+上声)のピッチクラス集合。内声の半音進行判定に使う */
+export function upperPitchClasses(parsed: ParsedChord): number[] {
+  const bass = bassSemitoneOf(parsed)
+  return chordPitchClasses(parsed).filter((pc) => pc !== bass)
+}
+
+/**
+ * 半音(0〜11)から、進行内で使われている表記慣習に沿ったディグリー表記へ変換する。
+ * (bII/bIII/#IV/bVI/bVII は既存テンプレートで使われている借用和音の綴りと一致させてある)
+ * 転回形のベース音(和音の3度・5度)をディグリー記号として表すための共有ユーティリティ。
+ */
+const SEMITONE_TO_DEGREE: { acc: number; roman: string }[] = [
+  { acc: 0, roman: "I" },
+  { acc: -1, roman: "II" },
+  { acc: 0, roman: "II" },
+  { acc: -1, roman: "III" },
+  { acc: 0, roman: "III" },
+  { acc: 0, roman: "IV" },
+  { acc: 1, roman: "IV" },
+  { acc: 0, roman: "V" },
+  { acc: -1, roman: "VI" },
+  { acc: 0, roman: "VI" },
+  { acc: -1, roman: "VII" },
+  { acc: 0, roman: "VII" },
+]
+
+export function degreeForSemitone(semitone: number): { acc: number; roman: string } {
+  return SEMITONE_TO_DEGREE[((semitone % 12) + 12) % 12]
 }
