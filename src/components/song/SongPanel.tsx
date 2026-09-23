@@ -17,6 +17,7 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { resolveTempo, songBarCount, songSections } from "@/features/midi/exportSong"
+import { toastWithUndo } from "@/lib/undoToast"
 import { usePlayerStore } from "@/store/usePlayerStore"
 import { useAppStore } from "@/store/useAppStore"
 import type { Folder } from "@/types/folder"
@@ -103,8 +104,8 @@ export function SongPanel({ folder }: { folder: Folder }) {
 
   const handleDelete = async (id: string, chords: string) => {
     try {
-      await deleteSaved(id)
-      toast.success(`「${chords}」を削除しました`)
+      const token = await deleteSaved(id)
+      toastWithUndo(`「${chords}」を削除しました`, token)
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "削除に失敗しました")
     }
@@ -248,6 +249,22 @@ export function SongPanel({ folder }: { folder: Folder }) {
                 >
                   {playingId === section.id ? "停止" : "試聴"}
                 </button>
+                <button
+                  type="button"
+                  aria-label="このセクションから曲の最後まで試聴"
+                  onClick={() =>
+                    playSequence(
+                      songPlayId,
+                      songSegments.map((s) => ({ chords: s.chords, beats: s.beats, style: s.style })),
+                      effectiveTempo,
+                      // 繰り返しを展開した並びでの、このセクションの最初の位置
+                      songSegments.findIndex((s) => s.id === section.id),
+                    )
+                  }
+                  className="shrink-0 rounded-md px-2 py-1 text-xs text-muted-foreground hover:bg-accent hover:text-foreground"
+                >
+                  ここから
+                </button>
                 <div className="flex shrink-0 items-center gap-1.5">
                   <Label className="text-xs text-muted-foreground">繰返</Label>
                   <Select
@@ -278,7 +295,7 @@ export function SongPanel({ folder }: { folder: Folder }) {
                 </Button>
                 <ConfirmDeleteDialog
                   title="セクションを削除しますか?"
-                  description={`「${section.chords.join(" – ")}」を曲の構成から削除します。この操作は取り消せません。`}
+                  description={`「${section.chords.join(" – ")}」を曲の構成から削除します。削除後しばらくは、通知の「元に戻す」で取り消せます。`}
                   onConfirm={() => void handleDelete(section.id, section.chords.join(" – "))}
                   trigger={
                     <Button

@@ -28,6 +28,7 @@ import { SavedProgressionCard } from "@/components/saved/SavedProgressionCard"
 import { SongPanel } from "@/components/song/SongPanel"
 import { STYLE_OPTIONS } from "@/features/chord-engine/templates"
 import { matchesQuery, SORT_OPTIONS, sortProgressions, type SortOrder } from "@/features/library/filterProgressions"
+import { toastWithUndo } from "@/lib/undoToast"
 import { useAppStore } from "@/store/useAppStore"
 import { cn } from "@/lib/utils"
 import type { Folder } from "@/types/folder"
@@ -62,8 +63,9 @@ export function SavedProgressionsPage() {
   const restoreFromBackup = useAppStore((s) => s.restoreFromBackup)
 
   const [searchParams, setSearchParams] = useSearchParams()
-  // ダッシュボードの「最近の曲」から ?folder=<id> で直接その曲を開けるようにする
-  const [filter, setFilterState] = useState<FolderFilter>(() => searchParams.get("folder") ?? "all")
+  // 選択中のフォルダはURL(?folder=<id>)が正。ダッシュボードの「最近の曲」から直接その曲を開け、
+  // 一覧を開いたままURLだけが変わった場合も表示が追従する
+  const filter: FolderFilter = searchParams.get("folder") ?? "all"
   const [query, setQueryState] = useState("")
   const [styleFilter, setStyleFilterState] = useState("all")
   const [sortOrder, setSortOrderState] = useState<SortOrder>("newest")
@@ -71,7 +73,6 @@ export function SavedProgressionsPage() {
   // 絞り込み・並び替えを変えたら、表示件数を最初の1ページに戻す
   const resetPage = () => setShownCount(PAGE_SIZE)
   const setFilter = (f: FolderFilter) => {
-    setFilterState(f)
     resetPage()
     setSearchParams(f === "all" ? {} : { folder: f }, { replace: true })
   }
@@ -125,8 +126,8 @@ export function SavedProgressionsPage() {
 
   const handleDelete = async (id: string, chords: string) => {
     try {
-      await deleteSaved(id)
-      toast.success(`「${chords}」を削除しました`)
+      const token = await deleteSaved(id)
+      toastWithUndo(`「${chords}」を削除しました`, token)
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "削除に失敗しました")
     }
@@ -285,9 +286,9 @@ export function SavedProgressionsPage() {
               description={`「${activeFolder.name}」を削除します。中の進行は削除されず、未分類に移動します。`}
               onConfirm={() => {
                 void deleteFolder(activeFolder.id)
-                  .then(() => {
+                  .then((token) => {
                     setFilter("all")
-                    toast.success("フォルダを削除しました")
+                    toastWithUndo("フォルダを削除しました", token)
                   })
                   .catch((e: unknown) =>
                     toast.error(e instanceof Error ? e.message : "削除に失敗しました"),
@@ -401,7 +402,7 @@ export function SavedProgressionsPage() {
               action={
                 <ConfirmDeleteDialog
                   title="進行を削除しますか?"
-                  description={`「${p.chords.join(" – ")}」を削除します。この操作は取り消せません。`}
+                  description={`「${p.chords.join(" – ")}」を削除します。削除後しばらくは、通知の「元に戻す」で取り消せます。`}
                   onConfirm={() => void handleDelete(p.id, p.chords.join(" – "))}
                   trigger={
                     <Button

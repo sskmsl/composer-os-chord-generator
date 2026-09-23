@@ -26,6 +26,8 @@ export interface SequenceOptions {
   onEnded: () => void
   /** セクションが切り替わるたびに、その番号(0始まり)を知らせる */
   onSegment?: (index: number) => void
+  /** このセクションから鳴らし始める(0始まり)。省略時は先頭から */
+  startIndex?: number
 }
 
 interface VoiceProfile {
@@ -234,23 +236,45 @@ function getVoice(style: StyleId): VoiceProfile {
   return { ...DEFAULT_VOICE, ...STYLE_VOICES[style] }
 }
 
+/** 先読みして予約しておく長さ(秒)。曲全体を一度に予約すると、長い曲で音源の数が膨らんで重くなる */
+const LOOKAHEAD_SECONDS = 6
+/** 先読みを補充する間隔(ミリ秒) */
+const SCHEDULER_INTERVAL_MS = 500
+
+interface ScheduledChord {
+  /** 再生開始からの秒数 */
+  at: number
+  dur: number
+  symbol: string
+  voice: VoiceProfile
+  segmentIndex: number
+}
+
 class ChordPlayer {
   private ctx: AudioContext | null = null
   private endTimer: number | null = null
-
-  private segmentTimers: number[] = []
+  private schedulerTimer: number | null = null
 
   async play(chords: string[], { bpm, style, onEnded, beats }: PlayOptions): Promise<void> {
     return this.playSequence([{ chords, beats, style }], { bpm, onEnded })
   }
 
-  /** 複数のセクションを1本のタイムラインとして続けて鳴らす(曲全体の試聴) */
-  async playSequence(segments: PlaySegment[], { bpm, onEnded, onSegment }: SequenceOptions): Promise<void> {
+  /**
+   * 複数のセクションを1本のタイムラインとして続けて鳴らす(曲全体の試聴)。
+   * startIndex を渡すと、そのセクションから鳴らし始める(onSegment には元の番号を知らせる)。
+   * 音は数秒先までを少しずつ予約するので、長い曲でも最初に重くならない。
+   */
+  async playSequence(
+    segments: PlaySegment[],
+    { bpm, onEnded, onSegment, startIndex = 0 }: SequenceOptions,
+  ): Promise<void> {
     this.stop()
 
     const ctx = new AudioContext()
     this.ctx = ctx
     await ctx.resume()
+    // resume を待つ間に停止・別の再生が始まっていたら何もしない
+    if (this.ctx !== ctx) return
 
     // マスターチェーン: コンプレッサー → マスターゲイン
     const master = ctx.createGain()
@@ -262,27 +286,46 @@ class ChordPlayer {
     master.connect(ctx.destination)
 
     const beatDur = 60 / bpm
-    const start = ctx.currentTime + 0.06
-
+    const timeline: ScheduledChord[] = []
+    const segmentStarts: { at: number; index: number }[] = []
     let elapsed = 0
     let lastRelease = DEFAULT_VOICE.release
     segments.forEach((segment, segmentIndex) => {
+      if (segmentIndex < startIndex) return
       const voice = getVoice(segment.style)
       lastRelease = voice.release
-      if (onSegment) {
-        const at = elapsed
-        this.segmentTimers.push(window.setTimeout(() => onSegment(segmentIndex), (at + 0.06) * 1000))
-      }
+      segmentStarts.push({ at: elapsed, index: segmentIndex })
       segment.chords.forEach((symbol, i) => {
         const dur = (segment.beats?.[i] ?? 4) * beatDur
-        const voicing = parseChordSymbol(symbol)
-        if (voicing) {
-          const t0 = start + elapsed
-          this.scheduleChord(ctx, compressor, voicing.bass, voicing.notes, t0, dur, voice)
-        }
+        timeline.push({ at: elapsed, dur, symbol, voice, segmentIndex })
         elapsed += dur
       })
     })
+
+    const start = ctx.currentTime + 0.06
+    let next = 0
+    let currentSegment = -1
+    const pump = () => {
+      if (this.ctx !== ctx) return
+      const now = ctx.currentTime - start
+      while (next < timeline.length && timeline[next].at < now + LOOKAHEAD_SECONDS) {
+        const chord = timeline[next]
+        const voicing = parseChordSymbol(chord.symbol)
+        if (voicing) {
+          this.scheduleChord(ctx, compressor, voicing.bass, voicing.notes, start + chord.at, chord.dur, chord.voice)
+        }
+        next += 1
+      }
+      if (onSegment) {
+        const playing = segmentStarts.filter((s) => s.at <= Math.max(0, now)).at(-1)
+        if (playing && playing.index !== currentSegment) {
+          currentSegment = playing.index
+          onSegment(playing.index)
+        }
+      }
+    }
+    pump()
+    this.schedulerTimer = window.setInterval(pump, SCHEDULER_INTERVAL_MS)
 
     const total = elapsed + lastRelease + 0.7 // リリースの余韻ぶん
     this.endTimer = window.setTimeout(() => {
@@ -358,8 +401,6 @@ class ChordPlayer {
   }
 
   stop(): void {
-    for (const timer of this.segmentTimers) clearTimeout(timer)
-    this.segmentTimers = []
     if (this.endTimer != null) {
       clearTimeout(this.endTimer)
       this.endTimer = null
@@ -368,6 +409,10 @@ class ChordPlayer {
   }
 
   private dispose(): void {
+    if (this.schedulerTimer != null) {
+      clearInterval(this.schedulerTimer)
+      this.schedulerTimer = null
+    }
     if (this.ctx) {
       void this.ctx.close().catch(() => {})
       this.ctx = null
