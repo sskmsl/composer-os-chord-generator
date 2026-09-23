@@ -27,8 +27,8 @@ export interface Features {
   largeArc: boolean
   /** 隣接コード間で共有される構成音の平均数(声部の滑らかさ・共通音の効果) */
   commonToneStrength: number
-  /** ベース以外の構成音が半音で動く箇所がある(内声の半音進行) */
-  chromaticInnerMotion: boolean
+  /** ベース以外の構成音が半音で動いた遷移の数(内声の半音進行) */
+  chromaticInnerSteps: number
   /** dim/bII/aug/借用/#IVなど、耳を引く"毒"の要素数 */
   surpriseCount: number
   /** 色彩和音も借用もスラッシュもペダルも意外性もない、教科書的で平板な進行 */
@@ -57,6 +57,37 @@ function bassSemitone(c: ParsedChord): number {
 function isDescStep(prev: number, cur: number): boolean {
   if (prev === cur) return false
   return (prev - cur + 12) % 12 <= 5
+}
+
+function shortestDistance(a: number, b: number): number {
+  const d = Math.abs(a - b) % 12
+  return Math.min(d, 12 - d)
+}
+
+/**
+ * 抜けていく声それぞれについて「最も近い、入ってくる声」との距離を貪欲法で求める。
+ * どの組み合わせでも半音差がありさえすれば true にすると、密度の高いコード
+ * (add9/m9等)同士では偶然の半音接近がほぼ必ず起きてしまい指標として機能しない。
+ * 実際に鳴らすなら選ぶはずの「一番近い相手」同士のペアだけを見て、
+ * その中に半音移動があるかどうかを判定する。
+ */
+function hasNearestNeighborHalfStep(departing: number[], arriving: number[]): boolean {
+  const remaining = [...arriving]
+  for (const p of departing) {
+    if (remaining.length === 0) break
+    let bestIdx = 0
+    let bestDist = shortestDistance(p, remaining[0])
+    for (let i = 1; i < remaining.length; i++) {
+      const d = shortestDistance(p, remaining[i])
+      if (d < bestDist) {
+        bestDist = d
+        bestIdx = i
+      }
+    }
+    if (bestDist === 1) return true
+    remaining.splice(bestIdx, 1)
+  }
+  return false
 }
 
 /** 末尾2和音の関係から終止の型を判定する(機能和声の一般的な分類。特定楽曲への依存なし) */
@@ -124,21 +155,20 @@ export function extractFeatures(chords: ParsedChord[], mode: Mode): Features {
 
   // 隣接コード間の共通音(声部の滑らかさ)と、内声(ベース以外)の半音進行を検出する
   let commonToneTotal = 0
-  let chromaticInnerMotion = false
+  let chromaticInnerSteps = 0
   for (let i = 1; i < chords.length; i++) {
     const prevAll = chordPitchClasses(chords[i - 1])
     const curAll = chordPitchClasses(chords[i])
     commonToneTotal += prevAll.filter((pc) => curAll.includes(pc)).length
 
+    // 「実際にそこにあった声」が半音で動いた場合だけを数える。共通音(=動いていない)を
+    // 除き、かつ「最も近い相手」同士のペアだけを見る。そうしないと密度の高いコード
+    // (add9/m9等)同士では偶然の半音接近がほぼ必ず起き、指標として意味をなさなくなる。
     const prevUpper = upperPitchClasses(chords[i - 1])
     const curUpper = upperPitchClasses(chords[i])
-    const hasHalfStep = prevUpper.some((p) =>
-      curUpper.some((q) => {
-        const diff = Math.abs(p - q)
-        return diff === 1 || diff === 11
-      }),
-    )
-    if (hasHalfStep) chromaticInnerMotion = true
+    const departing = prevUpper.filter((p) => !curUpper.includes(p))
+    const arriving = curUpper.filter((q) => !prevUpper.includes(q))
+    if (hasNearestNeighborHalfStep(departing, arriving)) chromaticInnerSteps++
   }
   const commonToneStrength = commonToneTotal / Math.max(1, chords.length - 1)
 
@@ -175,7 +205,7 @@ export function extractFeatures(chords: ParsedChord[], mode: Mode): Features {
     dominantPrep,
     largeArc: range >= 7,
     commonToneStrength,
-    chromaticInnerMotion,
+    chromaticInnerSteps,
     surpriseCount,
     plainDiatonic,
     overDecorated,
@@ -217,7 +247,7 @@ export function computeScores(
     (f.hasSlash ? 1 : 0) +
     (f.pedalBass ? 1 : 0) +
     (f.commonToneStrength >= 1.4 ? 1 : 0) +
-    (f.chromaticInnerMotion ? 1 : 0) +
+    (f.chromaticInnerSteps > 0 ? 1 : 0) +
     (idealSurprise ? 2 : 0) +
     (f.endsUnresolved ? 1 : 0) +
     (f.plainDiatonic ? -3 : 0) +
@@ -231,7 +261,7 @@ export function computeScores(
     Math.min(f.softColorCount, 2) +
     (f.descendingBass ? 1 : 0) +
     (f.endsUnresolved ? 1 : 0) +
-    (f.chromaticInnerMotion ? 1 : 0) +
+    (f.chromaticInnerSteps > 0 ? 1 : 0) +
     jitter()
 
   const darkness =
