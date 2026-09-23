@@ -127,9 +127,15 @@ export type MoodId =
 
 export type VariationCount = 5 | 10 | 20
 
-/** 進行のコード数(2〜5から選択) */
-export type ChordCount = 2 | 3 | 4 | 5
-export const CHORD_COUNT_OPTIONS: ChordCount[] = [2, 3, 4, 5]
+/** 進行のコード数(2〜5から選択)。8は「前半4コードで問い、同じ出だしの後半4コードで答える」8小節フレーズ */
+export type ChordCount = 2 | 3 | 4 | 5 | 8
+export const CHORD_COUNT_OPTIONS: ChordCount[] = [2, 3, 4, 5, 8]
+/** 前半(問い)+後半(答え)の8小節フレーズを表すコード数 */
+export const PERIOD_CHORD_COUNT = 8
+
+export function chordCountLabel(count: ChordCount): string {
+  return count === PERIOD_CHORD_COUNT ? "8小節(問いと答え)" : `${count}コード`
+}
 
 /** 実用重視のキーリスト(マイナー優先・一般的な綴りのみ) */
 export const MINOR_KEYS: MusicKey[] = [

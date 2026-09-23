@@ -28,6 +28,15 @@ vi.mock("@/features/storage/progressionRepository", () => ({
 vi.mock("@/features/sync/supabaseSync", () => ({
   pushFolder: vi.fn().mockResolvedValue(undefined),
   pushProgression: vi.fn().mockResolvedValue(undefined),
+  clearRemoteDeletions: vi.fn().mockResolvedValue(undefined),
+}))
+vi.mock("@/features/storage/deletionRepository", () => ({
+  deletionRepository: {
+    list: vi.fn().mockResolvedValue([]),
+    record: vi.fn().mockResolvedValue(undefined),
+    clear: vi.fn().mockResolvedValue(undefined),
+    replaceAll: vi.fn().mockResolvedValue(undefined),
+  },
 }))
 
 const { useAppStore } = await import("../useAppStore")
@@ -35,6 +44,8 @@ const { downloadBackup, parseBackup } = await import("@/features/storage/backup"
 const { folderRepository, progressionRepository } = await import(
   "@/features/storage/progressionRepository"
 )
+const { deletionRepository } = await import("@/features/storage/deletionRepository")
+const { clearRemoteDeletions } = await import("@/features/sync/supabaseSync")
 
 const INITIAL_STATE = useAppStore.getState()
 
@@ -122,6 +133,9 @@ describe("useAppStore: backup and restore", () => {
     expect(progressionRepository.replaceAll).toHaveBeenCalledWith([progression])
     expect(useAppStore.getState().folders).toEqual([folder])
     expect(useAppStore.getState().saved).toEqual([progression])
+    // 復元した項目は意図して戻したものなので、削除の記録を解除する(次の同期で消えないように)
+    expect(deletionRepository.clear).toHaveBeenCalledWith(["f1", "p1"])
+    expect(clearRemoteDeletions).toHaveBeenCalledWith(["f1", "p1"])
   })
 
   it("propagates a parseBackup validation error without touching local state", async () => {

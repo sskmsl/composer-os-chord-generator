@@ -1,5 +1,5 @@
 import type { MoodId, MusicKey, RuleSection, SectionId, StyleId } from "@/types/music"
-import { keyLabel, sectionRule } from "@/types/music"
+import { keyLabel, PERIOD_CHORD_COUNT, sectionRule } from "@/types/music"
 import { alignBeatsToBars, type GeneratedProgression } from "@/types/progression"
 import type { ParsedChord } from "./degrees"
 import { bassNoteName, buildToken, chordName, parseToken } from "./degrees"
@@ -8,6 +8,8 @@ import { buildDescription } from "./descriptions"
 import { chance, pick } from "./random"
 import { computeScores, extractFeatures, type CadenceType } from "./scoring"
 import {
+  cadentialTokens,
+  commonToneSubstitutes,
   matchesStyleSignature,
   openColors,
   rootKey,
@@ -16,7 +18,8 @@ import {
   tensionTokens,
   tonicTokens,
 } from "./styleGrammar"
-import { generateChain } from "./transitions"
+import { continuationsOf, generateChain } from "./transitions"
+import { featureTags, preferenceBonus, type PreferenceModel } from "@/features/preference/preferenceModel"
 import { applyVoiceLeadingBass } from "./voiceLeading"
 
 export interface GenerateParams {
@@ -27,6 +30,13 @@ export interface GenerateParams {
   count: number
   /** 進行のコード数(2〜5)。省略時は3〜5でランダムに揺らぐ */
   length?: number
+  /**
+   * 曲集(保存済みの進行)で既に使った骨格。同じ style×調 の保存済み進行から集めて渡すと、
+   * 同じ骨格の候補を減点し、数百曲作っても同じ進行の型に偏らないようにする。
+   */
+  usedSkeletons?: ReadonlySet<string>
+  /** 保存の傾向から学んだ好み。渡すと、好みに近い候補を順位で少し優遇する(表示する点数は変えない) */
+  preference?: PreferenceModel | null
 }
 
 /**
@@ -50,12 +60,15 @@ export function generateProgressions(params: GenerateParams): GeneratedProgressi
     const dedupKey = progression.chords.join("|")
     if (seen.has(dedupKey)) continue
     seen.add(dedupKey)
-    // そのスタイルの性格(シグネチャー)を欠いた候補は、点数に関わらず出さない
-    if (!matchesStyleSignature(params.style, progression.romanNumerals.map(parseToken), params.key.mode)) continue
+    // そのスタイルの性格(シグネチャー)を欠いた候補は、点数に関わらず出さない。
+    // 8小節フレーズは前半・後半それぞれが4コードの進行としてスタイルを満たすこと
+    const parsedChords = progression.romanNumerals.map(parseToken)
+    const halves = params.length === PERIOD_CHORD_COUNT ? [parsedChords.slice(0, 4), parsedChords.slice(4)] : [parsedChords]
+    if (!halves.every((half) => matchesStyleSignature(params.style, half, params.key.mode))) continue
     pool.push(progression)
   }
 
-  const selected = rankAndSelect(pool, params.style, params.key.mode, params.count)
+  const selected = rankAndSelect(pool, params.style, params.key.mode, params.count, params.usedSkeletons, params.preference)
   if (!REPETITIVE_STYLES.has(params.style)) {
     const bucket = skeletonBucket(params.style, params.key.mode)
     for (const p of selected) recordSkeleton(bucket, rootSkeletonOf(p.romanNumerals))
@@ -65,8 +78,8 @@ export function generateProgressions(params: GenerateParams): GeneratedProgressi
 
 /**
  * 骨格反復の抑制はstyle×調(=Markovの語彙プールと同じ単位)ごとに履歴を持つ。
- * ブラウザセッション中(タブを開いている間)だけ効く軽量な仕組みで、
- * 保存済みライブラリ全体との突き合わせまでは行わない。
+ * この履歴はブラウザセッション中(タブを開いている間)だけ効く。セッションをまたいだ
+ * 曲集全体の重複は、呼び出し側が渡す usedSkeletons(保存済み進行の骨格)で抑える。
  */
 const SKELETON_HISTORY_LIMIT = 40
 const skeletonHistory = new Map<string, string[]>()
@@ -84,6 +97,11 @@ export function rootSkeletonOf(romanNumerals: string[]): string {
       return accStr + (p.lower ? p.roman.toLowerCase() : p.roman)
     })
     .join("-")
+}
+
+/** セッション内の骨格履歴を消す(テストと、別セッションを模した計測用) */
+export function clearSessionSkeletonHistory(): void {
+  skeletonHistory.clear()
 }
 
 function recordSkeleton(bucket: string, skeleton: string): void {
@@ -108,14 +126,24 @@ function rankAndSelect(
   style: StyleId,
   mode: MusicKey["mode"],
   count: number,
+  usedSkeletons?: ReadonlySet<string>,
+  preference?: PreferenceModel | null,
 ): GeneratedProgression[] {
   // スコアは決定的な整数なので同点が多い。1未満の乱数を足して同点内の順序だけを
   // 揺らし、同じ条件で何度生成しても同じ顔ぶれに偏らないようにする
   // (異なる点数の大小関係は崩さない)。
+  // 減点: このセッションで直近に出した骨格は3点、曲集(保存済み)で使った骨格は2点
   const bucket = skeletonBucket(style, mode)
-  const penalty = (p: GeneratedProgression) =>
-    !REPETITIVE_STYLES.has(style) && wasRecentlyUsed(bucket, rootSkeletonOf(p.romanNumerals)) ? 3 : 0
-  const ranked = pool.map((p) => ({ p, rank: p.scores.boutonnat - penalty(p) + Math.random() * 0.99 }))
+  const penalty = (p: GeneratedProgression) => {
+    if (REPETITIVE_STYLES.has(style)) return 0
+    const skeleton = rootSkeletonOf(p.romanNumerals)
+    if (wasRecentlyUsed(bucket, skeleton)) return 3
+    return usedSkeletons?.has(skeleton) ? 2 : 0
+  }
+  const ranked = pool.map((p) => {
+    const personalFit = preferenceBonus(preference, p.featureTags ?? [])
+    return { p: preference ? { ...p, personalFit } : p, rank: p.scores.boutonnat - penalty(p) + personalFit + Math.random() * 0.99 }
+  })
   return ranked
     .sort((a, b) => b.rank - a.rank)
     .slice(0, count)
@@ -125,7 +153,12 @@ function rankAndSelect(
 function generateOne(params: GenerateParams): GeneratedProgression {
   const { key, style, section, mood, length } = params
 
-  const tokens = adaptToSection(generateChain(style, key.mode, mood, length), section, key, style)
+  const isPeriod = length === PERIOD_CHORD_COUNT
+  let tokens = isPeriod
+    ? buildPeriod(style, key.mode, mood, section)
+    : adaptToSection(generateChain(style, key.mode, mood, length), section, key, style)
+  // 8小節フレーズは「同じ出だし」自体が構造なので、代理和音で崩さない
+  if (!isPeriod && chance(SUBSTITUTION_PROBABILITY)) tokens = substituteOneChord(tokens, style, key.mode)
   const decorated = decorateProgression(tokens.map(parseToken), style, mood, key.mode)
   const { chords: parsed, invertedIndices } = applyVoiceLeadingBass(decorated, style)
 
@@ -143,11 +176,75 @@ function generateOne(params: GenerateParams): GeneratedProgression {
     mood,
     romanNumerals,
     bassMovement: describeBassMovement(parsed, key),
-    description: buildDescription(style, mood, section, features),
+    description: (isPeriod ? PERIOD_DESCRIPTION : "") + buildDescription(style, mood, section, features),
     scores: computeScores(features),
-    beats: computeHarmonicRhythm(parsed.length, style, invertedIndices, features.cadence),
+    featureTags: featureTags(features),
+    // 8小節フレーズは4小節+4小節の形そのものが構造なので、1和音=1小節に揃える
+    beats: isPeriod ? parsed.map(() => 4) : computeHarmonicRhythm(parsed.length, style, invertedIndices, features.cadence),
     createdAt: new Date().toISOString(),
   }
+}
+
+const PERIOD_DESCRIPTION = "前半4小節で問いかけ、同じ出だしの後半4小節で答える8小節フレーズ。"
+
+/** 次のセクションへつなぐため、8小節フレーズでも最後を解決させないセクション */
+const OPEN_ENDED_SECTIONS: RuleSection[] = ["intro", "preChorus", "breakdownChorus", "cMelody"]
+
+/** 指定した和音と根音が同じ候補を避けて選ぶ(候補がそれしか無ければそのまま選ぶ) */
+function pickAvoiding(candidates: string[], ...avoid: string[]): string {
+  const avoidRoots = new Set(avoid.map(rootKey))
+  const usable = candidates.filter((t) => !avoidRoots.has(rootKey(t)))
+  return pick(usable.length > 0 ? usable : candidates)
+}
+
+/**
+ * 8小節フレーズ(楽式でいう「楽節」)。前半4小節は次へ向かう和音で止めて「問い」とし、
+ * 後半4小節は同じ出だし2和音で始めて、最後にトニックへ着地して「答え」る。
+ * 次のセクションへつなぐ場面(Bメロ・Cメロ等)では、後半も前半と別の緊張の和音で止める。
+ * 和音はすべてそのスタイルのテンプレートと遷移表から選ぶ。
+ */
+function buildPeriod(style: StyleId, mode: MusicKey["mode"], mood: MoodId, section: SectionId): string[] {
+  const antecedent = generateChain(style, mode, mood, 4).slice(0, 4)
+  while (antecedent.length < 4) antecedent.push(pick(tensionTokens(style, mode)))
+  // 後半は前半の出だしで始まるので、出だし2和音が同じ根音なら、前半の終わりもそれと変えて3連続を防ぐ
+  const openingRepeats = rootKey(antecedent[0]) === rootKey(antecedent[1])
+  antecedent[3] = pickAvoiding(
+    tensionTokens(style, mode),
+    antecedent[2],
+    ...(openingRepeats ? [antecedent[0]] : []),
+  )
+
+  const tonicRoot = mode === "minor" ? "i" : "I"
+  const openEnded = OPEN_ENDED_SECTIONS.includes(sectionRule(section))
+  // 答えの3つ目: 着地するなら、そのスタイルでトニックの直前に置かれる和音(終止の準備)。
+  // 止めるなら、出だしからの自然な流れ(遷移表の続き)
+  const flow = continuationsOf(style, mode, antecedent[1]).filter((t) => rootKey(t) !== tonicRoot)
+  const approach = openEnded ? flow : cadentialTokens(style, mode)
+  const third = approach.length > 0 ? pickAvoiding(approach, antecedent[1]) : pickAvoiding(tensionTokens(style, mode), antecedent[1])
+  const endings = openEnded
+    ? tensionTokens(style, mode).filter((t) => rootKey(t) !== rootKey(antecedent[3]))
+    : tonicTokens(style, mode)
+  const last = pickAvoiding(endings.length > 0 ? endings : tensionTokens(style, mode), third)
+  return [...antecedent, antecedent[0], antecedent[1], third, last]
+}
+
+/** 生成した進行の1か所を代理和音へ差し替える確率 */
+const SUBSTITUTION_PROBABILITY = 0.35
+
+/**
+ * 進行の中ほど(先頭と末尾以外)の和音を1つ、同じスタイルの代理和音(共通音2つ以上)へ
+ * 差し替える。テンプレートの組み合わせだけでは骨格の種類に限りがあるため、流れと
+ * スタイルを保ったまま骨格の幅を広げる。前後と同じ根音になる候補は選ばない。
+ */
+function substituteOneChord(tokens: string[], style: StyleId, mode: MusicKey["mode"]): string[] {
+  if (tokens.length < 3) return tokens
+  const index = 1 + Math.floor(Math.random() * (tokens.length - 2))
+  const neighbours = new Set([rootKey(tokens[index - 1]), rootKey(tokens[index + 1])])
+  const candidates = commonToneSubstitutes(style, mode, tokens[index]).filter((t) => !neighbours.has(rootKey(t)))
+  if (candidates.length === 0) return tokens
+  const result = [...tokens]
+  result[index] = pick(candidates)
+  return result
 }
 
 /**

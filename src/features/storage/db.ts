@@ -1,12 +1,23 @@
 import { openDB, type DBSchema, type IDBPDatabase } from "idb"
 import type { SavedProgression } from "@/types/progression"
 import type { Folder } from "@/types/folder"
+import type { FeedbackRecord } from "@/features/preference/preferenceModel"
 
 const DB_NAME = "composer-os-chord-generator"
-const DB_VERSION = 2
+const DB_VERSION = 3
 
 export const PROGRESSION_STORE = "progressions"
 export const FOLDER_STORE = "folders"
+/** 表示した候補と保存の記録(好みの学習用)。この端末だけに置き、同期しない */
+export const FEEDBACK_STORE = "feedback"
+/** 削除の記録(tombstone)。別端末の古いデータから削除済みの項目が復活するのを防ぐ */
+export const DELETION_STORE = "deletions"
+
+export interface DeletionRecord {
+  id: string
+  kind: "progression" | "folder"
+  deletedAt: string
+}
 
 interface ChordGeneratorDB extends DBSchema {
   progressions: {
@@ -17,6 +28,15 @@ interface ChordGeneratorDB extends DBSchema {
   folders: {
     key: string
     value: Folder
+  }
+  feedback: {
+    key: string
+    value: FeedbackRecord
+    indexes: { "by-at": string }
+  }
+  deletions: {
+    key: string
+    value: DeletionRecord
   }
 }
 
@@ -31,6 +51,11 @@ export function getDb(): Promise<IDBPDatabase<ChordGeneratorDB>> {
       }
       if (oldVersion < 2) {
         db.createObjectStore(FOLDER_STORE, { keyPath: "id" })
+      }
+      if (oldVersion < 3) {
+        const store = db.createObjectStore(FEEDBACK_STORE, { keyPath: "id" })
+        store.createIndex("by-at", "at")
+        db.createObjectStore(DELETION_STORE, { keyPath: "id" })
       }
     },
   })

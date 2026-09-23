@@ -98,6 +98,15 @@ Node.js のインストールやターミナルは不要(ビルド時にElectron
   Composer Arrangerの通常のImportボタンから新規Composer Projectとして読み込める。
   ROLE識別子と日本語ラベルは両アプリで共通
 
+## クラウド同期(Supabase)の設定
+
+- 進行とフォルダは、ログインすると Supabase の `progressions` / `folders` テーブルと同期する
+- **削除の同期**: `supabase/chord-generator-deletions.sql` を Supabase の SQL Editor で1回実行すると、
+  削除の記録(`chord_deletions`)がクラウド経由で共有され、別の端末の古いデータから削除済みの進行・
+  フォルダが復活しなくなる。未実行でもアプリは動き、削除の記録はそれぞれの端末の中だけで働く
+- 記録は90日で消える。バックアップから復元した項目は削除の記録が解除される
+- 好みの学習用の記録(表示した候補と保存)は、その端末の IndexedDB だけに置き、同期しない
+
 ## アーキテクチャ
 
 ```

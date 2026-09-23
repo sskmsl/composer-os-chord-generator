@@ -1,10 +1,13 @@
 import { create } from "zustand"
-import { generateProgressions, type GenerateParams } from "@/features/chord-engine/generateProgressions"
+import { generateProgressions, rootSkeletonOf, type GenerateParams } from "@/features/chord-engine/generateProgressions"
 import { downloadComposerSongExchange } from "@/features/exchange/composerSongExchange"
 import { downloadSongSmf } from "@/features/midi/exportSong"
 import { downloadBackup, parseBackup } from "@/features/storage/backup"
+import { feedbackRepository } from "@/features/storage/feedbackRepository"
+import { learnPreference, type PreferenceModel } from "@/features/preference/preferenceModel"
 import { folderRepository, progressionRepository } from "@/features/storage/progressionRepository"
-import { pushFolder, pushProgression } from "@/features/sync/supabaseSync"
+import { clearRemoteDeletions, pushFolder, pushProgression } from "@/features/sync/supabaseSync"
+import { deletionRepository } from "@/features/storage/deletionRepository"
 import type { Folder } from "@/types/folder"
 import { createFolder as buildFolder } from "@/types/folder"
 import type { ChordCount, MoodId, MusicKey, SectionId, StyleId, VariationCount } from "@/types/music"
@@ -38,6 +41,13 @@ interface AppStore {
   saveProgression(generated: GeneratedProgression): Promise<void>
   updateSaved(id: string, patch: Partial<SavedProgression>): Promise<void>
   deleteSaved(id: string): Promise<void>
+
+  // 好みの学習(表示した候補と保存の記録から、順位の補正に使う)
+  /** 保存数が MIN_SAVES_FOR_PREFERENCE 未満の間は null */
+  preference: PreferenceModel | null
+  /** 学習に使える保存の記録数(画面で「あと何件で反映」を示す) */
+  feedbackSavedCount: number
+  refreshPreference(): Promise<void>
 
   // フォルダ(曲)
   folders: Folder[]
@@ -80,12 +90,20 @@ export const useAppStore = create<AppStore>((set, get) => ({
   },
 
   generate() {
-    const { params, results } = get()
-    const generateParams: GenerateParams = { ...params }
+    const { params, results, saved, preference } = get()
+    // 曲集(保存済み)で同じスタイル・調に使った骨格を渡し、数百曲作っても同じ型に偏らないようにする
+    const usedSkeletons = new Set(
+      saved
+        .filter((p) => p.style === params.style && p.mode === params.key.mode)
+        .map((p) => rootSkeletonOf(p.romanNumerals)),
+    )
+    const generateParams: GenerateParams = { ...params, usedSkeletons, preference }
+    const generated = generateProgressions(generateParams)
     set({
       previousResults: results.length > 0 ? results : get().previousResults,
-      results: generateProgressions(generateParams),
+      results: generated,
     })
+    void feedbackRepository.recordShown(generated)
   },
 
   restorePrevious() {
@@ -107,6 +125,7 @@ export const useAppStore = create<AppStore>((set, get) => ({
       saved.sort((a, b) => b.savedAt.localeCompare(a.savedAt))
       folders.sort((a, b) => a.createdAt.localeCompare(b.createdAt))
       set({ saved, folders, loaded: true, error: null })
+      void get().refreshPreference()
     } catch (e) {
       set({ error: e instanceof Error ? e.message : "読み込みに失敗しました", loaded: true })
     }
@@ -120,6 +139,19 @@ export const useAppStore = create<AppStore>((set, get) => ({
     set((state) => ({
       saved: state.saved.some((p) => p.id === entry.id) ? state.saved : [entry, ...state.saved],
     }))
+    await feedbackRepository.markSaved(generated)
+    void get().refreshPreference()
+  },
+
+  preference: null,
+  feedbackSavedCount: 0,
+
+  async refreshPreference() {
+    const records = await feedbackRepository.list()
+    set({
+      preference: learnPreference(records),
+      feedbackSavedCount: records.filter((r) => r.saved).length,
+    })
   },
 
   async updateSaved(id, patch) {
@@ -270,6 +302,12 @@ export const useAppStore = create<AppStore>((set, get) => ({
       folders: [...folders].sort((a, b) => a.createdAt.localeCompare(b.createdAt)),
     }
     set({ saved: sorted.saved, folders: sorted.folders })
+
+    // 復元した項目は意図して戻したものなので、過去の削除の記録を解除する
+    // (残っていると、次の同期で「削除済み」として再び消えてしまう)
+    const restoredIds = [...folders.map((f) => f.id), ...progressions.map((p) => p.id)]
+    await deletionRepository.clear(restoredIds)
+    void clearRemoteDeletions(restoredIds)
 
     // replaceAllはローカルのみの更新なので、次回ログイン同期でリモートの古い状態に
     // 上書きされないよう、復元した内容をリモートへも反映しておく(ベストエフォート)

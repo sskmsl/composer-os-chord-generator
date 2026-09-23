@@ -3,6 +3,7 @@ import { migrateSavedProgression } from "@/types/progression"
 import type { Folder } from "@/types/folder"
 import { migrateFolder } from "@/types/folder"
 import { FOLDER_STORE, getDb, PROGRESSION_STORE } from "./db"
+import { deletionRepository } from "./deletionRepository"
 import {
   deleteFolderRemote,
   deleteProgressionRemote,
@@ -35,7 +36,8 @@ export const progressionRepository = {
   async delete(id: string): Promise<void> {
     const db = await getDb()
     await db.delete(PROGRESSION_STORE, id)
-    void deleteProgressionRemote(id)
+    const tombstone = await deletionRepository.record(id, "progression")
+    void deleteProgressionRemote(tombstone)
   },
 
   /** リモートの内容でローカルを完全に置き換える(他端末からのログイン直後に使用) */
@@ -64,7 +66,8 @@ export const folderRepository = {
   async delete(id: string): Promise<void> {
     const db = await getDb()
     await db.delete(FOLDER_STORE, id)
-    void deleteFolderRemote(id)
+    const tombstone = await deletionRepository.record(id, "folder")
+    void deleteFolderRemote(tombstone)
   },
 
   /** リモートの内容でローカルを完全に置き換える(他端末からのログイン直後に使用) */

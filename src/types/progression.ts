@@ -30,6 +30,10 @@ export interface GeneratedProgression {
    * version 2)の startBeat / durationBeats にもそのまま反映される。
    */
   beats: number[]
+  /** 好みの学習に使う、進行の特徴タグ(preferenceModel.featureTags)。古いデータには無い */
+  featureTags?: string[]
+  /** 好みによる順位の補正値(-2〜+2)。学習前や古いデータには無い */
+  personalFit?: number
 }
 
 export const PROGRESSION_SCHEMA_VERSION = 5

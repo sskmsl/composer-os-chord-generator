@@ -33,16 +33,82 @@ const STYLE_OPENERS: Record<StyleId, string[]> = {
   kayokyoku: ["80年代の歌謡曲を思わせる、哀愁を帯びた美しい短調の進行。", "ドミナントへ向かう引力が、胸を締めつけるような郷愁を生む進行。", "夜の街と雨を思わせる、ノスタルジックなマイナー進行。"],
 }
 
-const MOOD_PHRASES: Record<MoodId, string> = {
-  melancholic: "静かな喪失感",
-  mysterious: "謎めいた気配",
-  romantic: "ロマンティックな熱",
-  dark: "深い闇の質感",
-  hopeful: "微かな希望の光",
-  dramatic: "劇的な感情の起伏",
-  floating: "浮遊する無重力感",
-  tense: "張り詰めた緊張",
-  dance: "都会的な高揚感",
+interface MoodPhrase {
+  text: string
+  /** この特徴を持つ進行でだけ使う表現。無ければ既定の表現 */
+  when?: (f: Features) => boolean
+}
+
+const unresolved = (f: Features) => f.endsUnresolved
+const softColors = (f: Features) => f.softColorCount >= 2
+
+/**
+ * ムードの表現。以前は1ムード1表現で、同じ条件で生成した5件がすべて「静かな喪失感」に
+ * なっていた。既定の表現に加え、進行の特徴に結びついた表現を持たせ、合うものから選ぶ。
+ */
+const MOOD_PHRASES: Record<MoodId, MoodPhrase[]> = {
+  melancholic: [
+    { text: "静かな喪失感" },
+    { text: "少しずつ沈んでいく哀しみ", when: (f) => f.descendingBass },
+    { text: "言葉にならない未練", when: unresolved },
+    { text: "柔らかく滲む切なさ", when: softColors },
+  ],
+  mysterious: [
+    { text: "謎めいた気配" },
+    { text: "得体の知れない揺らぎ", when: (f) => f.hasAug || f.hasDim },
+    { text: "霧の奥で続く低い囁き", when: (f) => f.pedalBass },
+    { text: "答えの出ない問い", when: unresolved },
+  ],
+  romantic: [
+    { text: "ロマンティックな熱" },
+    { text: "甘く溶けていく情感", when: softColors },
+    { text: "焦がれるような引力", when: (f) => f.hasV7 },
+    { text: "高まっていく想い", when: (f) => f.ascendingBass },
+  ],
+  dark: [
+    { text: "深い闇の質感" },
+    { text: "底知れない翳り", when: (f) => f.hasBII },
+    { text: "不穏に軋む闇", when: (f) => f.hasDim },
+    { text: "奈落へ降りていく重さ", when: (f) => f.descendingBass },
+  ],
+  hopeful: [
+    { text: "微かな希望の光" },
+    { text: "少しずつ開けていく視界", when: (f) => f.ascendingBass },
+    { text: "確かな光への着地", when: (f) => !f.endsUnresolved },
+    { text: "朝の光のような柔らかさ", when: softColors },
+  ],
+  dramatic: [
+    { text: "劇的な感情の起伏" },
+    { text: "大きく振れる感情の弧", when: (f) => f.largeArc },
+    { text: "スクリーンいっぱいに広がる高揚", when: (f) => f.hasBviBviiTonic },
+    { text: "引き絞られた緊張と解放", when: (f) => f.hasV7 },
+  ],
+  floating: [
+    { text: "浮遊する無重力感" },
+    { text: "地面から離れて漂う感覚", when: (f) => f.pedalBass },
+    { text: "輪郭の溶けた浮遊感", when: softColors },
+    { text: "着地しないままの漂い", when: unresolved },
+  ],
+  tense: [
+    { text: "張り詰めた緊張" },
+    { text: "軋むような緊迫", when: (f) => f.hasDim },
+    { text: "神経を逆撫でする半音の緊張", when: (f) => f.chromaticInnerSteps > 0 },
+    { text: "解けない緊張", when: unresolved },
+  ],
+  dance: [
+    { text: "都会的な高揚感" },
+    { text: "駆け上がる高揚", when: (f) => f.ascendingBass },
+    { text: "脈打つ反復の昂り", when: (f) => f.pedalBass },
+    { text: "前へ前へと押し出す推進力", when: (f) => f.hasV7 },
+  ],
+}
+
+/** 特徴に合う表現があれば主にそれを使い、ときどき既定の表現も混ぜる */
+function moodPhrase(mood: MoodId, f: Features): string {
+  const phrases = MOOD_PHRASES[mood]
+  const fitting = phrases.filter((p) => p.when?.(f))
+  if (fitting.length === 0 || Math.random() < 0.3) return phrases[0].text
+  return pick(fitting).text
 }
 
 const SECTION_CLOSERS: Record<RuleSection, string[]> = {
@@ -89,10 +155,8 @@ export function buildDescription(
   // ランダムに1つ拾うのではなく、際立った特徴を上から最大2つ具体的に挙げる
   const picked = collectFeaturePhrases(f).slice(0, 2)
 
-  const middle =
-    picked.length > 0
-      ? `${picked.join("と")}が${MOOD_PHRASES[mood]}を描き、`
-      : `${MOOD_PHRASES[mood]}をたたえながら、`
+  const moodText = moodPhrase(mood, f)
+  const middle = picked.length > 0 ? `${picked.join("と")}が${moodText}を描き、` : `${moodText}をたたえながら、`
 
   return `${pick(STYLE_OPENERS[style])}${middle}${pick(SECTION_CLOSERS[sectionRule(section)])}終止は${CADENCE_LABELS[f.cadence]}。`
 }

@@ -98,3 +98,24 @@ describe("buildDescription regression: no contradictory or redundant resolution 
     expect(checked).toBeGreaterThan(500)
   })
 })
+
+describe("ムード表現の選び分け", () => {
+  it("特徴に結びついた表現は、その特徴を持つ進行でだけ使う", () => {
+    for (let i = 0; i < 50; i++) {
+      // 特徴の無い進行では既定の表現だけ
+      expect(buildDescription("romanticDark", "melancholic", "verse", baseFeatures)).toContain("静かな喪失感")
+    }
+    const descending = { ...baseFeatures, descendingBass: true, plainDiatonic: false }
+    const seen = new Set<string>()
+    for (let i = 0; i < 80; i++) {
+      const text = buildDescription("romanticDark", "melancholic", "verse", descending)
+      for (const phrase of ["静かな喪失感", "少しずつ沈んでいく哀しみ", "言葉にならない未練", "柔らかく滲む切なさ"]) {
+        if (text.includes(phrase)) seen.add(phrase)
+      }
+    }
+    // 下降ベースの進行では「沈んでいく」表現が選ばれうるが、未解決・柔らかい色彩の表現は出ない
+    expect(seen.has("少しずつ沈んでいく哀しみ")).toBe(true)
+    expect(seen.has("言葉にならない未練")).toBe(false)
+    expect(seen.has("柔らかく滲む切なさ")).toBe(false)
+  })
+})

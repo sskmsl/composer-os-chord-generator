@@ -25,9 +25,14 @@ export function AppShell() {
         <header className="sticky top-0 z-40 border-b border-border/60 bg-background/80 pt-[env(safe-area-inset-top)] backdrop-blur">
           <div className="no-scrollbar mx-auto flex h-16 max-w-6xl items-center gap-4 overflow-x-auto px-4 sm:gap-8 sm:px-8">
             <NavLink to="/" className="flex shrink-0 items-center gap-2.5">
-              <span className="text-sm font-semibold tracking-[0.14em] whitespace-nowrap uppercase sm:text-base sm:tracking-[0.18em]">
+              {/* スマホ幅ではタイトルとメニューが収まらず「Saved」が画面外に押し出されていたため、短縮表記にする */}
+              <span className="hidden text-sm font-semibold tracking-[0.14em] whitespace-nowrap uppercase min-[440px]:inline sm:text-base sm:tracking-[0.18em]">
                 Chord Generator
               </span>
+              <span aria-hidden className="text-sm font-semibold tracking-[0.14em] min-[440px]:hidden">
+                CG
+              </span>
+              <span className="sr-only min-[440px]:hidden">Chord Generator</span>
             </NavLink>
             <nav className="flex shrink-0 items-center gap-1">
               {NAV_ITEMS.map((item) => (
