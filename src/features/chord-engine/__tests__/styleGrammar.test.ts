@@ -1,8 +1,8 @@
 import { describe, it, expect } from "vitest"
 import type { Mode, SectionId, StyleId } from "@/types/music"
 import { parseToken } from "../degrees"
-import { generateProgressions } from "../generateProgressions"
-import { matchesStyleSignature, rootKey, styleVocabulary } from "../styleGrammar"
+import { clearSessionSkeletonHistory, generateProgressions, rootSkeletonOf } from "../generateProgressions"
+import { commonToneSubstitutes, matchesStyleSignature, rootKey, styleVocabulary } from "../styleGrammar"
 import { STYLE_OPTIONS, STYLE_TEMPLATES } from "../templates"
 
 const MODES: Mode[] = ["minor", "major"]
@@ -130,5 +130,37 @@ describe("歌謡曲 (kayokyoku)", () => {
         expect(matchesStyleSignature("kayokyoku", parsed, mode)).toBe(true)
       }
     }
+  })
+})
+
+describe("骨格の重複対策(数百曲を前提)", () => {
+  it("代理和音は同じスタイルの語彙で、根音が違い、基本の3音を2つ以上共有する", () => {
+    const vocab = styleVocabulary("romanticDark", "minor")
+    const subs = commonToneSubstitutes("romanticDark", "minor", "i")
+    expect(subs.length).toBeGreaterThan(0)
+    for (const t of subs) {
+      expect(rootKey(t)).not.toBe("i")
+      expect(vocab.roots.has(rootKey(t))).toBe(true)
+    }
+    // i(A C E) と bIII(C E G)・bVI(F A C) は2音を共有する代理和音
+    expect(subs.map(rootKey)).toEqual(expect.arrayContaining(["bIII", "bVI"]))
+  })
+
+  it("曲集で使った骨格を渡すと、別セッションで繰り返し作っても骨格が分散する", () => {
+    const library: string[] = []
+    for (let i = 0; i < 60; i++) {
+      clearSessionSkeletonHistory()
+      const [top] = generateProgressions({
+        key: { tonic: "A", mode: "minor" },
+        style: "romanticDark",
+        section: "chorus",
+        mood: "melancholic",
+        count: 5,
+        usedSkeletons: new Set(library),
+      })
+      library.push(rootSkeletonOf(top.romanNumerals))
+    }
+    // 計測では60曲中およそ55種類。履歴なしでは200曲で平均82種類(1割前後が同じ骨格)だった
+    expect(new Set(library).size).toBeGreaterThanOrEqual(45)
   })
 })

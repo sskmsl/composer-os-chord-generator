@@ -1,5 +1,5 @@
 import { create } from "zustand"
-import { generateProgressions, type GenerateParams } from "@/features/chord-engine/generateProgressions"
+import { generateProgressions, rootSkeletonOf, type GenerateParams } from "@/features/chord-engine/generateProgressions"
 import { downloadComposerSongExchange } from "@/features/exchange/composerSongExchange"
 import { downloadSongSmf } from "@/features/midi/exportSong"
 import { downloadBackup, parseBackup } from "@/features/storage/backup"
@@ -80,8 +80,14 @@ export const useAppStore = create<AppStore>((set, get) => ({
   },
 
   generate() {
-    const { params, results } = get()
-    const generateParams: GenerateParams = { ...params }
+    const { params, results, saved } = get()
+    // 曲集(保存済み)で同じスタイル・調に使った骨格を渡し、数百曲作っても同じ型に偏らないようにする
+    const usedSkeletons = new Set(
+      saved
+        .filter((p) => p.style === params.style && p.mode === params.key.mode)
+        .map((p) => rootSkeletonOf(p.romanNumerals)),
+    )
+    const generateParams: GenerateParams = { ...params, usedSkeletons }
     set({
       previousResults: results.length > 0 ? results : get().previousResults,
       results: generateProgressions(generateParams),

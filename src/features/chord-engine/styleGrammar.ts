@@ -1,6 +1,6 @@
 import type { Mode, StyleId } from "@/types/music"
 import type { ParsedChord } from "./degrees"
-import { degreeSemitone, parseToken } from "./degrees"
+import { chordIntervals, degreeSemitone, parseToken } from "./degrees"
 import { STYLE_PREFS, STYLE_TEMPLATES } from "./templates"
 
 /**
@@ -97,6 +97,32 @@ export function spiceTokens(style: StyleId, mode: Mode): string[] {
 export function openColors(style: StyleId, lower: boolean): string[] {
   const prefs = STYLE_PREFS[style]
   return (lower ? prefs.minorColors : prefs.majorColors).filter((c) => c !== "aug")
+}
+
+/** 和音の基本の3音(根音・3度・5度)のピッチクラス。装飾やスラッシュベースは無視する */
+function triadPitchClasses(token: string): number[] {
+  const p = parseToken(token)
+  const root = degreeSemitone(p.acc, p.roman)
+  return chordIntervals({ ...p, bass: undefined })
+    .slice(0, 3)
+    .map((interval) => (root + interval) % 12)
+}
+
+/**
+ * 代理和音の候補: 同じスタイル・調のテンプレートに出てくる和音のうち、根音が違い、
+ * 基本の3音を2つ以上共有するもの(例: C と Am、F と Dm)。共通音が多いので和声の働きが近く、
+ * 差し替えても進行の流れを崩さずに骨格だけを変えられる。語彙はテンプレートの範囲に収まる。
+ */
+export function commonToneSubstitutes(style: StyleId, mode: Mode, token: string): string[] {
+  const root = rootKey(token)
+  const tones = triadPitchClasses(token)
+  return memoized(`subst-${style}-${mode}-${token}`, () =>
+    [...new Set(allTokens(style, mode))].filter((candidate) => {
+      if (rootKey(candidate) === root) return false
+      const shared = triadPitchClasses(candidate).filter((pc) => tones.includes(pc)).length
+      return shared >= 2
+    }),
+  )
 }
 
 /** V の和音に使ってよい装飾。テンプレートの V に付いているもの+長三和音用の装飾 */

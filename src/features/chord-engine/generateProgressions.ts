@@ -8,6 +8,7 @@ import { buildDescription } from "./descriptions"
 import { chance, pick } from "./random"
 import { computeScores, extractFeatures, type CadenceType } from "./scoring"
 import {
+  commonToneSubstitutes,
   matchesStyleSignature,
   openColors,
   rootKey,
@@ -27,6 +28,11 @@ export interface GenerateParams {
   count: number
   /** 進行のコード数(2〜5)。省略時は3〜5でランダムに揺らぐ */
   length?: number
+  /**
+   * 曲集(保存済みの進行)で既に使った骨格。同じ style×調 の保存済み進行から集めて渡すと、
+   * 同じ骨格の候補を減点し、数百曲作っても同じ進行の型に偏らないようにする。
+   */
+  usedSkeletons?: ReadonlySet<string>
 }
 
 /**
@@ -55,7 +61,7 @@ export function generateProgressions(params: GenerateParams): GeneratedProgressi
     pool.push(progression)
   }
 
-  const selected = rankAndSelect(pool, params.style, params.key.mode, params.count)
+  const selected = rankAndSelect(pool, params.style, params.key.mode, params.count, params.usedSkeletons)
   if (!REPETITIVE_STYLES.has(params.style)) {
     const bucket = skeletonBucket(params.style, params.key.mode)
     for (const p of selected) recordSkeleton(bucket, rootSkeletonOf(p.romanNumerals))
@@ -65,8 +71,8 @@ export function generateProgressions(params: GenerateParams): GeneratedProgressi
 
 /**
  * 骨格反復の抑制はstyle×調(=Markovの語彙プールと同じ単位)ごとに履歴を持つ。
- * ブラウザセッション中(タブを開いている間)だけ効く軽量な仕組みで、
- * 保存済みライブラリ全体との突き合わせまでは行わない。
+ * この履歴はブラウザセッション中(タブを開いている間)だけ効く。セッションをまたいだ
+ * 曲集全体の重複は、呼び出し側が渡す usedSkeletons(保存済み進行の骨格)で抑える。
  */
 const SKELETON_HISTORY_LIMIT = 40
 const skeletonHistory = new Map<string, string[]>()
@@ -84,6 +90,11 @@ export function rootSkeletonOf(romanNumerals: string[]): string {
       return accStr + (p.lower ? p.roman.toLowerCase() : p.roman)
     })
     .join("-")
+}
+
+/** セッション内の骨格履歴を消す(テストと、別セッションを模した計測用) */
+export function clearSessionSkeletonHistory(): void {
+  skeletonHistory.clear()
 }
 
 function recordSkeleton(bucket: string, skeleton: string): void {
@@ -108,13 +119,19 @@ function rankAndSelect(
   style: StyleId,
   mode: MusicKey["mode"],
   count: number,
+  usedSkeletons?: ReadonlySet<string>,
 ): GeneratedProgression[] {
   // スコアは決定的な整数なので同点が多い。1未満の乱数を足して同点内の順序だけを
   // 揺らし、同じ条件で何度生成しても同じ顔ぶれに偏らないようにする
   // (異なる点数の大小関係は崩さない)。
+  // 減点: このセッションで直近に出した骨格は3点、曲集(保存済み)で使った骨格は2点
   const bucket = skeletonBucket(style, mode)
-  const penalty = (p: GeneratedProgression) =>
-    !REPETITIVE_STYLES.has(style) && wasRecentlyUsed(bucket, rootSkeletonOf(p.romanNumerals)) ? 3 : 0
+  const penalty = (p: GeneratedProgression) => {
+    if (REPETITIVE_STYLES.has(style)) return 0
+    const skeleton = rootSkeletonOf(p.romanNumerals)
+    if (wasRecentlyUsed(bucket, skeleton)) return 3
+    return usedSkeletons?.has(skeleton) ? 2 : 0
+  }
   const ranked = pool.map((p) => ({ p, rank: p.scores.boutonnat - penalty(p) + Math.random() * 0.99 }))
   return ranked
     .sort((a, b) => b.rank - a.rank)
@@ -125,7 +142,8 @@ function rankAndSelect(
 function generateOne(params: GenerateParams): GeneratedProgression {
   const { key, style, section, mood, length } = params
 
-  const tokens = adaptToSection(generateChain(style, key.mode, mood, length), section, key, style)
+  let tokens = adaptToSection(generateChain(style, key.mode, mood, length), section, key, style)
+  if (chance(SUBSTITUTION_PROBABILITY)) tokens = substituteOneChord(tokens, style, key.mode)
   const decorated = decorateProgression(tokens.map(parseToken), style, mood, key.mode)
   const { chords: parsed, invertedIndices } = applyVoiceLeadingBass(decorated, style)
 
@@ -148,6 +166,25 @@ function generateOne(params: GenerateParams): GeneratedProgression {
     beats: computeHarmonicRhythm(parsed.length, style, invertedIndices, features.cadence),
     createdAt: new Date().toISOString(),
   }
+}
+
+/** 生成した進行の1か所を代理和音へ差し替える確率 */
+const SUBSTITUTION_PROBABILITY = 0.35
+
+/**
+ * 進行の中ほど(先頭と末尾以外)の和音を1つ、同じスタイルの代理和音(共通音2つ以上)へ
+ * 差し替える。テンプレートの組み合わせだけでは骨格の種類に限りがあるため、流れと
+ * スタイルを保ったまま骨格の幅を広げる。前後と同じ根音になる候補は選ばない。
+ */
+function substituteOneChord(tokens: string[], style: StyleId, mode: MusicKey["mode"]): string[] {
+  if (tokens.length < 3) return tokens
+  const index = 1 + Math.floor(Math.random() * (tokens.length - 2))
+  const neighbours = new Set([rootKey(tokens[index - 1]), rootKey(tokens[index + 1])])
+  const candidates = commonToneSubstitutes(style, mode, tokens[index]).filter((t) => !neighbours.has(rootKey(t)))
+  if (candidates.length === 0) return tokens
+  const result = [...tokens]
+  result[index] = pick(candidates)
+  return result
 }
 
 /**
