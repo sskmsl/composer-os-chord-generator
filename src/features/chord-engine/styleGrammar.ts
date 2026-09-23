@@ -1,6 +1,6 @@
 import type { Mode, StyleId } from "@/types/music"
 import type { ParsedChord } from "./degrees"
-import { parseToken } from "./degrees"
+import { degreeSemitone, parseToken } from "./degrees"
 import { STYLE_PREFS, STYLE_TEMPLATES } from "./templates"
 
 /**
@@ -130,6 +130,18 @@ const share = (chords: ParsedChord[], pred: (c: ParsedChord) => boolean) =>
   chords.filter(pred).length / chords.length
 const distinctRoots = (chords: ParsedChord[]) => new Set(chords.map(chordRoot)).size
 const colored = (c: ParsedChord) => c.suffix !== ""
+/** ルートが完全5度ずつ下る動き(例: iv → bVII → bIII)が連続する最大回数 */
+const fifthsDescent = (chords: ParsedChord[]) => {
+  let best = 0
+  let run = 0
+  for (let i = 1; i < chords.length; i++) {
+    const prev = degreeSemitone(chords[i - 1].acc, chords[i - 1].roman)
+    const cur = degreeSemitone(chords[i].acc, chords[i].roman)
+    run = (cur - prev + 12) % 12 === 5 ? run + 1 : 0
+    best = Math.max(best, run)
+  }
+  return best
+}
 
 /**
  * そのスタイルに「聞こえる」ための最低条件。語彙(styleVocabulary)に収まって
@@ -180,6 +192,11 @@ const STYLE_SIGNATURES: Record<StyleId, (chords: ParsedChord[], mode: Mode) => b
   frenchPop: (cs) =>
     cs.some((c) => isDominantSeventh(c) || c.suffix === "ø") &&
     share(cs, (c) => ["maj7", "7", "6", "m9", "ø"].includes(c.suffix)) >= 0.5,
+  // 和声的短音階のV・属七(I7/III7/VI7等)の引力か、5度ずつ下る循環があり、
+  // add9/sus2/m9等の現代的な色彩を使わない(三和音+7th/6th中心)
+  kayokyoku: (cs) =>
+    (cs.some((c) => isMajorV(c) || isDominantSeventh(c)) || fifthsDescent(cs) >= 2) &&
+    cs.every((c) => ["", "7", "6", "maj7", "ø", "sus4", "7sus4"].includes(c.suffix)),
 }
 
 export function matchesStyleSignature(style: StyleId, chords: ParsedChord[], mode: Mode): boolean {

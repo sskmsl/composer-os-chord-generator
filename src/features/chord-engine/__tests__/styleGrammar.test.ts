@@ -120,3 +120,15 @@ describe("new styles", () => {
     }
   })
 })
+
+describe("歌謡曲 (kayokyoku)", () => {
+  it("always has a dominant pull (V / dominant seventh) or a descending-fifths chain, with no modern colors", () => {
+    for (const mode of MODES) {
+      for (const p of generateAll("kayokyoku", mode)) {
+        const parsed = p.romanNumerals.map(parseToken)
+        expect(parsed.every((c) => ["", "7", "6", "maj7", "ø", "sus4", "7sus4"].includes(c.suffix)), p.romanNumerals.join(" ")).toBe(true)
+        expect(matchesStyleSignature("kayokyoku", parsed, mode)).toBe(true)
+      }
+    }
+  })
+})

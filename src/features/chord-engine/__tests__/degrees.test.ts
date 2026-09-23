@@ -4,6 +4,7 @@ import {
   buildToken,
   chordIntervals,
   chordName,
+  chordToneDegree,
   chordPitchClasses,
   degreeForSemitone,
   degreeSemitone,
@@ -96,6 +97,25 @@ describe("chordName", () => {
 
   it("names a slash chord", () => {
     expect(chordName(parseToken("bVImaj7/i"), AM)).toBe("Fmaj7/A")
+  })
+})
+
+describe("chordToneDegree (inversion bass spelling)", () => {
+  it("spells the third of E7 in C major as G# (#V), not Ab (bVI)", () => {
+    const e7 = parseToken("III7")
+    const third = chordToneDegree(e7, 4)
+    expect(third).toEqual({ acc: 1, roman: "V" })
+    expect(chordName({ ...e7, bass: { ...third, raw: "#v" } }, C_MAJ)).toBe("E7/G#")
+  })
+
+  it("keeps flat spellings for tones of flatted chords (bVI in C major: C and Eb)", () => {
+    const bVI = parseToken("bVI")
+    expect(chordToneDegree(bVI, 4)).toEqual({ acc: 0, roman: "I" })
+    expect(chordToneDegree(bVI, 7)).toEqual({ acc: -1, roman: "III" })
+  })
+
+  it("spells the third of V7 in A minor as the leading tone G# (VII)", () => {
+    expect(chordToneDegree(parseToken("V7"), 4)).toEqual({ acc: 0, roman: "VII" })
   })
 })
 

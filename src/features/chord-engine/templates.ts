@@ -396,6 +396,33 @@ export const STYLE_TEMPLATES: Record<StyleId, Record<Mode, string[][]>> = {
       ["IVmaj7", "V7", "iii7", "VI7"],
     ],
   },
+  kayokyoku: {
+    // 1980年代の歌謡曲・ニューミュージックの哀愁。和声的短音階のV7(導音を持つ
+    // 属七)で主和音へ強く引き戻し、主和音を長三和音化した I7 で iv へ流れ込む。
+    // 5度ずつ下る循環(iv → bVII → bIII → bVI → iiø → V7)と下降ベースで、
+    // 泣きの旋律が乗る土台を作る。色彩は三和音+7th/6th中心で、add9等の現代的な
+    // 響きには頼らない。
+    minor: [
+      ["i", "iv", "V7", "i"],
+      ["i", "I7", "iv", "V7"],
+      ["iv", "bVII", "bIII", "bVI"],
+      ["bVI", "iiø", "V7", "i"],
+      ["i", "v/bVII", "bVI", "V7"],
+      ["i", "bVI", "iv6", "V7"],
+      ["bIII", "bVII", "bVI", "V7"],
+      ["i", "iv", "bVII", "bIII"],
+    ],
+    major: [
+      ["IVmaj7", "V7", "iii7", "vi"],
+      ["vi", "ii7", "V7", "Imaj7"],
+      ["I", "III7", "vi", "IV"],
+      ["vi", "VI7", "ii", "V7"],
+      ["IV", "V", "iii", "vi"],
+      ["IVmaj7", "III7", "vi", "V7"],
+      ["vi", "IV", "V", "I"],
+      ["I", "V/VII", "vi", "III7"],
+    ],
+  },
 }
 
 /** スタイルごとの標準テンポ(BPM)。試聴とMIDI書き出しのデフォルトに使う */
@@ -417,6 +444,7 @@ export const STYLE_TEMPO: Record<StyleId, number> = {
   electronica: 100,
   slowcore: 60,
   frenchPop: 104,
+  kayokyoku: 84,
 }
 
 export const STYLE_OPTIONS: { value: StyleId; label: string; tagline: string }[] = [
@@ -437,6 +465,7 @@ export const STYLE_OPTIONS: { value: StyleId; label: string; tagline: string }[]
   { value: "electronica", label: "Electronica", tagline: "7th系パッドのループ・解決しない浮遊感" },
   { value: "slowcore", label: "Sadcore / Slowcore", tagline: "遅く静かに、少ない三和音で沈んでいく" },
   { value: "frenchPop", label: "French Pop", tagline: "maj7と循環コード・洒脱で軽やかな憂い" },
+  { value: "kayokyoku", label: "歌謡曲", tagline: "80年代ニューミュージックの哀愁・泣きの短調" },
 ]
 
 interface StylePrefs {
@@ -560,6 +589,13 @@ export const STYLE_PREFS: Record<StyleId, StylePrefs> = {
     slashProb: 0.15,
     minorColors: ["7", "7", "6"],
     majorColors: ["maj7", "maj7", "6"],
+  },
+  kayokyoku: {
+    // 装飾は控えめ。短調の和音にm7/m6、長調の和音にmaj7を時々
+    decorationProb: 0.3,
+    slashProb: 0.2,
+    minorColors: ["7", "6"],
+    majorColors: ["maj7"],
   },
 }
 

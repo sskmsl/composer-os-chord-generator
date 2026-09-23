@@ -245,3 +245,24 @@ const SEMITONE_TO_DEGREE: { acc: number; roman: string }[] = [
 export function degreeForSemitone(semitone: number): { acc: number; roman: string } {
   return SEMITONE_TO_DEGREE[((semitone % 12) + 12) % 12]
 }
+
+const ROMAN_ORDER = ["I", "II", "III", "IV", "V", "VI", "VII"]
+/** 根音からの半音数 → 何度上の音か(3度=2ステップ、5度=4ステップ等) */
+const INTERVAL_STEPS = [0, 1, 1, 2, 2, 3, 4, 4, 4, 5, 6, 6]
+
+/**
+ * コードの構成音(転回形のベース等)を、そのコードの根音から数えた度数で綴る。
+ * 例: Cメジャーの III7(E7)の3度は bVI(Ab)ではなく #V(G#)。
+ * 半音数だけから度数を決めると、♭の付いた度数を♭で綴る規則により E7/Ab のような
+ * 誤った表記になるため、根音の文字から3度・5度…上の文字を使う。
+ */
+export function chordToneDegree(root: { acc: number; roman: string }, interval: number): { acc: number; roman: string } {
+  const rootIndex = ROMAN_ORDER.indexOf(root.roman)
+  const semitone = (degreeSemitone(root.acc, root.roman) + interval) % 12
+  if (rootIndex < 0) return degreeForSemitone(semitone)
+  const roman = ROMAN_ORDER[(rootIndex + INTERVAL_STEPS[((interval % 12) + 12) % 12]) % 7]
+  const diff = (semitone - degreeSemitone(0, roman) + 12) % 12
+  const acc = diff === 0 ? 0 : diff === 1 ? 1 : diff === 11 ? -1 : null
+  // 重嬰・重変になる場合だけは半音数からの綴りに戻す
+  return acc === null ? degreeForSemitone(semitone) : { acc, roman }
+}

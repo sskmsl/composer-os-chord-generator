@@ -1,6 +1,6 @@
 import type { StyleId } from "@/types/music"
 import type { ParsedChord } from "./degrees"
-import { bassSemitoneOf, buildToken, chordIntervals, degreeForSemitone, degreeSemitone } from "./degrees"
+import { bassSemitoneOf, buildToken, chordIntervals, chordToneDegree, degreeSemitone } from "./degrees"
 import { STYLE_PREFS } from "./templates"
 import { chance } from "./random"
 
@@ -43,7 +43,8 @@ export function applyVoiceLeadingBass(chords: ParsedChord[], style: StyleId): Vo
     }
 
     if (best !== rootSemi && chance(prob)) {
-      const deg = degreeForSemitone(best)
+      // ベースはコードの構成音として綴る(Cメジャーの E7 の3度は Ab ではなく G#)
+      const deg = chordToneDegree(cur, (best - rootSemi + 12) % 12)
       const accStr = deg.acc === -1 ? "b" : deg.acc === 1 ? "#" : ""
       cur.bass = { acc: deg.acc, roman: deg.roman, raw: `${accStr}${deg.roman.toLowerCase()}` }
       cur.token = buildToken(cur)
