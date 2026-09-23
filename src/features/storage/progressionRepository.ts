@@ -1,6 +1,7 @@
 import type { SavedProgression } from "@/types/progression"
 import { migrateSavedProgression } from "@/types/progression"
 import type { Folder } from "@/types/folder"
+import { migrateFolder } from "@/types/folder"
 import { FOLDER_STORE, getDb, PROGRESSION_STORE } from "./db"
 import {
   deleteFolderRemote,
@@ -50,7 +51,8 @@ export const progressionRepository = {
 export const folderRepository = {
   async list(): Promise<Folder[]> {
     const db = await getDb()
-    return db.getAll(FOLDER_STORE)
+    const items = await db.getAll(FOLDER_STORE)
+    return items.map(migrateFolder)
   },
 
   async save(folder: Folder): Promise<void> {

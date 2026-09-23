@@ -1,7 +1,7 @@
 import { toast } from "sonner"
 import { supabase } from "@/lib/supabase"
 import { folderRepository, progressionRepository } from "@/features/storage/progressionRepository"
-import type { Folder } from "@/types/folder"
+import { migrateFolder, type Folder } from "@/types/folder"
 import { migrateSavedProgression, type SavedProgression } from "@/types/progression"
 
 const FOLDERS_TABLE = "folders"
@@ -121,17 +121,20 @@ export async function syncPullAndReconcile(): Promise<void> {
   ])
   if (folderErr || progErr) throw folderErr ?? progErr
 
-  const remoteFolders = (remoteFoldersRaw ?? []).map((r) => r.data as Folder)
-  // リモートは古いバージョンのアプリから書かれた形式(例: beatsフィールドが無い)の
-  // 可能性があるため、ローカルと同じくmigrateSavedProgressionを通して揃える
+  // リモートは古いバージョンのアプリから書かれた形式(例: Folderにupdated Atが無い、
+  // SavedProgressionにbeatsが無い等)の可能性があるため、ローカルと同じく
+  // 移行関数を通して揃えてからマージする
+  const remoteFolders = (remoteFoldersRaw ?? []).map((r) => migrateFolder(r.data as Folder))
   const remoteProgressions = (remoteProgressionsRaw ?? []).map((r) =>
     migrateSavedProgression(r.data as SavedProgression),
   )
 
-  // フォルダには更新日時がないため、両方に存在する場合はリモートを正とする
-  // (既存の「リモートが正」という前提を、削除しない形に緩めただけ)
-  const mergedFolders = mergeById(localFolders, remoteFolders, () => true)
-  // 進行は savedAt を比較し、より新しい方を残す
+  // フォルダ・進行のどちらも updatedAt/savedAt を比較し、より新しい方を残す
+  const mergedFolders = mergeById(
+    localFolders,
+    remoteFolders,
+    (local, remote) => remote.updatedAt >= local.updatedAt,
+  )
   const mergedProgressions = mergeById(
     localProgressions,
     remoteProgressions,

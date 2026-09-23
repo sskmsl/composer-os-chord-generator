@@ -1,4 +1,4 @@
-import type { Folder } from "@/types/folder"
+import { migrateFolder, type Folder } from "@/types/folder"
 import { migrateSavedProgression, type SavedProgression } from "@/types/progression"
 
 /**
@@ -42,8 +42,8 @@ export function downloadBackup(folders: Folder[], progressions: SavedProgression
 
 /**
  * バックアップJSON文字列を検証しつつ読み込む。フォルダ・進行それぞれの中身までは
- * 厳密に検証しないが、古いバージョンのバックアップでも migrateSavedProgression を
- * 通すことで安全に復元できるようにする。
+ * 厳密に検証しないが、古いバージョンのバックアップでも移行関数(migrateFolder /
+ * migrateSavedProgression)を通すことで安全に復元できるようにする。
  */
 export function parseBackup(text: string): { folders: Folder[]; progressions: SavedProgression[] } {
   let data: unknown
@@ -66,7 +66,7 @@ export function parseBackup(text: string): { folders: Folder[]; progressions: Sa
   }
 
   return {
-    folders: record.folders as Folder[],
+    folders: (record.folders as Folder[]).map(migrateFolder),
     progressions: (record.progressions as SavedProgression[]).map(migrateSavedProgression),
   }
 }

@@ -3,7 +3,12 @@ import { buildBackup, parseBackup, BACKUP_FORMAT, BACKUP_VERSION } from "../back
 import type { Folder } from "@/types/folder"
 import type { SavedProgression } from "@/types/progression"
 
-const folder: Folder = { id: "f1", name: "Test Song", createdAt: "2024-01-01T00:00:00.000Z" }
+const folder: Folder = {
+  id: "f1",
+  name: "Test Song",
+  createdAt: "2024-01-01T00:00:00.000Z",
+  updatedAt: "2024-01-01T00:00:00.000Z",
+}
 
 const progression: SavedProgression = {
   id: "p1",
@@ -66,5 +71,13 @@ describe("parseBackup validation", () => {
     const backup = { format: BACKUP_FORMAT, version: 1, exportedAt: "x", folders: [folder], progressions: [legacy] }
     const restored = parseBackup(JSON.stringify(backup))
     expect(restored.progressions[0].beats).toEqual([4, 4])
+  })
+
+  it("migrates legacy (pre-updatedAt) folders found inside an old backup", () => {
+    const legacy = { ...folder } as Partial<Folder>
+    delete legacy.updatedAt
+    const backup = { format: BACKUP_FORMAT, version: 1, exportedAt: "x", folders: [legacy], progressions: [progression] }
+    const restored = parseBackup(JSON.stringify(backup))
+    expect(restored.folders[0].updatedAt).toBe(folder.createdAt)
   })
 })

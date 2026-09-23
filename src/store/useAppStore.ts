@@ -159,7 +159,7 @@ export const useAppStore = create<AppStore>((set, get) => ({
     if (trimmed === "") throw new Error("フォルダ名を入力してください")
     const folder = get().folders.find((f) => f.id === id)
     if (!folder) throw new Error("フォルダが見つかりません")
-    const updated = { ...folder, name: trimmed }
+    const updated = { ...folder, name: trimmed, updatedAt: new Date().toISOString() }
     await folderRepository.save(updated)
     set({ folders: get().folders.map((f) => (f.id === id ? updated : f)) })
   },
@@ -185,7 +185,7 @@ export const useAppStore = create<AppStore>((set, get) => ({
   async setFolderTempo(id, tempo) {
     const folder = get().folders.find((f) => f.id === id)
     if (!folder) throw new Error("フォルダが見つかりません")
-    const updated = { ...folder, tempo }
+    const updated = { ...folder, tempo, updatedAt: new Date().toISOString() }
     await folderRepository.save(updated)
     set({ folders: get().folders.map((f) => (f.id === id ? updated : f)) })
   },
@@ -193,7 +193,7 @@ export const useAppStore = create<AppStore>((set, get) => ({
   async setFolderMemo(id, memo) {
     const folder = get().folders.find((f) => f.id === id)
     if (!folder) throw new Error("フォルダが見つかりません")
-    const updated = { ...folder, memo }
+    const updated = { ...folder, memo, updatedAt: new Date().toISOString() }
     await folderRepository.save(updated)
     set({ folders: get().folders.map((f) => (f.id === id ? updated : f)) })
   },
