@@ -77,6 +77,15 @@ describe("chordName", () => {
     expect(chordName(parseToken("bVII"), AM)).toBe("G")
   })
 
+  it("spells flatted degrees with flats even in a sharp-spelled key (C major bVII is Bb, not A#)", () => {
+    expect(chordName(parseToken("bVII"), C_MAJ)).toBe("Bb")
+    expect(chordName(parseToken("bIIImaj7"), C_MAJ)).toBe("Ebmaj7")
+    expect(chordName(parseToken("bVI"), C_MAJ)).toBe("Ab")
+    expect(chordName(parseToken("i/bVII"), AM)).toBe("Am/G")
+    // ♯の付いた度数は♯で綴る
+    expect(chordName(parseToken("#ivdim"), C_MAJ)).toBe("F#dim")
+  })
+
   it("names extended and altered qualities", () => {
     expect(chordName(parseToken("i(add9)"), AM)).toBe("Am(add9)")
     expect(chordName(parseToken("V7"), AM)).toBe("E7")

@@ -85,8 +85,12 @@ export function degreeSemitone(acc: number, roman: string): number {
   return (base + acc + 12) % 12
 }
 
-function noteName(pc: number, key: MusicKey): string {
-  const useFlats = FLAT_KEYS.has(`${key.tonic}-${key.mode}`)
+/**
+ * @param acc 度数に付いた臨時記号。♭の付いた度数(bVII等)は調に関わらず♭で、
+ *   ♯の付いた度数(#iv等)は♯で綴る。Cメジャーの bVII が "A#" ではなく "Bb" になる。
+ */
+function noteName(pc: number, key: MusicKey, acc = 0): string {
+  const useFlats = acc === -1 || (acc === 0 && FLAT_KEYS.has(`${key.tonic}-${key.mode}`))
   return (useFlats ? FLAT_NAMES : SHARP_NAMES)[pc]
 }
 
@@ -103,7 +107,7 @@ export function bassPc(parsed: ParsedChord, key: MusicKey): number {
 
 /** 実コード名を生成する(例: F#m(add9), Dmaj7/F#) */
 export function chordName(parsed: ParsedChord, key: MusicKey): string {
-  const root = noteName(rootPc(parsed, key), key)
+  const root = noteName(rootPc(parsed, key), key, parsed.acc)
   let quality: string
   switch (parsed.suffix) {
     case "dim":
@@ -148,13 +152,13 @@ export function chordName(parsed: ParsedChord, key: MusicKey): string {
   }
   let name = root + quality
   if (parsed.bass) {
-    name += "/" + noteName(bassPc(parsed, key), key)
+    name += "/" + noteName(bassPc(parsed, key), key, parsed.bass.acc)
   }
   return name
 }
 
 export function bassNoteName(parsed: ParsedChord, key: MusicKey): string {
-  return noteName(bassPc(parsed, key), key)
+  return noteName(bassPc(parsed, key), key, parsed.bass?.acc ?? parsed.acc)
 }
 
 /**

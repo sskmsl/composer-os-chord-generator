@@ -1,6 +1,7 @@
-import type { MoodId, StyleId } from "@/types/music"
+import type { Mode, MoodId, StyleId } from "@/types/music"
 import type { ParsedChord } from "./degrees"
 import { buildToken } from "./degrees"
+import { dominantColors } from "./styleGrammar"
 import { MOOD_PROFILES, STYLE_PREFS } from "./templates"
 import { chance, pick } from "./random"
 
@@ -12,6 +13,7 @@ export function decorateProgression(
   chords: ParsedChord[],
   style: StyleId,
   mood: MoodId,
+  mode: Mode,
 ): ParsedChord[] {
   const prefs = STYLE_PREFS[style]
   const moodColors = MOOD_PROFILES[mood].colors
@@ -24,8 +26,9 @@ export function decorateProgression(
       result.suffix === "" && !["dim", "ø"].includes(result.suffix)
 
     if (canDecorate && chance(prefs.decorationProb)) {
+      // V もスタイル共通の装飾ではなく、そのスタイルが V に付ける装飾から選ぶ
       const base = isDominant
-        ? ["sus4", "7", "7sus4"]
+        ? dominantColors(style, mode)
         : result.lower
           ? prefs.minorColors
           : prefs.majorColors

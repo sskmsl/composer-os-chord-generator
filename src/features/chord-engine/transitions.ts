@@ -12,6 +12,8 @@ import { chance, pick } from "./random"
 interface TransitionData {
   /** 進行の先頭になりうるトークン(元テンプレートの1つ目の要素) */
   starts: string[]
+  /** 末尾以外の全トークン。2コードの進行はテンプレート中の任意の隣接ペアから作る */
+  inner: string[]
   /** ルート度数 → 続きうる次のトークン群(頻度がそのまま重みになる) */
   table: Record<string, string[]>
 }
@@ -27,15 +29,17 @@ function rootOf(token: string): string {
 
 function buildTransitionTable(templates: string[][]): TransitionData {
   const starts: string[] = []
+  const inner: string[] = []
   const table: Record<string, string[]> = {}
   for (const template of templates) {
     starts.push(template[0])
     for (let i = 0; i < template.length - 1; i++) {
+      inner.push(template[i])
       const from = rootOf(template[i])
       ;(table[from] ??= []).push(template[i + 1])
     }
   }
-  return { starts, table }
+  return { starts, inner, table }
 }
 
 const cache = new Map<string, TransitionData>()
@@ -58,8 +62,10 @@ function walk(starts: string[], table: Record<string, string[]>, affinity: strin
   let current = pick(starts)
   const chain = [current]
   while (chain.length < targetLen) {
-    const candidates = table[rootOf(current)]
-    if (!candidates || candidates.length === 0) break
+    // 同じ和音が3回続くと反復ではなく停滞に聞こえるため、2回までに抑える
+    const repeating = chain.length >= 2 && rootOf(chain[chain.length - 2]) === rootOf(current)
+    const candidates = (table[rootOf(current)] ?? []).filter((c) => !repeating || rootOf(c) !== rootOf(current))
+    if (candidates.length === 0) break
     const preferred = candidates.filter((c) => affinity.some((a) => c.includes(a)))
     const pool = preferred.length > 0 && chance(0.5) ? preferred : candidates
     current = pick(pool)
@@ -70,9 +76,11 @@ function walk(starts: string[], table: Record<string, string[]>, affinity: strin
 
 /** @param length 指定するとその長さちょうどを狙って生成する(行き止まりに備えて複数回試行) */
 export function generateChain(style: StyleId, mode: Mode, mood: MoodId, length?: number): string[] {
-  const { starts, table } = getTransitionData(style, mode)
+  const { starts: templateStarts, inner, table } = getTransitionData(style, mode)
   const affinity = MOOD_PROFILES[mood].affinity
   const targetLen = length ?? pick(CHAIN_LENGTHS)
+  // 2コードは先頭ペアだけだと組み合わせが少なすぎ、同じ候補ばかりになる
+  const starts = targetLen <= 2 ? inner : templateStarts
 
   let best: string[] = []
   for (let attempt = 0; attempt < 25; attempt++) {
