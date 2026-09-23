@@ -217,3 +217,27 @@ export function upperPitchClasses(parsed: ParsedChord): number[] {
   const bass = bassSemitoneOf(parsed)
   return chordPitchClasses(parsed).filter((pc) => pc !== bass)
 }
+
+/**
+ * 半音(0〜11)から、進行内で使われている表記慣習に沿ったディグリー表記へ変換する。
+ * (bII/bIII/#IV/bVI/bVII は既存テンプレートで使われている借用和音の綴りと一致させてある)
+ * 転回形のベース音(和音の3度・5度)をディグリー記号として表すための共有ユーティリティ。
+ */
+const SEMITONE_TO_DEGREE: { acc: number; roman: string }[] = [
+  { acc: 0, roman: "I" },
+  { acc: -1, roman: "II" },
+  { acc: 0, roman: "II" },
+  { acc: -1, roman: "III" },
+  { acc: 0, roman: "III" },
+  { acc: 0, roman: "IV" },
+  { acc: 1, roman: "IV" },
+  { acc: 0, roman: "V" },
+  { acc: -1, roman: "VI" },
+  { acc: 0, roman: "VI" },
+  { acc: -1, roman: "VII" },
+  { acc: 0, roman: "VII" },
+]
+
+export function degreeForSemitone(semitone: number): { acc: number; roman: string } {
+  return SEMITONE_TO_DEGREE[((semitone % 12) + 12) % 12]
+}

@@ -1,7 +1,16 @@
 import type { MoodId, RuleSection, SectionId, StyleId } from "@/types/music"
 import { sectionRule } from "@/types/music"
-import type { Features } from "./scoring"
+import type { CadenceType, Features } from "./scoring"
 import { pick } from "./random"
+
+/** 終止の型ごとの一言解説(音楽理論用語+効果の説明) */
+const CADENCE_LABELS: Record<CadenceType, string> = {
+  authentic: "完全終止(V→I)でしっかり着地",
+  half: "半終止(Vで止め)、続きへの期待を残す",
+  deceptive: "偽終止(Vから意外な和音へ)、予想を外して耳を引く",
+  plagal: "変終止(IV→I)で、教会的な穏やかな着地",
+  modal: "機能和声に頼らない、旋法的・借用和音的な着地",
+}
 
 const STYLE_OPENERS: Record<StyleId, string[]> = {
   ethereal: ["霧の中を漂うような浮遊感のある進行。", "輪郭の溶けた透明な響き。", "重力から解き放たれたような進行。"],
@@ -71,5 +80,5 @@ export function buildDescription(
       ? `${pick(featurePhrases)}が${MOOD_PHRASES[mood]}を描き、`
       : `${MOOD_PHRASES[mood]}をたたえながら、`
 
-  return `${pick(STYLE_OPENERS[style])}${middle}${pick(SECTION_CLOSERS[sectionRule(section)])}`
+  return `${pick(STYLE_OPENERS[style])}${middle}${pick(SECTION_CLOSERS[sectionRule(section)])}終止は${CADENCE_LABELS[f.cadence]}。`
 }

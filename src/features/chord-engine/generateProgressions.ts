@@ -8,6 +8,7 @@ import { buildDescription } from "./descriptions"
 import { chance, pick } from "./random"
 import { computeScores, extractFeatures } from "./scoring"
 import { generateChain } from "./transitions"
+import { applyVoiceLeadingBass } from "./voiceLeading"
 
 export interface GenerateParams {
   key: MusicKey
@@ -47,7 +48,8 @@ function generateOne(params: GenerateParams): GeneratedProgression {
   const { key, style, section, mood, length } = params
 
   const tokens = adaptToSection(generateChain(style, key.mode, mood, length), section, key)
-  const parsed = decorateProgression(tokens.map(parseToken), style, mood)
+  const decorated = decorateProgression(tokens.map(parseToken), style, mood)
+  const parsed = applyVoiceLeadingBass(decorated, style)
 
   const chords = parsed.map((c) => chordName(c, key))
   const romanNumerals = parsed.map((c) => c.token)

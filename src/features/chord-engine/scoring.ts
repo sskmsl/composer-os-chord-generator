@@ -35,7 +35,16 @@ export interface Features {
   plainDiatonic: boolean
   /** 装飾・借用・意外性が詰め込まれすぎて、シンプルさを失っている */
   overDecorated: boolean
+  /** 終止の型(理論的な説明・分析用) */
+  cadence: CadenceType
 }
+
+/**
+ * 終止の型。 authentic=完全終止(V→I) / half=半終止(Vで止める) /
+ * deceptive=偽終止(Vから予想外の和音へ) / plagal=変終止(IV→I) /
+ * modal=機能和声に依らない終止(旋法的・借用和音的な着地)
+ */
+export type CadenceType = "authentic" | "half" | "deceptive" | "plagal" | "modal"
 
 const COLOR_SUFFIXES = ["add9", "maj7", "m9", "m11", "11", "sus2", "sus4", "7sus4", "6", "aug"]
 const SOFT_COLORS = ["add9", "maj7", "m9", "m11", "11"]
@@ -48,6 +57,25 @@ function bassSemitone(c: ParsedChord): number {
 function isDescStep(prev: number, cur: number): boolean {
   if (prev === cur) return false
   return (prev - cur + 12) % 12 <= 5
+}
+
+/** 末尾2和音の関係から終止の型を判定する(機能和声の一般的な分類。特定楽曲への依存なし) */
+function detectCadence(chords: ParsedChord[], minor: boolean): CadenceType {
+  if (chords.length < 2) return "modal"
+  const last = chords[chords.length - 1]
+  const prev = chords[chords.length - 2]
+  const lastSemi = degreeSemitone(last.acc, last.roman)
+  const prevSemi = degreeSemitone(prev.acc, prev.roman)
+
+  const lastIsTonic = lastSemi === 0 && last.lower === minor
+  const lastIsDominant = !last.lower && lastSemi === 7
+  const prevIsDominant = !prev.lower && prevSemi === 7
+  const prevIsSubdominant = prevSemi === 5 && prev.lower === minor
+
+  if (lastIsDominant) return "half"
+  if (prevIsDominant) return lastIsTonic ? "authentic" : "deceptive"
+  if (prevIsSubdominant && lastIsTonic) return "plagal"
+  return "modal"
 }
 
 export function extractFeatures(chords: ParsedChord[], mode: Mode): Features {
@@ -151,6 +179,7 @@ export function extractFeatures(chords: ParsedChord[], mode: Mode): Features {
     surpriseCount,
     plainDiatonic,
     overDecorated,
+    cadence: detectCadence(chords, minor),
   }
 }
 
