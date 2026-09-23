@@ -3,7 +3,8 @@ import { STYLE_TEMPO } from "@/features/chord-engine/templates"
 import type { Folder } from "@/types/folder"
 import { SECTION_OPTIONS } from "@/types/music"
 import type { SavedProgression } from "@/types/progression"
-import { buildSmf, TICKS_PER_QUARTER, type MidiMarker, type MidiNote } from "./smf"
+import type { Mode } from "@/types/music"
+import { buildSmf, TICKS_PER_QUARTER, type MidiKeySignature, type MidiMarker, type MidiNote } from "./smf"
 
 /** 1拍(4分音符)のtick数。既定は1コード=4拍=1小節だが、和声のリズムに合わせてコードごとに変える */
 const BEAT_TICKS = TICKS_PER_QUARTER
@@ -33,6 +34,23 @@ export function resolveTempo(folder: Folder, sections: SavedProgression[]): numb
   return first ? STYLE_TEMPO[first.style] : 90
 }
 
+const MAJOR_SIGNATURES: Record<string, number> = {
+  C: 0, G: 1, D: 2, A: 3, E: 4, B: 5, "F#": 6, "C#": 7,
+  F: -1, Bb: -2, Eb: -3, Ab: -4, Db: -5, Gb: -6, Cb: -7,
+}
+const MINOR_SIGNATURES: Record<string, number> = {
+  A: 0, E: 1, B: 2, "F#": 3, "C#": 4, "G#": 5, "D#": 6, "A#": 7,
+  D: -1, G: -2, C: -3, F: -4, Bb: -5, Eb: -6, Ab: -7,
+}
+
+/** "F#m" / "Bb" のようなキー表記から調号(♯・♭の数)を求める。不明なキーは null */
+export function keySignatureOf(key: string, mode: Mode): Omit<MidiKeySignature, "tick"> | null {
+  const tonic = key.trim().replace(/m$/, "")
+  const table = mode === "minor" ? MINOR_SIGNATURES : MAJOR_SIGNATURES
+  const sharpsFlats = table[tonic]
+  return sharpsFlats === undefined ? null : { sharpsFlats, minor: mode === "minor" }
+}
+
 function sectionLabel(p: SavedProgression): string {
   const label = SECTION_OPTIONS.find((s) => s.value === p.section)?.label ?? p.section
   return `${label} (${p.key})`
@@ -52,10 +70,17 @@ export function buildSongSmf(folder: Folder, progressions: SavedProgression[]): 
   const chordNotes: MidiNote[] = []
   const bassNotes: MidiNote[] = []
   const markers: MidiMarker[] = []
+  const keySignatures: MidiKeySignature[] = []
   let tick = 0
 
   for (const section of sections) {
     const repeat = Math.max(1, section.repeatCount)
+    // 調号は調が変わる位置にだけ置く(同じ調の連続では置かない)
+    const signature = keySignatureOf(section.key, section.mode)
+    const previous = keySignatures.at(-1)
+    if (signature && (!previous || previous.sharpsFlats !== signature.sharpsFlats || previous.minor !== signature.minor)) {
+      keySignatures.push({ tick, ...signature })
+    }
     for (let r = 0; r < repeat; r++) {
       // セクションマーカー(繰り返し2回目以降は #n を付す)
       markers.push({
@@ -87,6 +112,7 @@ export function buildSongSmf(folder: Folder, progressions: SavedProgression[]): 
     name: folder.name,
     tempoBpm: tempo,
     markers,
+    keySignatures,
     tracks: [
       // コンダクター側のマーカーだけでなく、各トラック自身にも同じラベルを
       // メモ書き(Text event)として埋め込み、そのトラックだけを見ても

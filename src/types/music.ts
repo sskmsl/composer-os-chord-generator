@@ -176,6 +176,11 @@ export function keyLabel(key: MusicKey): string {
   return key.mode === "minor" ? `${key.tonic}m` : key.tonic
 }
 
+/** keyLabel の逆("F#m" + minor → { tonic: "F#", mode: "minor" }) */
+export function keyFromLabel(label: string, mode: Mode): MusicKey {
+  return { tonic: label.trim().replace(/m$/, ""), mode }
+}
+
 export const SECTION_ROLE_LABELS: Record<SectionRole, string> = {
   intro: "イントロ",
   verse: "Aメロ",

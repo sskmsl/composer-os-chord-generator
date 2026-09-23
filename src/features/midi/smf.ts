@@ -84,10 +84,19 @@ export interface SmfTrack {
   textEvents?: MidiMarker[]
 }
 
+/** 調号(Key Signature)。sharpsFlats は ♯ の数(正)または ♭ の数(負) */
+export interface MidiKeySignature {
+  tick: number
+  sharpsFlats: number
+  minor: boolean
+}
+
 export interface SmfSong {
   name: string
   tempoBpm: number
   markers: MidiMarker[]
+  /** セクションごとの調号(調が変わる位置にだけ置く)。DAWや他アプリがキーを推定せずに読める */
+  keySignatures?: MidiKeySignature[]
   tracks: SmfTrack[]
 }
 
@@ -115,6 +124,11 @@ export function buildSmf(song: SmfSong): Uint8Array {
         microsecPerQuarter & 0xff,
       ]),
     },
+    ...(song.keySignatures ?? []).map((k) => ({
+      tick: k.tick,
+      order: 0,
+      data: metaEvent(0x59, [Math.max(-7, Math.min(7, k.sharpsFlats)) & 0xff, k.minor ? 1 : 0]),
+    })),
     ...song.markers.map((m) => ({
       tick: m.tick,
       order: 0,

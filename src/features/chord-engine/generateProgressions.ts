@@ -2,7 +2,7 @@ import type { MoodId, MusicKey, RuleSection, SectionId, StyleId } from "@/types/
 import { keyLabel, PERIOD_CHORD_COUNT, sectionRule } from "@/types/music"
 import { alignBeatsToBars, type GeneratedProgression } from "@/types/progression"
 import type { ParsedChord } from "./degrees"
-import { bassNoteName, buildToken, chordName, parseToken } from "./degrees"
+import { bassNoteName, buildToken, chordName, parseToken, tokenFromChordSymbol } from "./degrees"
 import { decorateProgression } from "./decorate"
 import { buildDescription } from "./descriptions"
 import { chance, pick } from "./random"
@@ -182,6 +182,49 @@ function generateOne(params: GenerateParams): GeneratedProgression {
     // 8小節フレーズは4小節+4小節の形そのものが構造なので、1和音=1小節に揃える
     beats: isPeriod ? parsed.map(() => 4) : computeHarmonicRhythm(parsed.length, style, invertedIndices, features.cadence),
     createdAt: new Date().toISOString(),
+  }
+}
+
+/**
+ * 手で書き換えたコード名から、度数表記・ベースの動き・説明文・スコアを計算し直す。
+ * コードだけ差し替えて他が元の進行のまま残ると、詳細画面の度数や点数が実際の響きと食い違うため。
+ * 解釈できないコードが1つでもあれば null。
+ */
+export function reanalyzeChords(
+  chords: string[],
+  params: { key: MusicKey; style: StyleId; mood: MoodId; section: SectionId },
+): Pick<GeneratedProgression, "romanNumerals" | "bassMovement" | "description" | "scores" | "featureTags"> | null {
+  const tokens = chords.map((chord) => tokenFromChordSymbol(chord, params.key))
+  if (tokens.some((token) => token === null)) return null
+  const parsed = (tokens as string[]).map(parseToken)
+  const features = extractFeatures(parsed, params.key.mode)
+  return {
+    romanNumerals: parsed.map((c) => c.token),
+    // ベースの音名は入力したコードの綴りのまま(Db を C# と書き換えない)
+    bassMovement: describeBassMovement(
+      parsed,
+      params.key,
+      chords.map((chord) => chord.split("/")[1]?.trim() || /^[A-G][#b]?/.exec(chord.trim())![0]),
+    ),
+    description: buildDescription(params.style, params.mood, params.section, features),
+    scores: computeScores(features),
+    featureTags: featureTags(features),
+  }
+}
+
+/**
+ * 保存した進行を別の調へ移す。度数(romanNumerals)はそのままに、コード名とベースの動きだけを
+ * 新しい調で作り直す(度数・スコア・説明文は調に依存しないので変わらない)。
+ */
+export function transposeProgression(
+  romanNumerals: string[],
+  key: MusicKey,
+): Pick<GeneratedProgression, "key" | "chords" | "bassMovement"> {
+  const parsed = romanNumerals.map(parseToken)
+  return {
+    key: keyLabel(key),
+    chords: parsed.map((c) => chordName(c, key)),
+    bassMovement: describeBassMovement(parsed, key),
   }
 }
 
@@ -389,8 +432,8 @@ function unresolveToken(token: string, style: StyleId, mode: MusicKey["mode"]): 
 }
 
 /** ベースの動きを音名列+輪郭ラベルで表現する */
-function describeBassMovement(parsed: ParsedChord[], key: MusicKey): string {
-  const names = parsed.map((c) => bassNoteName(c, key))
+function describeBassMovement(parsed: ParsedChord[], key: MusicKey, spelledNames?: string[]): string {
+  const names = spelledNames ?? parsed.map((c) => bassNoteName(c, key))
 
   let desc = 0
   let asc = 0

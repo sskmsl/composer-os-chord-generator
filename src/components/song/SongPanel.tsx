@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react"
 import { Link } from "react-router-dom"
-import { ChevronDown, ChevronUp, Copy, Download, FileJson, Music, Trash2 } from "lucide-react"
+import { ChevronDown, ChevronUp, Copy, Download, FileJson, Music, Play, Square, Trash2 } from "lucide-react"
 import { toast } from "sonner"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -37,10 +37,20 @@ export function SongPanel({ folder }: { folder: Folder }) {
   const duplicateSection = useAppStore((s) => s.duplicateSection)
   const play = usePlayerStore((s) => s.play)
   const playingId = usePlayerStore((s) => s.playingId)
+  const playSequence = usePlayerStore((s) => s.playSequence)
+  const playingSegment = usePlayerStore((s) => s.playingSegment)
 
   const sections = useMemo(() => songSections(folder, saved), [folder, saved])
   const bars = songBarCount(sections)
   const effectiveTempo = resolveTempo(folder, sections)
+  const songPlayId = `song:${folder.id}`
+  // 曲全体の試聴では繰り返しも展開して鳴らす。鳴っている箇所がどのセクションかを引くための対応表
+  const songSegments = useMemo(
+    () => sections.flatMap((section) => Array.from({ length: Math.max(1, section.repeatCount) }, () => section)),
+    [sections],
+  )
+  const playingSectionId =
+    playingId === songPlayId && playingSegment !== null ? songSegments[playingSegment]?.id ?? null : null
 
   const [tempoInput, setTempoInput] = useState(folder.tempo ? String(folder.tempo) : "")
   const [memoInput, setMemoInput] = useState(folder.memo ?? "")
@@ -137,6 +147,19 @@ export function SongPanel({ folder }: { folder: Folder }) {
               />
               <span className="text-xs text-muted-foreground">BPM</span>
             </div>
+            <Button
+              variant="outline"
+              onClick={() =>
+                playSequence(
+                  songPlayId,
+                  songSegments.map((s) => ({ chords: s.chords, beats: s.beats, style: s.style })),
+                  effectiveTempo,
+                )
+              }
+            >
+              {playingId === songPlayId ? <Square data-icon="inline-start" /> : <Play data-icon="inline-start" />}
+              {playingId === songPlayId ? "停止" : "曲全体を試聴"}
+            </Button>
             <Button onClick={handleExport}>
               <Download data-icon="inline-start" />
               MIDI書き出し
@@ -150,7 +173,7 @@ export function SongPanel({ folder }: { folder: Folder }) {
         <p className="text-xs text-muted-foreground">
           {sections.length}セクション / 約{bars}小節 · SMF Type 1 (.mid) · 和声のリズムは可変
           (基本4拍、経過和音は短く終止は長く) · Logic Proにインポート可能
-          {!folder.tempo && `(テンポ未設定のため ${effectiveTempo} BPM で書き出し)`}
+          {!folder.tempo && `(テンポ未設定のため ${effectiveTempo} BPM で試聴・書き出し)`}
         </p>
         <div className="flex flex-col gap-1.5">
           <Label htmlFor="song-memo" className="text-xs text-muted-foreground">
@@ -173,7 +196,10 @@ export function SongPanel({ folder }: { folder: Folder }) {
           return (
             <div
               key={section.id}
-              className="flex flex-col gap-2 rounded-lg border border-border/60 bg-card px-3 py-2 sm:flex-row sm:items-center sm:gap-3"
+              aria-current={playingSectionId === section.id ? "step" : undefined}
+              className={`flex flex-col gap-2 rounded-lg border bg-card px-3 py-2 transition-colors sm:flex-row sm:items-center sm:gap-3 ${
+                playingSectionId === section.id ? "border-primary ring-1 ring-primary/40" : "border-border/60"
+              }`}
             >
               <div className="flex min-w-0 items-center gap-3 sm:flex-1">
                 <div className="flex shrink-0 flex-col">
@@ -216,7 +242,8 @@ export function SongPanel({ folder }: { folder: Folder }) {
                 <button
                   type="button"
                   aria-label="このセクションを試聴"
-                  onClick={() => play(section.id, section.chords, section.style, section.beats)}
+                  // 曲の中のセクションは、スタイルの標準テンポではなく曲のテンポで鳴らす
+                  onClick={() => play(section.id, section.chords, section.style, section.beats, effectiveTempo)}
                   className="shrink-0 rounded-md px-2 py-1 text-xs text-muted-foreground hover:bg-accent hover:text-foreground"
                 >
                   {playingId === section.id ? "停止" : "試聴"}

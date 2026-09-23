@@ -157,7 +157,7 @@ export const useAppStore = create<AppStore>((set, get) => ({
   async updateSaved(id, patch) {
     const existing = get().saved.find((p) => p.id === id)
     if (!existing) throw new Error("進行が見つかりません")
-    const updated = { ...existing, ...patch }
+    const updated = { ...existing, ...patch, updatedAt: new Date().toISOString() }
     await progressionRepository.save(updated)
     set({ saved: get().saved.map((p) => (p.id === id ? updated : p)) })
   },
@@ -199,13 +199,14 @@ export const useAppStore = create<AppStore>((set, get) => ({
   async deleteFolder(id) {
     // フォルダ内の進行は削除せず未分類へ移す
     const affected = get().saved.filter((p) => p.folderId === id)
-    const moved = affected.map((p) => ({ ...p, folderId: null }))
+    const now = new Date().toISOString()
+    const moved = affected.map((p) => ({ ...p, folderId: null, updatedAt: now }))
     await progressionRepository.saveMany(moved)
     await folderRepository.delete(id)
     const movedIds = new Set(moved.map((p) => p.id))
     set({
       folders: get().folders.filter((f) => f.id !== id),
-      saved: get().saved.map((p) => (movedIds.has(p.id) ? { ...p, folderId: null } : p)),
+      saved: get().saved.map((p) => (movedIds.has(p.id) ? { ...p, folderId: null, updatedAt: now } : p)),
       saveTargetFolderId: get().saveTargetFolderId === id ? null : get().saveTargetFolderId,
     })
   },
@@ -245,8 +246,9 @@ export const useAppStore = create<AppStore>((set, get) => ({
     if (swapIdx < 0 || swapIdx >= siblings.length) return
     const other = siblings[swapIdx]
     // order 値を入れ替える
-    const a = { ...target, order: other.order }
-    const b = { ...other, order: target.order }
+    const now = new Date().toISOString()
+    const a = { ...target, order: other.order, updatedAt: now }
+    const b = { ...other, order: target.order, updatedAt: now }
     await progressionRepository.saveMany([a, b])
     set({
       saved: get().saved.map((p) => (p.id === a.id ? a : p.id === b.id ? b : p)),

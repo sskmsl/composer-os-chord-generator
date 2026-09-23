@@ -14,6 +14,20 @@ export interface PlayOptions {
   beats?: number[]
 }
 
+/** 曲全体の試聴で続けて鳴らす、セクション1つ分(音色はセクションのスタイルに合わせる) */
+export interface PlaySegment {
+  chords: string[]
+  beats?: number[]
+  style: StyleId
+}
+
+export interface SequenceOptions {
+  bpm: number
+  onEnded: () => void
+  /** セクションが切り替わるたびに、その番号(0始まり)を知らせる */
+  onSegment?: (index: number) => void
+}
+
 interface VoiceProfile {
   waveform: OscillatorType
   /** 2枚のオシレーターのデチューン幅(セント) */
@@ -224,7 +238,14 @@ class ChordPlayer {
   private ctx: AudioContext | null = null
   private endTimer: number | null = null
 
+  private segmentTimers: number[] = []
+
   async play(chords: string[], { bpm, style, onEnded, beats }: PlayOptions): Promise<void> {
+    return this.playSequence([{ chords, beats, style }], { bpm, onEnded })
+  }
+
+  /** 複数のセクションを1本のタイムラインとして続けて鳴らす(曲全体の試聴) */
+  async playSequence(segments: PlaySegment[], { bpm, onEnded, onSegment }: SequenceOptions): Promise<void> {
     this.stop()
 
     const ctx = new AudioContext()
@@ -240,22 +261,30 @@ class ChordPlayer {
     compressor.connect(master)
     master.connect(ctx.destination)
 
-    const voice = getVoice(style)
     const beatDur = 60 / bpm
     const start = ctx.currentTime + 0.06
 
     let elapsed = 0
-    chords.forEach((symbol, i) => {
-      const dur = (beats?.[i] ?? 4) * beatDur
-      const voicing = parseChordSymbol(symbol)
-      if (voicing) {
-        const t0 = start + elapsed
-        this.scheduleChord(ctx, compressor, voicing.bass, voicing.notes, t0, dur, voice)
+    let lastRelease = DEFAULT_VOICE.release
+    segments.forEach((segment, segmentIndex) => {
+      const voice = getVoice(segment.style)
+      lastRelease = voice.release
+      if (onSegment) {
+        const at = elapsed
+        this.segmentTimers.push(window.setTimeout(() => onSegment(segmentIndex), (at + 0.06) * 1000))
       }
-      elapsed += dur
+      segment.chords.forEach((symbol, i) => {
+        const dur = (segment.beats?.[i] ?? 4) * beatDur
+        const voicing = parseChordSymbol(symbol)
+        if (voicing) {
+          const t0 = start + elapsed
+          this.scheduleChord(ctx, compressor, voicing.bass, voicing.notes, t0, dur, voice)
+        }
+        elapsed += dur
+      })
     })
 
-    const total = elapsed + voice.release + 0.7 // リリースの余韻ぶん
+    const total = elapsed + lastRelease + 0.7 // リリースの余韻ぶん
     this.endTimer = window.setTimeout(() => {
       this.dispose()
       onEnded()
@@ -329,6 +358,8 @@ class ChordPlayer {
   }
 
   stop(): void {
+    for (const timer of this.segmentTimers) clearTimeout(timer)
+    this.segmentTimers = []
     if (this.endTimer != null) {
       clearTimeout(this.endTimer)
       this.endTimer = null

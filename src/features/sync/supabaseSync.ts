@@ -4,7 +4,7 @@ import type { DeletionRecord } from "@/features/storage/db"
 import { DELETION_RETENTION_DAYS, deletionRepository } from "@/features/storage/deletionRepository"
 import { folderRepository, progressionRepository } from "@/features/storage/progressionRepository"
 import { migrateFolder, type Folder } from "@/types/folder"
-import { migrateSavedProgression, type SavedProgression } from "@/types/progression"
+import { lastModifiedAt, migrateSavedProgression, type SavedProgression } from "@/types/progression"
 
 const FOLDERS_TABLE = "folders"
 const PROGRESSIONS_TABLE = "progressions"
@@ -208,7 +208,7 @@ export async function syncPullAndReconcile(): Promise<void> {
     migrateSavedProgression(r.data as SavedProgression),
   )
 
-  // フォルダ・進行のどちらも updatedAt/savedAt を比較し、より新しい方を残す。
+  // フォルダ・進行のどちらも最終更新日時を比較し、より新しい方を残す。
   // その後、どちらかの端末で削除した項目(削除の記録がある項目)を落とす
   const mergedFolders = applyTombstones(
     mergeById(localFolders, remoteFolders, (local, remote) => remote.updatedAt >= local.updatedAt),
@@ -216,9 +216,11 @@ export async function syncPullAndReconcile(): Promise<void> {
     (f) => f.updatedAt,
   )
   const mergedProgressions = applyTombstones(
-    mergeById(localProgressions, remoteProgressions, (local, remote) => remote.savedAt >= local.savedAt),
+    // 保存後の編集(コードの書き換え・メモ等)も新しさに含める。savedAt だけで比べると、
+    // 未同期の編集が、編集前のクラウド側の同じ進行で上書きされてしまう
+    mergeById(localProgressions, remoteProgressions, (local, remote) => lastModifiedAt(remote) >= lastModifiedAt(local)),
     tombstones.filter((t) => t.kind === "progression"),
-    (p) => p.savedAt,
+    lastModifiedAt,
   )
 
   await folderRepository.replaceAll(mergedFolders)

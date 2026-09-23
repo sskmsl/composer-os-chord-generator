@@ -1,5 +1,6 @@
 import { describe, it, expect } from "vitest"
-import { generateProgressions, rootSkeletonOf } from "../generateProgressions"
+import { generateProgressions, reanalyzeChords, rootSkeletonOf, transposeProgression } from "../generateProgressions"
+import { chordName, parseToken } from "../degrees"
 import { STYLE_OPTIONS } from "../templates"
 import type { MoodId, MusicKey, SectionId, StyleId } from "@/types/music"
 
@@ -125,5 +126,42 @@ describe("generateProgressions: skeleton repetition suppression", () => {
       skeletons.add(rootSkeletonOf(r.romanNumerals))
     }
     expect(skeletons.size).toBeGreaterThan(5)
+  })
+})
+
+describe("reanalyzeChords(詳細画面でのコード書き換え)", () => {
+  it("生成した進行のコード名から計算し直すと、同じコード名・(ほぼ)同じスコアに戻る", () => {
+    let total = 0
+    let same = 0
+    for (const { value: style } of STYLE_OPTIONS) {
+      for (const mode of ["minor", "major"] as const) {
+        const key = { tonic: mode === "minor" ? "D" : "Eb", mode }
+        for (const p of generateProgressions({ key, style, section: "verse", mood: "melancholic", count: 3 })) {
+          const again = reanalyzeChords(p.chords, { key, style, mood: p.mood, section: p.section })
+          expect(again, p.chords.join(" ")).not.toBeNull()
+          expect(again!.romanNumerals.map((t) => chordName(parseToken(t), key)), `${style}: ${p.chords.join(" ")}`).toEqual(p.chords)
+          total++
+          if (JSON.stringify(again!.scores) === JSON.stringify(p.scores)) same++
+        }
+      }
+    }
+    // コード名だけでは区別できない書き分け(例: 長調の Im9 と im9)があるため、ごく一部は点数が変わり得る
+    expect(same / total).toBeGreaterThanOrEqual(0.9)
+  })
+
+  it("書き換えたコードに合わせて度数とベースの動きが変わる", () => {
+    const key = { tonic: "A", mode: "minor" } as const
+    const result = reanalyzeChords(["Am", "Dbmaj7", "E7", "Am"], { key, style: "romanticDark", mood: "melancholic", section: "verse" })
+    expect(result?.romanNumerals).toEqual(["i", "IIImaj7", "V7", "i"])
+    expect(result?.bassMovement.startsWith("A → Db → E → A")).toBe(true)
+  })
+})
+
+describe("transposeProgression(保存した進行の移調)", () => {
+  it("度数はそのままに、新しい調のコード名とベースの動きへ作り直す", () => {
+    const moved = transposeProgression(["i", "bVImaj7", "iv/bVI", "V7"], { tonic: "E", mode: "minor" })
+    expect(moved.key).toBe("Em")
+    expect(moved.chords).toEqual(["Em", "Cmaj7", "Am/C", "B7"])
+    expect(moved.bassMovement.startsWith("E → C → C → B")).toBe(true)
   })
 })
