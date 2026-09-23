@@ -1,4 +1,4 @@
-import { normalizeSectionRole, type Mode, type MoodId, type SectionId, type StyleId } from "./music"
+import { normalizeSectionRole, normalizeStyleId, type Mode, type MoodId, type SectionId, type StyleId } from "./music"
 
 export interface Scores {
   mylene: number
@@ -73,6 +73,8 @@ export function migrateSavedProgression(raw: SavedProgression): SavedProgression
   return {
     ...raw,
     section: normalizeSectionRole(raw.section),
+    // 廃止したスタイル(Symphonic Rock)で保存された進行を現行スタイルへ読み替える
+    style: normalizeStyleId(raw.style),
     memo: raw.memo ?? "",
     songIdea: raw.songIdea ?? "",
     arrangementNote: raw.arrangementNote ?? "",

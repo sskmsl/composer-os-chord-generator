@@ -34,6 +34,32 @@ export type SectionRole =
   | "instrumental"
   | "outro"
 
+const STYLE_IDS: readonly StyleId[] = [
+  "ethereal",
+  "romanticDark",
+  "cinematic",
+  "newWave",
+  "sadcorePop",
+  "ritual",
+  "finale",
+  "cool",
+  "tripHop",
+  "neoclassical",
+  "minimalism",
+  "jChanson",
+  "hiNRG",
+  "dorian",
+]
+
+/**
+ * 廃止したスタイルIDを現行のスタイルへ読み替える。Symphonic Rock(劇的・重厚)は
+ * 響きが最も近いCinematicへ寄せる。未知の値も同じく既定のCinematicにする
+ * (テンポ・音色の参照先が見つからず試聴やMIDI書き出しが壊れるのを防ぐ)。
+ */
+export function normalizeStyleId(value: unknown): StyleId {
+  return STYLE_IDS.includes(value as StyleId) ? (value as StyleId) : "cinematic"
+}
+
 /** 既存コードとの互換性を保つ別名。値はArrangerのSectionRoleと一致する。 */
 export type SectionId = SectionRole
 

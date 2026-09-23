@@ -37,6 +37,15 @@ describe("migrateSavedProgression", () => {
     expect(migrated.beats).toEqual([4, 4, 4, 4])
   })
 
+  it("maps the removed Symphonic Rock style to a current style so playback/MIDI keep working", () => {
+    const raw = { ...legacyV3Progression(), style: "symphonicRock" } as unknown as SavedProgression
+    expect(migrateSavedProgression(raw).style).toBe("cinematic")
+  })
+
+  it("keeps a current style as is", () => {
+    expect(migrateSavedProgression(legacyV3Progression()).style).toBe("romanticDark")
+  })
+
   it("bumps schemaVersion to the current version", () => {
     const migrated = migrateSavedProgression(legacyV3Progression())
     expect(migrated.schemaVersion).toBe(PROGRESSION_SCHEMA_VERSION)
