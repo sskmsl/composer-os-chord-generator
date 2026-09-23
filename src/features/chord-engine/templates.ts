@@ -261,13 +261,13 @@ export const STYLE_PREFS: Record<StyleId, StylePrefs> = {
   romanticDark: {
     decorationProb: 0.6,
     slashProb: 0.2,
-    minorColors: ["add9", "m9"],
+    minorColors: ["add9", "m9", "aug"],
     majorColors: ["maj7", "add9"],
   },
   cinematic: {
     decorationProb: 0.55,
     slashProb: 0.25,
-    minorColors: ["add9", "m9"],
+    minorColors: ["add9", "m9", "aug"],
     majorColors: ["maj7", "add9"],
   },
   newWave: {
@@ -309,7 +309,7 @@ export const STYLE_PREFS: Record<StyleId, StylePrefs> = {
   neoclassical: {
     decorationProb: 0.6,
     slashProb: 0.45,
-    minorColors: ["add9", "m9", "maj7"],
+    minorColors: ["add9", "m9", "maj7", "aug"],
     majorColors: ["maj7", "add9"],
   },
   minimalism: {
@@ -321,7 +321,7 @@ export const STYLE_PREFS: Record<StyleId, StylePrefs> = {
   jChanson: {
     decorationProb: 0.55,
     slashProb: 0.25,
-    minorColors: ["maj7", "m9"],
+    minorColors: ["maj7", "m9", "aug"],
     majorColors: ["maj7", "add9", "6"],
   },
   hiNRG: {
@@ -347,9 +347,9 @@ interface MoodProfile {
 
 export const MOOD_PROFILES: Record<MoodId, MoodProfile> = {
   melancholic: { affinity: ["add9", "maj7", "ivm9"], colors: ["add9", "m9", "maj7"] },
-  mysterious: { affinity: ["bII", "sus2", "i11"], colors: ["sus2", "m11"] },
+  mysterious: { affinity: ["bII", "sus2", "i11"], colors: ["sus2", "m11", "aug"] },
   romantic: { affinity: ["maj7", "ivm9", "V7sus4"], colors: ["maj7", "m9"] },
-  dark: { affinity: ["dim", "bII", "V7", "bVI"], colors: ["add9"] },
+  dark: { affinity: ["dim", "bII", "V7", "bVI"], colors: ["add9", "aug"] },
   hopeful: { affinity: ["bIII", "bVImaj7", "IV"], colors: ["maj7", "add9", "6"] },
   dramatic: { affinity: ["V", "bVI", "bVII"], colors: ["7sus4", "add9"] },
   floating: { affinity: ["add9", "sus", "maj7"], colors: ["add9", "sus2", "m11"] },

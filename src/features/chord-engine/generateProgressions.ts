@@ -22,21 +22,25 @@ export interface GenerateParams {
 /**
  * メインエントリポイント。
  * テンプレート選択 → セクション変形 → 装飾 → 移調 → スコア/説明文 の
- * パイプラインで、重複しない進行を最大 count 件生成する。
+ * パイプラインで重複しない候補プールを作り、Boutonnat的な審美眼(boutonnat
+ * スコア)を最終フィルタとして上位 count 件だけを返す。
+ * 「安全だが平凡」な候補だけが並ばないよう、候補評価を出力選定に直結させる。
  */
 export function generateProgressions(params: GenerateParams): GeneratedProgression[] {
-  const results: GeneratedProgression[] = []
+  const poolTarget = Math.min(params.count * 3, 60)
+  const maxAttempts = poolTarget * 6
+  const pool: GeneratedProgression[] = []
   const seen = new Set<string>()
-  const maxAttempts = params.count * 12
 
-  for (let attempt = 0; attempt < maxAttempts && results.length < params.count; attempt++) {
+  for (let attempt = 0; attempt < maxAttempts && pool.length < poolTarget; attempt++) {
     const progression = generateOne(params)
     const dedupKey = progression.chords.join("|")
     if (seen.has(dedupKey)) continue
     seen.add(dedupKey)
-    results.push(progression)
+    pool.push(progression)
   }
-  return results
+
+  return pool.sort((a, b) => b.scores.boutonnat - a.scores.boutonnat).slice(0, params.count)
 }
 
 function generateOne(params: GenerateParams): GeneratedProgression {

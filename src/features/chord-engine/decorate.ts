@@ -34,12 +34,15 @@ export function decorateProgression(
       result.suffix = preferred.length > 0 && chance(0.6) ? pick(preferred) : pick(base)
     }
 
-    // スラッシュベース: bVI→トニックペダル、bIII→5度上ベース(仕様の例に準拠)
+    // スラッシュベース: 借用和音の下にトニックペダルを敷き、機能を保ったまま
+    // 響きの色だけを変える(bVI/bVII/iv → i ペダル、bIII → 5度上ベース)
     if (!result.bass && chance(prefs.slashProb)) {
-      if (result.acc === -1 && result.roman === "VI" && index > 0) {
+      if (result.acc === -1 && (result.roman === "VI" || result.roman === "VII") && index > 0) {
         result.bass = { acc: 0, roman: "I", raw: "i" }
       } else if (result.acc === -1 && result.roman === "III") {
         result.bass = { acc: 0, roman: "V", raw: "V" }
+      } else if (result.lower && result.roman === "IV" && index > 0) {
+        result.bass = { acc: 0, roman: "I", raw: "i" }
       }
     }
 
