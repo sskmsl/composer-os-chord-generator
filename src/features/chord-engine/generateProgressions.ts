@@ -7,6 +7,7 @@ import { decorateProgression } from "./decorate"
 import { buildDescription } from "./descriptions"
 import { chance, pick } from "./random"
 import { computeScores, extractFeatures, type CadenceType } from "./scoring"
+import { openColors, rootKey, spiceTokens, styleVocabulary, tensionTokens, tonicTokens } from "./styleGrammar"
 import { generateChain } from "./transitions"
 import { applyVoiceLeadingBass } from "./voiceLeading"
 
@@ -114,8 +115,8 @@ function rankAndSelect(
 function generateOne(params: GenerateParams): GeneratedProgression {
   const { key, style, section, mood, length } = params
 
-  const tokens = adaptToSection(generateChain(style, key.mode, mood, length), section, key)
-  const decorated = decorateProgression(tokens.map(parseToken), style, mood)
+  const tokens = adaptToSection(generateChain(style, key.mode, mood, length), section, key, style)
+  const decorated = decorateProgression(tokens.map(parseToken), style, mood, key.mode)
   const { chords: parsed, invertedIndices } = applyVoiceLeadingBass(decorated, style)
 
   const chords = parsed.map((c) => chordName(c, key))
@@ -167,28 +168,34 @@ function computeHarmonicRhythm(
 }
 
 /** CHORD_ENGINE_SPEC §6 のセクションルールでテンプレートを変形する */
-function adaptToSection(tokens: string[], section: SectionId, key: MusicKey): string[] {
-  const minor = key.mode === "minor"
+function adaptToSection(tokens: string[], section: SectionId, key: MusicKey, style: StyleId): string[] {
+  const mode = key.mode
   let result = [...tokens]
   const rule: RuleSection = sectionRule(section)
+  const last = () => result.length - 1
+  // 変形で差し込む和音は、すべてそのスタイルのテンプレートから選ぶ(styleGrammar.ts)
+  const hasSpice = () => {
+    const spiceRoots = new Set(spiceTokens(style, mode).map(rootKey))
+    return result.some((t) => spiceRoots.has(rootKey(t)))
+  }
 
   switch (rule) {
     case "intro":
       // 疎に: 2〜4コード、終止は未解決に
       if (chance(0.5)) result = result.slice(0, 2)
-      result[result.length - 1] = unresolveToken(result[result.length - 1], minor)
+      result[last()] = unresolveToken(result[last()], style, mode)
       break
 
     case "verse":
       // 抑制: 強い解決(V7)を弱める
-      if (/V7(?!sus)/.test(result[result.length - 1]) && chance(0.5)) {
-        result[result.length - 1] = "Vsus4"
+      if (/V7(?!sus)/.test(result[last()]) && chance(0.5)) {
+        result[last()] = unresolveToken(result[last()], style, mode)
       }
       break
 
     case "preChorus":
-      // 末尾をドミナント系にして緊張を作る
-      result[result.length - 1] = pick(["V", "Vsus4", "V7sus4"])
+      // 末尾を、そのスタイルが実際に使う「トニック以外の終わり方」にして緊張を作る
+      result[last()] = pick(tensionTokens(style, mode))
       break
 
     case "chorus":
@@ -198,36 +205,36 @@ function adaptToSection(tokens: string[], section: SectionId, key: MusicKey): st
       // 落ちサビ: サビの和声感を保ちながら密度と終止感を抑える
       if (result.length > 3) result = result.slice(0, 3)
       if (chance(0.65)) {
-        result[result.length - 1] = unresolveToken(result[result.length - 1], minor)
+        result[last()] = unresolveToken(result[last()], style, mode)
       }
       break
 
-    case "grandChorus":
+    case "grandChorus": {
       // 最後のサビ: 半分の確率でトニック終止を保証して解放感を出す
-      if (minor && chance(0.5) && !/^i/.test(result[result.length - 1])) {
-        result[result.length - 1] = pick(["i", "i(add9)"])
+      const tonics = tonicTokens(style, mode)
+      if (mode === "minor" && tonics.length > 0 && chance(0.5) && rootKey(result[last()]) !== "i") {
+        result[last()] = pick(tonics)
       }
       break
+    }
 
     case "cMelody":
-      // Cメロ: 新しい和声景色を作りつつ、後続サビへ向かう緊張を残す
-      if (minor && !/bII|#iv|ivm9/.test(result.join(" "))) {
-        result[Math.min(1, result.length - 1)] = pick(["bII", "#ivdim", "ivm9"])
-      }
-      if (chance(0.55)) result[result.length - 1] = pick(["V", "Vsus4", "V7sus4"])
+      // Cメロ: そのスタイルにとっての色彩和音で新しい景色を作り、後続サビへの緊張を残す
+      if (!hasSpice()) result[Math.min(1, last())] = pick(spiceTokens(style, mode))
+      if (chance(0.55)) result[last()] = pick(tensionTokens(style, mode))
       break
 
     case "bridge":
-      // 借用和音・意外な転回を注入する
-      if (minor && !/bII|#iv|ivm9/.test(result.join(" ")) && chance(0.35)) {
-        result[1] = pick(["bII", "#ivdim", "ivm9"])
+      // そのスタイルの色彩和音・意外な和音を注入する
+      if (result.length >= 2 && !hasSpice() && chance(0.35)) {
+        result[1] = pick(spiceTokens(style, mode))
       }
       break
 
     case "instrumental":
       // 間奏: 歌唱終止を要求せず、色彩和音と循環性を優先する
       if (result.length >= 2 && chance(0.5)) {
-        result[result.length - 1] = result[0]
+        result[last()] = result[0]
       }
       break
 
@@ -237,20 +244,31 @@ function adaptToSection(tokens: string[], section: SectionId, key: MusicKey): st
         result = [result[0], result[1], result[0], pick([result[0], result[1]])]
       }
       if (chance(0.5)) {
-        result[result.length - 1] = unresolveToken(result[result.length - 1], minor)
+        result[last()] = unresolveToken(result[last()], style, mode)
       }
       break
   }
   return result
 }
 
-/** トークンを未解決な響きに変える(sus化・add9化) */
-function unresolveToken(token: string, minor: boolean): string {
+/**
+ * 終止をぼかす。V はそのスタイルが持つsus形へ、素の和音はそのスタイルの
+ * 装飾(Ritualならsus2、New Waveなら6th等)へ。スタイルに該当する装飾が
+ * なければ手を付けない(スタイル外の響きを足さない)。
+ */
+function unresolveToken(token: string, style: StyleId, mode: MusicKey["mode"]): string {
   const parsed = parseToken(token)
+  const allowed = styleVocabulary(style, mode).suffixes
   if (!parsed.lower && parsed.roman === "V" && parsed.acc === 0) {
-    parsed.suffix = parsed.suffix === "7" ? "7sus4" : "sus4"
+    if (parsed.suffix.includes("sus")) return token
+    const options = parsed.suffix === "7" ? ["7sus4", "sus4"] : ["sus4", "7sus4"]
+    const next = options.find((s) => allowed.has(s))
+    if (!next) return token
+    parsed.suffix = next
   } else if (parsed.suffix === "") {
-    parsed.suffix = minor && parsed.lower ? "add9" : pick(["add9", "sus2"])
+    const colors = openColors(style, parsed.lower)
+    if (colors.length === 0) return token
+    parsed.suffix = pick(colors)
   }
   return buildToken(parsed)
 }
