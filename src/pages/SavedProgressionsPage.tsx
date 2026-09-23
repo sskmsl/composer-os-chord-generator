@@ -1,7 +1,16 @@
-import { useMemo, useState } from "react"
+import { useMemo, useRef, useState } from "react"
 import { useNavigate } from "react-router-dom"
-import { FolderPlus, Pencil, Sparkles, Trash2 } from "lucide-react"
+import { DatabaseBackup, FolderPlus, Pencil, Sparkles, Trash2, Upload } from "lucide-react"
 import { toast } from "sonner"
+import {
+  AlertDialog,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
@@ -24,8 +33,12 @@ export function SavedProgressionsPage() {
   const createFolder = useAppStore((s) => s.createFolder)
   const renameFolder = useAppStore((s) => s.renameFolder)
   const deleteFolder = useAppStore((s) => s.deleteFolder)
+  const exportAllAsBackup = useAppStore((s) => s.exportAllAsBackup)
+  const restoreFromBackup = useAppStore((s) => s.restoreFromBackup)
 
   const [filter, setFilter] = useState<FolderFilter>("all")
+  const [pendingRestoreText, setPendingRestoreText] = useState<string | null>(null)
+  const restoreInputRef = useRef<HTMLInputElement>(null)
 
   const visible = useMemo(() => {
     if (filter === "all") return saved
@@ -50,6 +63,36 @@ export function SavedProgressionsPage() {
     }
   }
 
+  const handleBackup = () => {
+    try {
+      exportAllAsBackup()
+      toast.success("全データをバックアップしました")
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "バックアップに失敗しました")
+    }
+  }
+
+  const handleRestoreFileSelected = (file: File | undefined) => {
+    if (!file) return
+    const reader = new FileReader()
+    reader.onload = () => setPendingRestoreText(String(reader.result))
+    reader.onerror = () => toast.error("ファイルの読み込みに失敗しました")
+    reader.readAsText(file)
+  }
+
+  const handleConfirmRestore = async () => {
+    if (!pendingRestoreText) return
+    try {
+      await restoreFromBackup(pendingRestoreText)
+      toast.success("バックアップから復元しました")
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "復元に失敗しました")
+    } finally {
+      setPendingRestoreText(null)
+      if (restoreInputRef.current) restoreInputRef.current.value = ""
+    }
+  }
+
   return (
     <div className="flex flex-col gap-6">
       <div className="flex flex-wrap items-end justify-between gap-4">
@@ -57,11 +100,45 @@ export function SavedProgressionsPage() {
           <p className="text-xs tracking-[0.3em] text-muted-foreground uppercase">Library</p>
           <h1 className="mt-2 text-3xl font-semibold tracking-wide">Saved Progressions</h1>
         </div>
-        <Button onClick={() => navigate("/generator")}>
-          <Sparkles data-icon="inline-start" />
-          新しく生成する
-        </Button>
+        <div className="flex flex-wrap items-center gap-2">
+          <Button variant="outline" onClick={handleBackup}>
+            <DatabaseBackup data-icon="inline-start" />
+            バックアップ
+          </Button>
+          <Button variant="outline" onClick={() => restoreInputRef.current?.click()}>
+            <Upload data-icon="inline-start" />
+            復元
+          </Button>
+          <input
+            ref={restoreInputRef}
+            type="file"
+            accept="application/json"
+            className="hidden"
+            onChange={(e) => handleRestoreFileSelected(e.target.files?.[0])}
+          />
+          <Button onClick={() => navigate("/generator")}>
+            <Sparkles data-icon="inline-start" />
+            新しく生成する
+          </Button>
+        </div>
       </div>
+
+      <AlertDialog open={pendingRestoreText != null} onOpenChange={(open) => !open && setPendingRestoreText(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>バックアップから復元しますか?</AlertDialogTitle>
+            <AlertDialogDescription>
+              現在保存されているフォルダ・進行はすべて、このバックアップファイルの内容で置き換えられます。この操作は取り消せません。
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>キャンセル</AlertDialogCancel>
+            <AlertDialogCancel variant="destructive" onClick={() => void handleConfirmRestore()}>
+              復元する
+            </AlertDialogCancel>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       {/* フォルダバー */}
       <div className="flex flex-wrap items-center gap-2">
