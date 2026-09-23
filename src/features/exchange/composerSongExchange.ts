@@ -4,7 +4,7 @@ import type { SavedProgression, Scores } from "../../types/progression"
 import { resolveTempo, songSections } from "../midi/exportSong"
 
 export const COMPOSER_SONG_EXCHANGE_FORMAT = "composer-os/song-exchange" as const
-export const COMPOSER_SONG_EXCHANGE_VERSION = 1 as const
+export const COMPOSER_SONG_EXCHANGE_VERSION = 2 as const
 
 export type ExchangeSectionRole = SectionId
 
@@ -30,9 +30,12 @@ export interface ComposerSongExchangeSection {
 
 /**
  * Composer OS内のアプリ間で受け渡す、特定アプリの保存スキーマに依存しない最小形式。
- * v1はChord Generatorの現行仕様に合わせ、4/4・1コード=1小節を明示する。
+ * 4/4を前提とするが、コードごとの長さ(durationBeats/startBeat)は一定ではない。
+ * v1は「1コード=1小節」固定だったが、v2からはChord Generator側の和声の
+ * リズム(経過和音は短く・終止の着地は長く)をそのまま反映する。
+ * 読み込み側は startBeat/durationBeats を都度参照し、4拍固定を仮定しないこと。
  */
-export interface ComposerSongExchangeV1 {
+export interface ComposerSongExchangeV2 {
   format: typeof COMPOSER_SONG_EXCHANGE_FORMAT
   version: typeof COMPOSER_SONG_EXCHANGE_VERSION
   source: {
@@ -51,11 +54,22 @@ export function toExchangeSectionRole(section: SectionId): ExchangeSectionRole {
   return section
 }
 
+/** コードごとの長さ(beats)から、累積の startBeat/durationBeats を組み立てる */
+function toExchangeChords(section: SavedProgression): ComposerSongExchangeChord[] {
+  let cursor = 0
+  return section.chords.map((symbol, index) => {
+    const durationBeats = section.beats[index] ?? 4
+    const chord: ComposerSongExchangeChord = { symbol, startBeat: cursor, durationBeats }
+    cursor += durationBeats
+    return chord
+  })
+}
+
 export function buildComposerSongExchange(
   folder: Folder,
   progressions: SavedProgression[],
   exportedAt = new Date().toISOString(),
-): ComposerSongExchangeV1 {
+): ComposerSongExchangeV2 {
   const sections = songSections(folder, progressions)
   return {
     format: COMPOSER_SONG_EXCHANGE_FORMAT,
@@ -75,11 +89,7 @@ export function buildComposerSongExchange(
       role: toExchangeSectionRole(section.section),
       key: section.key,
       repeatCount: Math.max(1, Math.round(section.repeatCount)),
-      chords: section.chords.map((symbol, index) => ({
-        symbol,
-        startBeat: index * 4,
-        durationBeats: 4,
-      })),
+      chords: toExchangeChords(section),
       sourceIntent: {
         style: section.style,
         mood: section.mood,

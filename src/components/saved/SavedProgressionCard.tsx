@@ -85,7 +85,7 @@ export function SavedProgressionCard({ progression, action }: Props) {
         )}
         <div className="flex items-center justify-between text-xs text-muted-foreground">
           <span className="font-mono">
-            M{progression.scores.mylene} / B{progression.scores.boutonnat} / C
+            Atmo{progression.scores.mylene} / Craft{progression.scores.boutonnat} / Cine
             {progression.scores.cinematic}
           </span>
           <span>{formatDate(progression.savedAt)} 保存</span>
