@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest"
-import { generateProgressions } from "../generateProgressions"
+import { generateProgressions, rootSkeletonOf } from "../generateProgressions"
 import { STYLE_OPTIONS } from "../templates"
 import type { MoodId, MusicKey, SectionId, StyleId } from "@/types/music"
 
@@ -59,9 +59,10 @@ describe("generateProgressions: output contract", () => {
     expect(seen.size).toBe(results.length)
   })
 
-  it("returns results sorted by descending boutonnat score", () => {
+  it("returns results sorted by descending boutonnat score for a repetitive style (no skeleton penalty applies)", () => {
+    // minimalism/tripHop/ritualは骨格反復の抑制対象外なので、純粋にboutonnat降順であることを保証できる
     const results = generateProgressions({
-      key: { tonic: "C", mode: "major" }, style: "neoclassical", section: "bridge", mood: "mysterious", count: 10,
+      key: { tonic: "C", mode: "major" }, style: "minimalism", section: "verse", mood: "floating", count: 10,
     })
     for (let i = 1; i < results.length; i++) {
       expect(results[i - 1].scores.boutonnat).toBeGreaterThanOrEqual(results[i].scores.boutonnat)
@@ -86,5 +87,36 @@ describe("generateProgressions: output contract", () => {
       if (r.beats.some((b) => b !== 4)) sawVariation = true
     }
     expect(sawVariation).toBe(true)
+  })
+})
+
+describe("rootSkeletonOf", () => {
+  it("collapses color/slash differences into the same skeleton", () => {
+    expect(rootSkeletonOf(["i", "i(add9)"])).toBe(rootSkeletonOf(["i(add9)", "i"]))
+    expect(rootSkeletonOf(["bVImaj7", "bVImaj7/i"])).toBe(rootSkeletonOf(["bVImaj7", "bVImaj7"]))
+  })
+
+  it("distinguishes different root motion", () => {
+    expect(rootSkeletonOf(["i", "V"])).not.toBe(rootSkeletonOf(["i", "iv"]))
+  })
+
+  it("distinguishes major/minor quality of the same degree", () => {
+    expect(rootSkeletonOf(["i", "IV"])).not.toBe(rootSkeletonOf(["i", "iv"]))
+  })
+})
+
+describe("generateProgressions: skeleton repetition suppression", () => {
+  it("keeps root-skeleton diversity reasonably high across many separate calls for a non-repetitive style", () => {
+    // 同一条件(style×mode)で何度も別々に呼ぶ = 別の曲で同じ設定を使い回すシナリオ。
+    // 骨格反復の抑制が効いていれば、count=1を何度呼んでも骨格の使い回しは
+    // 一定割合に収まるはず(完全に排除はしない、あくまでランキングへの軽い減点)。
+    const skeletons = new Set<string>()
+    for (let i = 0; i < 25; i++) {
+      const [r] = generateProgressions({
+        key: { tonic: "F", mode: "minor" }, style: "hiNRG", section: "chorus", mood: "dance", count: 1,
+      })
+      skeletons.add(rootSkeletonOf(r.romanNumerals))
+    }
+    expect(skeletons.size).toBeGreaterThan(5)
   })
 })
