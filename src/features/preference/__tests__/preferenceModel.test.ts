@@ -46,7 +46,8 @@ describe("好みの順位への反映", () => {
     const share = (preference: typeof model | null) => {
       let hit = 0
       let n = 0
-      for (let i = 0; i < 30; i++) {
+      // 標本が少ないと差が揺れて稀に落ちるため、各500件ほど取る(差の標準偏差 約0.03)
+      for (let i = 0; i < 100; i++) {
         clearSessionSkeletonHistory()
         for (const p of generateProgressions({
           key: { tonic: "A", mode: "minor" },
@@ -62,7 +63,7 @@ describe("好みの順位への反映", () => {
       }
       return hit / n
     }
-    // 計測では 60% → 82% 程度
-    expect(share(model)).toBeGreaterThan(share(null) + 0.08)
+    // 計測では 63% → 80% 程度(差の平均 約0.16)
+    expect(share(model)).toBeGreaterThan(share(null) + 0.06)
   })
 })

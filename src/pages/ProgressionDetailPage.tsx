@@ -21,6 +21,7 @@ import {
 import { parseChordSymbol } from "@/features/audio/chordSymbols"
 import { reanalyzeChords, transposeProgression } from "@/features/chord-engine/generateProgressions"
 import { STYLE_OPTIONS } from "@/features/chord-engine/templates"
+import { toastWithUndo } from "@/lib/undoToast"
 import { useAppStore } from "@/store/useAppStore"
 import { usePlayerStore } from "@/store/usePlayerStore"
 import { keyFromLabel, keyId, keyLabel, MAJOR_KEYS, MINOR_KEYS, MOOD_OPTIONS, SECTION_OPTIONS } from "@/types/music"
@@ -142,9 +143,9 @@ export function ProgressionDetailPage() {
         mood: progression.mood,
         section: progression.section,
       })
-      await updateSaved(progression.id, { chords: trimmed, ...(reanalyzed ?? {}) })
+      const token = await updateSaved(progression.id, { chords: trimmed, ...(reanalyzed ?? {}) })
       setEditingChords(false)
-      toast.success("コードを変更しました")
+      toastWithUndo("コードを変更しました", token)
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "保存に失敗しました")
     } finally {
@@ -160,8 +161,11 @@ export function ProgressionDetailPage() {
   const handleTranspose = async (tonic: string) => {
     if (currentKey.tonic === tonic) return
     try {
-      await updateSaved(progression.id, transposeProgression(progression.romanNumerals, { tonic, mode: progression.mode }))
-      toast.success(`${keyLabel({ tonic, mode: progression.mode })} に移調しました`)
+      const token = await updateSaved(
+        progression.id,
+        transposeProgression(progression.romanNumerals, { tonic, mode: progression.mode }),
+      )
+      toastWithUndo(`${keyLabel({ tonic, mode: progression.mode })} に移調しました`, token)
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "移調に失敗しました")
     }
@@ -169,8 +173,8 @@ export function ProgressionDetailPage() {
 
   const handleDelete = async () => {
     try {
-      await deleteSaved(progression.id)
-      toast.success("進行を削除しました")
+      const token = await deleteSaved(progression.id)
+      toastWithUndo("進行を削除しました", token)
       navigate("/saved")
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "削除に失敗しました")
@@ -287,7 +291,7 @@ export function ProgressionDetailPage() {
             </Button>
             <ConfirmDeleteDialog
               title="進行を削除しますか?"
-              description={`「${progression.chords.join(" – ")}」を削除します。この操作は取り消せません。`}
+              description={`「${progression.chords.join(" – ")}」を削除します。削除後しばらくは、通知の「元に戻す」で取り消せます。`}
               onConfirm={() => void handleDelete()}
               trigger={
                 <Button variant="destructive" size="icon" aria-label="進行を削除">
@@ -330,7 +334,7 @@ export function ProgressionDetailPage() {
                 value={progression.folderId ?? "none"}
                 onValueChange={(v) => {
                   void moveToFolder(progression.id, v === "none" ? null : (v as string))
-                    .then(() => toast.success("フォルダを移動しました"))
+                    .then((token) => toastWithUndo("フォルダを移動しました", token))
                     .catch((e: unknown) =>
                       toast.error(e instanceof Error ? e.message : "移動に失敗しました"),
                     )

@@ -10,8 +10,11 @@ interface PlayerStore {
   playingSegment: number | null
   /** bpm を省略するとスタイルの標準テンポ。曲の中のセクションは曲のテンポを渡す */
   play(id: string, chords: string[], style: StyleId, beats?: number[], bpm?: number): void
-  /** 曲全体(セクションの並び・繰り返し込み)を続けて鳴らす。同じidで呼ぶと停止 */
-  playSequence(id: string, segments: PlaySegment[], bpm: number): void
+  /**
+   * 曲全体(セクションの並び・繰り返し込み)を続けて鳴らす。同じidで呼ぶと停止。
+   * startIndex を渡すとそのセクションから鳴らす(再生中でも、その位置から鳴らし直す)
+   */
+  playSequence(id: string, segments: PlaySegment[], bpm: number, startIndex?: number): void
   stop(): void
 }
 
@@ -23,8 +26,8 @@ export const usePlayerStore = create<PlayerStore>((set, get) => ({
     get().playSequence(id, [{ chords, beats, style }], bpm ?? STYLE_TEMPO[style])
   },
 
-  playSequence(id, segments, bpm) {
-    if (get().playingId === id) {
+  playSequence(id, segments, bpm, startIndex) {
+    if (get().playingId === id && startIndex === undefined) {
       get().stop()
       return
     }
@@ -32,6 +35,7 @@ export const usePlayerStore = create<PlayerStore>((set, get) => ({
     void chordPlayer
       .playSequence(segments, {
         bpm,
+        startIndex,
         onSegment: (index) => {
           if (get().playingId === id) set({ playingSegment: index })
         },

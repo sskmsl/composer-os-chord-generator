@@ -119,6 +119,48 @@ describe("useAppStore: saved progressions", () => {
   })
 })
 
+describe("useAppStore: 取り消し(元に戻す)", () => {
+  it("コードの書き換えを取り消すと、直前の内容を今の時刻で保存し直す", async () => {
+    await useAppStore.getState().saveProgression(fakeGenerated("g1"))
+    const token = await useAppStore.getState().updateSaved("g1", { chords: ["Dm", "E7"] })
+    expect(await useAppStore.getState().undo(token)).toBe(true)
+    const restored = useAppStore.getState().saved.find((p) => p.id === "g1")
+    expect(restored?.chords).toEqual(["Am", "F"])
+    // 同期で「新しい方」として残るよう、戻した時刻を編集日時にする
+    expect(restored?.updatedAt).toBeDefined()
+    expect(progressionRepository.saveMany).toHaveBeenCalledWith([expect.objectContaining({ id: "g1", chords: ["Am", "F"] })])
+  })
+
+  it("削除を取り消すと進行が戻り、削除の記録も消す", async () => {
+    await useAppStore.getState().saveProgression(fakeGenerated("g1"))
+    const token = await useAppStore.getState().deleteSaved("g1")
+    expect(useAppStore.getState().saved.find((p) => p.id === "g1")).toBeUndefined()
+    await useAppStore.getState().undo(token)
+    expect(useAppStore.getState().saved.find((p) => p.id === "g1")).toBeDefined()
+    expect(deletionRepository.clear).toHaveBeenCalledWith(["g1"])
+    expect(clearRemoteDeletions).toHaveBeenCalledWith(["g1"])
+  })
+
+  it("フォルダの削除を取り消すと、フォルダと中の進行の所属が戻る", async () => {
+    const folder = await useAppStore.getState().createFolder("My Song")
+    useAppStore.getState().setSaveTargetFolder(folder.id)
+    await useAppStore.getState().saveProgression(fakeGenerated("g1"))
+    const token = await useAppStore.getState().deleteFolder(folder.id)
+    expect(useAppStore.getState().saved.find((p) => p.id === "g1")?.folderId).toBeNull()
+    await useAppStore.getState().undo(token)
+    expect(useAppStore.getState().folders.map((f) => f.id)).toContain(folder.id)
+    expect(useAppStore.getState().saved.find((p) => p.id === "g1")?.folderId).toBe(folder.id)
+  })
+
+  it("同じ取り消しは1回だけ。知らないトークンは false", async () => {
+    await useAppStore.getState().saveProgression(fakeGenerated("g1"))
+    const token = await useAppStore.getState().updateSaved("g1", { memo: "x" })
+    expect(await useAppStore.getState().undo(token)).toBe(true)
+    expect(await useAppStore.getState().undo(token)).toBe(false)
+    expect(await useAppStore.getState().undo("unknown")).toBe(false)
+  })
+})
+
 describe("useAppStore: backup and restore", () => {
   it("restoreFromBackup replaces local state with the parsed backup contents", async () => {
     const folder = {
