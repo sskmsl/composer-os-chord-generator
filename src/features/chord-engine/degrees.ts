@@ -266,3 +266,84 @@ export function chordToneDegree(root: { acc: number; roman: string }, interval: 
   // 重嬰・重変になる場合だけは半音数からの綴りに戻す
   return acc === null ? degreeForSemitone(semitone) : { acc, roman }
 }
+
+/** コード名の品質 → ディグリー表記の品質(小文字=マイナー系か、サフィックス) */
+const QUALITY_TO_TOKEN: Record<string, { lower: boolean; suffix: string }> = {
+  "": { lower: false, suffix: "" },
+  m: { lower: true, suffix: "" },
+  dim: { lower: true, suffix: "dim" },
+  aug: { lower: false, suffix: "aug" },
+  m7b5: { lower: true, suffix: "ø" },
+  "ø": { lower: true, suffix: "ø" },
+  maj7: { lower: false, suffix: "maj7" },
+  mMaj7: { lower: true, suffix: "maj7" },
+  "7": { lower: false, suffix: "7" },
+  m7: { lower: true, suffix: "7" },
+  add9: { lower: false, suffix: "add9" },
+  "m(add9)": { lower: true, suffix: "add9" },
+  madd9: { lower: true, suffix: "add9" },
+  m9: { lower: true, suffix: "m9" },
+  m11: { lower: true, suffix: "11" },
+  "11": { lower: false, suffix: "11" },
+  sus2: { lower: false, suffix: "sus2" },
+  sus4: { lower: false, suffix: "sus4" },
+  "7sus4": { lower: false, suffix: "7sus4" },
+  "6": { lower: false, suffix: "6" },
+  m6: { lower: true, suffix: "6" },
+}
+
+/** 表にない品質(9, maj9, 13 など)を、響きの近い品質へ寄せる */
+function nearestQuality(quality: string): { lower: boolean; suffix: string } {
+  const exact = QUALITY_TO_TOKEN[quality]
+  if (exact) return exact
+  if (/^maj/.test(quality)) return QUALITY_TO_TOKEN.maj7
+  if (/^m(?!aj)/.test(quality)) return /\d/.test(quality) ? QUALITY_TO_TOKEN.m7 : QUALITY_TO_TOKEN.m
+  if (/^(9|13|7)/.test(quality)) return QUALITY_TO_TOKEN["7"]
+  if (/^sus/.test(quality)) return QUALITY_TO_TOKEN.sus4
+  return QUALITY_TO_TOKEN[""]
+}
+
+const THIRDLESS_SUFFIXES = new Set(["sus2", "sus4", "7sus4", "aug"])
+/** 短調(i ii° bIII iv V bVI bVII。属和音は和声的短音階の長三和音)・長音階(I ii iii IV V vi vii°)で短三和音系になる度数 */
+const MINOR_KEY_LOWER = new Set(["0:I", "0:II", "0:IV"])
+const MAJOR_KEY_LOWER = new Set(["0:II", "0:III", "0:VI", "0:VII"])
+
+function diatonicIsMinor(degree: { acc: number; roman: string }, key: MusicKey): boolean {
+  return (key.mode === "minor" ? MINOR_KEY_LOWER : MAJOR_KEY_LOWER).has(`${degree.acc}:${degree.roman}`)
+}
+
+/**
+ * 実コード名(例: "Dbmaj7/F")を、キーから見たディグリー表記(例: "bIImaj7/iv")へ戻す。
+ * 手で書き換えたコードから、度数表記・スコア・説明文を計算し直すために使う。
+ * 度数は半音数で決まる慣習的な綴りになる(Aマイナーの "Db" は III)。
+ * 解釈できない表記は null。
+ */
+export function tokenFromChordSymbol(symbol: string, key: MusicKey): string | null {
+  const [main, bassName] = symbol.trim().split("/")
+  const m = /^([A-G][#b]?)(.*)$/.exec(main.trim())
+  if (!m) return null
+  const rootPcValue = NOTE_TO_PC[m[1]]
+  const tonicPc = NOTE_TO_PC[key.tonic]
+  if (rootPcValue == null || tonicPc == null) return null
+  // 度数は進行内の綴りの慣習(bIII・bVI・#IV等)で表す。入力したコード名の綴り自体は呼び出し側でそのまま残す
+  const degree = degreeForSemitone(rootPcValue - tonicPc)
+  const quality = nearestQuality(m[2].trim())
+  // 3度を含まない和音(sus・aug)は、その度数の調の中での三和音に合わせて大文字・小文字を決める
+  const lower = THIRDLESS_SUFFIXES.has(quality.suffix) ? diatonicIsMinor(degree, key) : quality.lower
+  const suffix = quality.suffix
+  const parsed: ParsedChord = { token: "", acc: degree.acc, roman: degree.roman, lower, suffix }
+  if (bassName != null) {
+    const bassValue = NOTE_TO_PC[bassName.trim()]
+    if (bassValue == null) return null
+    if (bassValue !== rootPcValue) {
+      // 構成音のベース(転回形)は根音から数えた度数で、それ以外(ペダル等)は調から見た度数で綴る
+      const interval = (bassValue - rootPcValue + 12) % 12
+      const bassDegree = chordIntervals(parsed).some((i) => i % 12 === interval)
+        ? chordToneDegree(degree, interval)
+        : degreeForSemitone(bassValue - tonicPc)
+      const accStr = bassDegree.acc === -1 ? "b" : bassDegree.acc === 1 ? "#" : ""
+      parsed.bass = { acc: bassDegree.acc, roman: bassDegree.roman, raw: `${accStr}${bassDegree.roman.toLowerCase()}` }
+    }
+  }
+  return buildToken(parsed)
+}

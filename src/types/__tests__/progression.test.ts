@@ -1,6 +1,7 @@
 import { describe, it, expect } from "vitest"
 import {
   alignBeatsToBars,
+  lastModifiedAt,
   migrateSavedProgression,
   toSavedProgression,
   PROGRESSION_SCHEMA_VERSION,
@@ -129,5 +130,18 @@ describe("alignBeatsToBars", () => {
     for (const beats of [[2], [4, 2], [2, 4, 2, 4, 2], [3, 4], [4, 2, 8]]) {
       expect(alignBeatsToBars(beats).reduce((a, b) => a + b, 0) % 4).toBe(0)
     }
+  })
+})
+
+describe("lastModifiedAt(同期で新しい方を残す基準)", () => {
+  it("保存後に編集していれば編集日時、していなければ保存日時", () => {
+    expect(lastModifiedAt({ savedAt: "2026-01-01T00:00:00.000Z" })).toBe("2026-01-01T00:00:00.000Z")
+    expect(lastModifiedAt({ savedAt: "2026-01-01T00:00:00.000Z", updatedAt: "2026-02-01T00:00:00.000Z" })).toBe(
+      "2026-02-01T00:00:00.000Z",
+    )
+    // 複製直後など、編集日時が保存日時より古い場合は保存日時
+    expect(lastModifiedAt({ savedAt: "2026-03-01T00:00:00.000Z", updatedAt: "2026-02-01T00:00:00.000Z" })).toBe(
+      "2026-03-01T00:00:00.000Z",
+    )
   })
 })

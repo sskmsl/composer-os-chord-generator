@@ -10,6 +10,7 @@ import {
   degreeSemitone,
   parseToken,
   rootPc,
+  tokenFromChordSymbol,
   upperPitchClasses,
 } from "../degrees"
 import type { MusicKey } from "@/types/music"
@@ -196,5 +197,27 @@ describe("degreeForSemitone", () => {
   it("wraps negative and >=12 inputs into a single octave", () => {
     expect(degreeForSemitone(-1)).toEqual(degreeForSemitone(11))
     expect(degreeForSemitone(12)).toEqual(degreeForSemitone(0))
+  })
+})
+
+describe("tokenFromChordSymbol(手で書き換えたコード → 度数)", () => {
+  it("実コード名を調から見た度数へ戻し、chordName で同じ名前に戻る", () => {
+    const key = { tonic: "A", mode: "minor" } as const
+    for (const symbol of ["Am", "Fmaj7", "Dm7", "E7", "G/B", "Bm7b5", "Cadd9", "Am(add9)", "F/A", "Esus4", "E7sus4"]) {
+      const token = tokenFromChordSymbol(symbol, key)
+      expect(token, symbol).not.toBeNull()
+      expect(chordName(parseToken(token!), key), symbol).toBe(symbol)
+    }
+  })
+
+  it("異名同音の綴りは慣習的な度数で表す(Aマイナーの Db は III)", () => {
+    expect(tokenFromChordSymbol("Dbmaj7", { tonic: "A", mode: "minor" })).toBe("IIImaj7")
+  })
+
+  it("表にない品質は近い響きに寄せ、解釈できない表記は null", () => {
+    const key = { tonic: "C", mode: "major" } as const
+    expect(tokenFromChordSymbol("G9", key)).toBe("V7")
+    expect(tokenFromChordSymbol("Fmaj9", key)).toBe("IVmaj7")
+    expect(tokenFromChordSymbol("H7", key)).toBeNull()
   })
 })

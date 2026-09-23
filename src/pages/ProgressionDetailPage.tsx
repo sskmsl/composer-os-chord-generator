@@ -19,10 +19,11 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { parseChordSymbol } from "@/features/audio/chordSymbols"
+import { reanalyzeChords, transposeProgression } from "@/features/chord-engine/generateProgressions"
 import { STYLE_OPTIONS } from "@/features/chord-engine/templates"
 import { useAppStore } from "@/store/useAppStore"
 import { usePlayerStore } from "@/store/usePlayerStore"
-import { MOOD_OPTIONS, SECTION_OPTIONS } from "@/types/music"
+import { keyFromLabel, keyId, keyLabel, MAJOR_KEYS, MINOR_KEYS, MOOD_OPTIONS, SECTION_OPTIONS } from "@/types/music"
 import { formatDate } from "@/utils/date"
 
 interface MemoFields {
@@ -60,6 +61,7 @@ export function ProgressionDetailPage() {
     logicProNote: "",
   })
   const [saving, setSaving] = useState(false)
+  const [autoSavedAt, setAutoSavedAt] = useState<Date | null>(null)
   const [editingChords, setEditingChords] = useState(false)
   const [chordInputs, setChordInputs] = useState<string[]>([])
   const [savingChords, setSavingChords] = useState(false)
@@ -101,11 +103,13 @@ export function ProgressionDetailPage() {
     fields.arrangementNote !== progression.arrangementNote ||
     fields.logicProNote !== progression.logicProNote
 
-  const handleSave = async () => {
+  const handleSave = async (auto = false) => {
     setSaving(true)
     try {
       await updateSaved(progression.id, fields)
-      toast.success("メモを保存しました")
+      // 入力欄から離れたときの自動保存は、トーストを出さず欄の下の表示だけで知らせる
+      if (auto) setAutoSavedAt(new Date())
+      else toast.success("メモを保存しました")
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "保存に失敗しました")
     } finally {
@@ -131,13 +135,35 @@ export function ProgressionDetailPage() {
     }
     setSavingChords(true)
     try {
-      await updateSaved(progression.id, { chords: trimmed })
+      // 度数表記・スコア・説明文もコードに合わせて計算し直す(元の進行のまま残さない)
+      const reanalyzed = reanalyzeChords(trimmed, {
+        key: keyFromLabel(progression.key, progression.mode),
+        style: progression.style,
+        mood: progression.mood,
+        section: progression.section,
+      })
+      await updateSaved(progression.id, { chords: trimmed, ...(reanalyzed ?? {}) })
       setEditingChords(false)
       toast.success("コードを変更しました")
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "保存に失敗しました")
     } finally {
       setSavingChords(false)
+    }
+  }
+
+  const currentKey = keyFromLabel(progression.key, progression.mode)
+  // 曲の流れで転調した先など、一覧にない調で保存された進行でも現在の調を選択肢に残す
+  const listedKeys = progression.mode === "minor" ? MINOR_KEYS : MAJOR_KEYS
+  const keyOptions = listedKeys.some((k) => k.tonic === currentKey.tonic) ? listedKeys : [currentKey, ...listedKeys]
+
+  const handleTranspose = async (tonic: string) => {
+    if (currentKey.tonic === tonic) return
+    try {
+      await updateSaved(progression.id, transposeProgression(progression.romanNumerals, { tonic, mode: progression.mode }))
+      toast.success(`${keyLabel({ tonic, mode: progression.mode })} に移調しました`)
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "移調に失敗しました")
     }
   }
 
@@ -216,7 +242,27 @@ export function ProgressionDetailPage() {
               {progression.romanNumerals.join(" – ")}
             </p>
             <div className="mt-3 flex flex-wrap gap-1.5">
-              <Badge variant="secondary" className="font-normal">{progression.key}</Badge>
+              {/* 同じ度数のまま別の調へ移す(曲の中で転調させたいセクション向け) */}
+              <Select
+                items={keyOptions.map((k) => ({
+                  value: k.tonic,
+                  label: keyLabel(k),
+                }))}
+                value={currentKey.tonic}
+                onValueChange={(v) => void handleTranspose(v as string)}
+                disabled={editingChords}
+              >
+                <SelectTrigger size="sm" aria-label="キー(移調)" className="h-6 gap-1 px-2 text-xs">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {keyOptions.map((k) => (
+                    <SelectItem key={keyId(k)} value={k.tonic}>
+                      {keyLabel(k)}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
               <Badge variant="secondary" className="font-normal">{styleLabel}</Badge>
               <Badge variant="secondary" className="font-normal">{sectionLabel}</Badge>
               <Badge variant="outline" className="font-normal">{moodLabel}</Badge>
@@ -333,16 +379,29 @@ export function ProgressionDetailPage() {
                   id={`memo-${key}`}
                   value={fields[key]}
                   onChange={(e) => setFields((f) => ({ ...f, [key]: e.target.value }))}
+                  // 保存ボタンを押し忘れて画面を離れても書いた内容が消えないよう、欄から離れた時点で保存する
+                  onBlur={() => {
+                    if (dirty && !saving) void handleSave(true)
+                  }}
                   placeholder={placeholder}
                   rows={3}
                   className="leading-relaxed"
                 />
               </div>
             ))}
-            <Button onClick={handleSave} disabled={!dirty || saving} className="self-end">
-              <Save data-icon="inline-start" />
-              {saving ? "保存中..." : "メモを保存"}
-            </Button>
+            <div className="flex flex-wrap items-center justify-end gap-3">
+              <p className="text-xs text-muted-foreground" aria-live="polite">
+                {dirty
+                  ? "入力欄から離れると自動で保存します"
+                  : autoSavedAt
+                    ? `${autoSavedAt.toLocaleTimeString("ja-JP", { hour: "2-digit", minute: "2-digit" })} に自動保存しました`
+                    : ""}
+              </p>
+              <Button onClick={() => void handleSave()} disabled={!dirty || saving}>
+                <Save data-icon="inline-start" />
+                {saving ? "保存中..." : "メモを保存"}
+              </Button>
+            </div>
           </CardContent>
         </Card>
       </div>

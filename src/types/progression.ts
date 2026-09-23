@@ -81,6 +81,11 @@ export interface SavedProgression extends GeneratedProgression {
   arrangementNote: string
   logicProNote: string
   savedAt: string
+  /**
+   * 最終更新日時(保存後にコード・メモ・所属・並び順などを変えた時刻)。
+   * 端末間の同期で「新しい方を残す」判定に使う。古いデータには無く、その場合は savedAt で比べる
+   */
+  updatedAt?: string
   /** 所属フォルダ(曲)のid。null は未分類 */
   folderId: string | null
   /** フォルダ内での並び順(小さいほど先)。保存時刻由来の数値で初期化 */
@@ -105,6 +110,11 @@ export function toSavedProgression(
     order: Date.now(),
     repeatCount: 1,
   }
+}
+
+/** 同期のマージ・削除記録との比較に使う、進行の最終更新日時 */
+export function lastModifiedAt(progression: Pick<SavedProgression, "savedAt" | "updatedAt">): string {
+  return progression.updatedAt && progression.updatedAt > progression.savedAt ? progression.updatedAt : progression.savedAt
 }
 
 export function migrateSavedProgression(raw: SavedProgression): SavedProgression {
