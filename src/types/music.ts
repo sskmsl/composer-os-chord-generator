@@ -23,6 +23,7 @@ export type StyleId =
   | "electronica"
   | "slowcore"
   | "frenchPop"
+  | "kayokyoku"
 
 /** Composer Arrangerと共有する、曲中での音楽的な役割。 */
 export type SectionRole =
@@ -55,6 +56,7 @@ const STYLE_IDS: readonly StyleId[] = [
   "electronica",
   "slowcore",
   "frenchPop",
+  "kayokyoku",
 ]
 
 /**

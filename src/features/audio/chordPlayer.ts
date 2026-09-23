@@ -202,6 +202,18 @@ const STYLE_VOICES: Partial<Record<StyleId, Partial<VoiceProfile>>> = {
     release: 0.5,
     chordGain: 0.045,
   },
+  kayokyoku: {
+    // 80年代のFMエレピ+ストリングスを思わせる、明るすぎない中域
+    waveform: "triangle",
+    detune: 6,
+    filterBase: 900,
+    filterPeak: 1800,
+    attack: 0.03,
+    sustainLevel: 0.6,
+    decay: 0.4,
+    release: 0.8,
+    chordGain: 0.05,
+  },
 }
 
 function getVoice(style: StyleId): VoiceProfile {
