@@ -1,6 +1,6 @@
 import type { MoodId, MusicKey, RuleSection, SectionId, StyleId } from "@/types/music"
 import { keyLabel, sectionRule } from "@/types/music"
-import type { GeneratedProgression } from "@/types/progression"
+import { alignBeatsToBars, type GeneratedProgression } from "@/types/progression"
 import type { ParsedChord } from "./degrees"
 import { bassNoteName, buildToken, chordName, parseToken } from "./degrees"
 import { decorateProgression } from "./decorate"
@@ -174,7 +174,7 @@ function computeHarmonicRhythm(
     beats[lastIdx] = 8
   }
 
-  return beats
+  return alignBeatsToBars(beats)
 }
 
 /** CHORD_ENGINE_SPEC §6 のセクションルールでテンプレートを変形する */

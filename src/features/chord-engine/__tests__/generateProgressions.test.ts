@@ -36,6 +36,13 @@ describe("generateProgressions: never throws across the full parameter space", (
                 expect(b).toBeGreaterThan(0)
                 expect(Number.isInteger(b)).toBe(true)
               }
+              // 小節単位: 合計は4拍の倍数で、2拍のコード以外は小節頭から始まる
+              expect(r.beats.reduce((a, b) => a + b, 0) % 4).toBe(0)
+              let start = 0
+              for (const b of r.beats) {
+                if (start % 4 !== 0) expect(b).toBe(2)
+                start += b
+              }
               for (const v of Object.values(r.scores)) {
                 expect(v).toBeGreaterThanOrEqual(1)
                 expect(v).toBeLessThanOrEqual(10)
