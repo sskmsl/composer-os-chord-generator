@@ -74,6 +74,11 @@ function walk(starts: string[], table: Record<string, string[]>, affinity: strin
   return chain
 }
 
+/** そのスタイルのテンプレートで、この和音の次に置かれたことのある和音(遷移表の候補) */
+export function continuationsOf(style: StyleId, mode: Mode, token: string): string[] {
+  return getTransitionData(style, mode).table[rootOf(token)] ?? []
+}
+
 /** @param length 指定するとその長さちょうどを狙って生成する(行き止まりに備えて複数回試行) */
 export function generateChain(style: StyleId, mode: Mode, mood: MoodId, length?: number): string[] {
   const { starts: templateStarts, inner, table } = getTransitionData(style, mode)

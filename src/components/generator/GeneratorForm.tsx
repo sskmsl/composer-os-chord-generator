@@ -14,6 +14,7 @@ import { STYLE_OPTIONS } from "@/features/chord-engine/templates"
 import { useAppStore } from "@/store/useAppStore"
 import {
   CHORD_COUNT_OPTIONS,
+  chordCountLabel,
   MAJOR_KEYS,
   MINOR_KEYS,
   MOOD_OPTIONS,
@@ -33,7 +34,7 @@ const ALL_KEYS = [...MINOR_KEYS, ...MAJOR_KEYS]
 const KEY_ITEMS = ALL_KEYS.map((k) => ({ value: keyId(k), label: keyLabel(k) }))
 const STYLE_ITEMS = STYLE_OPTIONS.map((s) => ({ value: s.value, label: s.label }))
 const COUNT_ITEMS = VARIATION_OPTIONS.map((c) => ({ value: String(c), label: `${c}件` }))
-const LENGTH_ITEMS = CHORD_COUNT_OPTIONS.map((c) => ({ value: String(c), label: `${c}コード` }))
+const LENGTH_ITEMS = CHORD_COUNT_OPTIONS.map((c) => ({ value: String(c), label: chordCountLabel(c) }))
 
 export function GeneratorForm() {
   const params = useAppStore((s) => s.params)

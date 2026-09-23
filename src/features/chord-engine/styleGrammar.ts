@@ -63,6 +63,18 @@ export function tonicTokens(style: StyleId, mode: Mode): string[] {
 }
 
 /**
+ * トニックへ着地する直前に置く和音。そのスタイルのテンプレートで、実際にトニックの直前に
+ * 置かれている和音から選ぶ(歌謡曲なら V7、Dorian なら IV / bVII のように、終止の作り方が変わる)。
+ */
+export function cadentialTokens(style: StyleId, mode: Mode): string[] {
+  return memoized(`cadential-${style}-${mode}`, () =>
+    STYLE_TEMPLATES[style][mode].flatMap((tpl) =>
+      tpl.slice(0, -1).filter((t, i) => !isTonic(t, mode) && isTonic(tpl[i + 1], mode)),
+    ),
+  )
+}
+
+/**
  * Bメロ末尾・Cメロ末尾に置く「次へ向かう」和音。そのスタイルのテンプレートが
  * 実際に終わりに使っている、トニック以外の和音から選ぶ(Dorianなら IV / bVII、
  * Romantic Darkなら V / V7sus4 のように、スタイルごとに緊張の作り方が変わる)。

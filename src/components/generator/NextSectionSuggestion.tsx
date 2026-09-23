@@ -37,7 +37,8 @@ export function NextSectionSuggestion() {
             <Button
               key={section}
               variant="outline"
-              className="h-auto flex-col items-start gap-0.5 px-3 py-2 text-left"
+              // 説明文が長いと折り返さずに画面幅を超えていたため、折り返しを許可する
+              className="h-auto max-w-full shrink flex-col items-start gap-0.5 px-3 py-2 text-left whitespace-normal"
               onClick={() => {
                 setParams(keyChanges ? { section, key: targetKey } : { section })
                 generate()

@@ -1,5 +1,5 @@
 import type { MoodId, MusicKey, RuleSection, SectionId, StyleId } from "@/types/music"
-import { keyLabel, sectionRule } from "@/types/music"
+import { keyLabel, PERIOD_CHORD_COUNT, sectionRule } from "@/types/music"
 import { alignBeatsToBars, type GeneratedProgression } from "@/types/progression"
 import type { ParsedChord } from "./degrees"
 import { bassNoteName, buildToken, chordName, parseToken } from "./degrees"
@@ -8,6 +8,7 @@ import { buildDescription } from "./descriptions"
 import { chance, pick } from "./random"
 import { computeScores, extractFeatures, type CadenceType } from "./scoring"
 import {
+  cadentialTokens,
   commonToneSubstitutes,
   matchesStyleSignature,
   openColors,
@@ -17,7 +18,7 @@ import {
   tensionTokens,
   tonicTokens,
 } from "./styleGrammar"
-import { generateChain } from "./transitions"
+import { continuationsOf, generateChain } from "./transitions"
 import { applyVoiceLeadingBass } from "./voiceLeading"
 
 export interface GenerateParams {
@@ -56,8 +57,11 @@ export function generateProgressions(params: GenerateParams): GeneratedProgressi
     const dedupKey = progression.chords.join("|")
     if (seen.has(dedupKey)) continue
     seen.add(dedupKey)
-    // そのスタイルの性格(シグネチャー)を欠いた候補は、点数に関わらず出さない
-    if (!matchesStyleSignature(params.style, progression.romanNumerals.map(parseToken), params.key.mode)) continue
+    // そのスタイルの性格(シグネチャー)を欠いた候補は、点数に関わらず出さない。
+    // 8小節フレーズは前半・後半それぞれが4コードの進行としてスタイルを満たすこと
+    const parsedChords = progression.romanNumerals.map(parseToken)
+    const halves = params.length === PERIOD_CHORD_COUNT ? [parsedChords.slice(0, 4), parsedChords.slice(4)] : [parsedChords]
+    if (!halves.every((half) => matchesStyleSignature(params.style, half, params.key.mode))) continue
     pool.push(progression)
   }
 
@@ -142,8 +146,12 @@ function rankAndSelect(
 function generateOne(params: GenerateParams): GeneratedProgression {
   const { key, style, section, mood, length } = params
 
-  let tokens = adaptToSection(generateChain(style, key.mode, mood, length), section, key, style)
-  if (chance(SUBSTITUTION_PROBABILITY)) tokens = substituteOneChord(tokens, style, key.mode)
+  const isPeriod = length === PERIOD_CHORD_COUNT
+  let tokens = isPeriod
+    ? buildPeriod(style, key.mode, mood, section)
+    : adaptToSection(generateChain(style, key.mode, mood, length), section, key, style)
+  // 8小節フレーズは「同じ出だし」自体が構造なので、代理和音で崩さない
+  if (!isPeriod && chance(SUBSTITUTION_PROBABILITY)) tokens = substituteOneChord(tokens, style, key.mode)
   const decorated = decorateProgression(tokens.map(parseToken), style, mood, key.mode)
   const { chords: parsed, invertedIndices } = applyVoiceLeadingBass(decorated, style)
 
@@ -161,11 +169,55 @@ function generateOne(params: GenerateParams): GeneratedProgression {
     mood,
     romanNumerals,
     bassMovement: describeBassMovement(parsed, key),
-    description: buildDescription(style, mood, section, features),
+    description: (isPeriod ? PERIOD_DESCRIPTION : "") + buildDescription(style, mood, section, features),
     scores: computeScores(features),
-    beats: computeHarmonicRhythm(parsed.length, style, invertedIndices, features.cadence),
+    // 8小節フレーズは4小節+4小節の形そのものが構造なので、1和音=1小節に揃える
+    beats: isPeriod ? parsed.map(() => 4) : computeHarmonicRhythm(parsed.length, style, invertedIndices, features.cadence),
     createdAt: new Date().toISOString(),
   }
+}
+
+const PERIOD_DESCRIPTION = "前半4小節で問いかけ、同じ出だしの後半4小節で答える8小節フレーズ。"
+
+/** 次のセクションへつなぐため、8小節フレーズでも最後を解決させないセクション */
+const OPEN_ENDED_SECTIONS: RuleSection[] = ["intro", "preChorus", "breakdownChorus", "cMelody"]
+
+/** 指定した和音と根音が同じ候補を避けて選ぶ(候補がそれしか無ければそのまま選ぶ) */
+function pickAvoiding(candidates: string[], ...avoid: string[]): string {
+  const avoidRoots = new Set(avoid.map(rootKey))
+  const usable = candidates.filter((t) => !avoidRoots.has(rootKey(t)))
+  return pick(usable.length > 0 ? usable : candidates)
+}
+
+/**
+ * 8小節フレーズ(楽式でいう「楽節」)。前半4小節は次へ向かう和音で止めて「問い」とし、
+ * 後半4小節は同じ出だし2和音で始めて、最後にトニックへ着地して「答え」る。
+ * 次のセクションへつなぐ場面(Bメロ・Cメロ等)では、後半も前半と別の緊張の和音で止める。
+ * 和音はすべてそのスタイルのテンプレートと遷移表から選ぶ。
+ */
+function buildPeriod(style: StyleId, mode: MusicKey["mode"], mood: MoodId, section: SectionId): string[] {
+  const antecedent = generateChain(style, mode, mood, 4).slice(0, 4)
+  while (antecedent.length < 4) antecedent.push(pick(tensionTokens(style, mode)))
+  // 後半は前半の出だしで始まるので、出だし2和音が同じ根音なら、前半の終わりもそれと変えて3連続を防ぐ
+  const openingRepeats = rootKey(antecedent[0]) === rootKey(antecedent[1])
+  antecedent[3] = pickAvoiding(
+    tensionTokens(style, mode),
+    antecedent[2],
+    ...(openingRepeats ? [antecedent[0]] : []),
+  )
+
+  const tonicRoot = mode === "minor" ? "i" : "I"
+  const openEnded = OPEN_ENDED_SECTIONS.includes(sectionRule(section))
+  // 答えの3つ目: 着地するなら、そのスタイルでトニックの直前に置かれる和音(終止の準備)。
+  // 止めるなら、出だしからの自然な流れ(遷移表の続き)
+  const flow = continuationsOf(style, mode, antecedent[1]).filter((t) => rootKey(t) !== tonicRoot)
+  const approach = openEnded ? flow : cadentialTokens(style, mode)
+  const third = approach.length > 0 ? pickAvoiding(approach, antecedent[1]) : pickAvoiding(tensionTokens(style, mode), antecedent[1])
+  const endings = openEnded
+    ? tensionTokens(style, mode).filter((t) => rootKey(t) !== rootKey(antecedent[3]))
+    : tonicTokens(style, mode)
+  const last = pickAvoiding(endings.length > 0 ? endings : tensionTokens(style, mode), third)
+  return [...antecedent, antecedent[0], antecedent[1], third, last]
 }
 
 /** 生成した進行の1か所を代理和音へ差し替える確率 */
