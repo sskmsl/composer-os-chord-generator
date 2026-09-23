@@ -98,13 +98,17 @@ function rankAndSelect(
   mode: MusicKey["mode"],
   count: number,
 ): GeneratedProgression[] {
-  if (REPETITIVE_STYLES.has(style)) {
-    return [...pool].sort((a, b) => b.scores.boutonnat - a.scores.boutonnat).slice(0, count)
-  }
+  // スコアは決定的な整数なので同点が多い。1未満の乱数を足して同点内の順序だけを
+  // 揺らし、同じ条件で何度生成しても同じ顔ぶれに偏らないようにする
+  // (異なる点数の大小関係は崩さない)。
   const bucket = skeletonBucket(style, mode)
-  const rank = (p: GeneratedProgression) =>
-    p.scores.boutonnat - (wasRecentlyUsed(bucket, rootSkeletonOf(p.romanNumerals)) ? 3 : 0)
-  return [...pool].sort((a, b) => rank(b) - rank(a)).slice(0, count)
+  const penalty = (p: GeneratedProgression) =>
+    !REPETITIVE_STYLES.has(style) && wasRecentlyUsed(bucket, rootSkeletonOf(p.romanNumerals)) ? 3 : 0
+  const ranked = pool.map((p) => ({ p, rank: p.scores.boutonnat - penalty(p) + Math.random() * 0.99 }))
+  return ranked
+    .sort((a, b) => b.rank - a.rank)
+    .slice(0, count)
+    .map(({ p }) => p)
 }
 
 function generateOne(params: GenerateParams): GeneratedProgression {
@@ -129,7 +133,7 @@ function generateOne(params: GenerateParams): GeneratedProgression {
     romanNumerals,
     bassMovement: describeBassMovement(parsed, key),
     description: buildDescription(style, mood, section, features),
-    scores: computeScores(features, style, section, mood),
+    scores: computeScores(features),
     beats: computeHarmonicRhythm(parsed.length, style, invertedIndices, features.cadence),
     createdAt: new Date().toISOString(),
   }

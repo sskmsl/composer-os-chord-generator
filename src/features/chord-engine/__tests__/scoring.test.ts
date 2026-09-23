@@ -114,7 +114,7 @@ describe("computeScores", () => {
   }
 
   it("clamps every score into the 1-10 range even for a maximally negative feature set", () => {
-    const scores = computeScores(baseFeatures, "romanticDark", "verse", "melancholic")
+    const scores = computeScores(baseFeatures)
     for (const v of Object.values(scores)) {
       expect(v).toBeGreaterThanOrEqual(1)
       expect(v).toBeLessThanOrEqual(10)
@@ -146,11 +146,23 @@ describe("computeScores", () => {
       plainDiatonic: false,
       overDecorated: false,
     }
-    const scores = computeScores(maxed, "cinematic", "grand-chorus", "dramatic")
+    const scores = computeScores(maxed)
     for (const v of Object.values(scores)) {
       expect(v).toBeGreaterThanOrEqual(1)
       expect(v).toBeLessThanOrEqual(10)
     }
+  })
+
+  it("is deterministic: the same progression always gets the same scores", () => {
+    const first = computeScores(baseFeatures)
+    for (let i = 0; i < 50; i++) expect(computeScores(baseFeatures)).toEqual(first)
+  })
+
+  it("keeps a plain textbook progression in the lower half instead of inflating it", () => {
+    const scores = computeScores(baseFeatures)
+    expect(scores.boutonnat).toBeLessThanOrEqual(5)
+    expect(scores.mylene).toBeLessThanOrEqual(5)
+    expect(scores.cinematic).toBeLessThanOrEqual(5)
   })
 
   it("scores a plainDiatonic progression's boutonnat lower on average than a colorful one", () => {
@@ -166,7 +178,7 @@ describe("computeScores", () => {
     }
     const sample = (f: Features) => {
       const runs = Array.from({ length: 200 }, () =>
-        computeScores(f, "romanticDark", "verse", "melancholic").boutonnat,
+        computeScores(f).boutonnat,
       )
       return runs.reduce((a, b) => a + b, 0) / runs.length
     }

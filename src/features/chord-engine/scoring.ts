@@ -1,8 +1,7 @@
-import { sectionRule, type Mode, type MoodId, type SectionId, type StyleId } from "@/types/music"
+import type { Mode } from "@/types/music"
 import type { Scores } from "@/types/progression"
 import type { ParsedChord } from "./degrees"
 import { chordPitchClasses, degreeSemitone, upperPitchClasses } from "./degrees"
-import { jitter } from "./random"
 
 /** 進行から検出した音楽的特徴。スコアと説明文の両方の根拠になる */
 export interface Features {
@@ -215,33 +214,32 @@ export function extractFeatures(chords: ParsedChord[], mode: Mode): Features {
 
 const clamp = (n: number) => Math.max(1, Math.min(10, Math.round(n)))
 
-/** CHORD_ENGINE_SPEC §7 のルールをコード化した決定的スコア + 小さな揺らぎ */
-export function computeScores(
-  f: Features,
-  style: StyleId,
-  section: SectionId,
-  mood: MoodId,
-): Scores {
-  const darkMood = ["dark", "melancholic", "romantic", "mysterious", "tense"].includes(mood)
-  const rule = sectionRule(section)
-  const liftSection = ["preChorus", "chorus", "grandChorus", "outro"].includes(rule)
-  const cinematicStyle = ["cinematic", "finale", "sadcorePop"].includes(style)
-
+/**
+ * 進行そのものの特徴だけから決まる、決定的なスコア。
+ *
+ * 以前はムード・セクション・スタイルといった「生成条件」でも加点し、さらに
+ * ±1の乱数を足していた。条件由来の加点は同じ条件で生成した候補すべてに同じだけ
+ * 乗るため候補間の差を生まず、値を9〜10に張り付かせるだけだった。乱数は
+ * 同じ進行に毎回違う点を付け、表示された差の意味を曖昧にしていた。
+ * そのため両方を取り除き、同じ進行には常に同じ点が付くようにしている
+ * (候補の多様性は生成側の乱数と、選抜時の同点の並べ替えで確保する)。
+ */
+export function computeScores(f: Features): Scores {
   const mylene =
-    4 +
-    (darkMood ? 2 : 0) +
+    3 +
     (f.minor ? 1 : 0) +
     (f.endsUnresolved ? 1 : 0) +
-    (f.softColorCount >= 2 ? 1 : 0) +
-    (f.hasBviBviiTonic || liftSection ? 1 : 0) +
-    jitter()
+    Math.min(f.softColorCount, 2) +
+    (f.hasBviBviiTonic ? 1 : 0) +
+    (f.pedalBass || f.descendingBass ? 1 : 0) +
+    (f.commonToneStrength >= 1.4 ? 1 : 0)
 
   // Boutonnat的な審美眼: 少ないコードで深く・過剰にせず・1〜2箇所だけ毒を残す進行を最上位で評価する。
   // 「安全だが平凡」(plainDiatonic)と「詰め込みすぎ」(overDecorated)の両方を減点し、
   // 共通音・内声の半音進行・ペダル・スラッシュ・ちょうど良い意外性(1〜2箇所)を加点する。
   const idealSurprise = f.surpriseCount === 1 || f.surpriseCount === 2
   const boutonnat =
-    4 +
+    2 +
     (f.hasBviBviiTonic ? 1 : 0) +
     (f.minor && (f.hasV7 || (f.hasBVI && f.hasBVII)) ? 1 : 0) +
     (f.hasSlash ? 1 : 0) +
@@ -252,17 +250,16 @@ export function computeScores(
     (f.endsUnresolved ? 1 : 0) +
     (f.plainDiatonic ? -3 : 0) +
     (f.overDecorated ? -2 : 0) +
-    (f.surpriseCount >= 3 ? -2 : 0) +
-    jitter()
+    (f.surpriseCount >= 3 ? -2 : 0)
 
   const melancholy =
-    3 +
+    2 +
     (f.minor ? 2 : 0) +
     Math.min(f.softColorCount, 2) +
+    (f.hasBVI ? 1 : 0) +
     (f.descendingBass ? 1 : 0) +
     (f.endsUnresolved ? 1 : 0) +
-    (f.chromaticInnerSteps > 0 ? 1 : 0) +
-    jitter()
+    (f.chromaticInnerSteps > 0 ? 1 : 0)
 
   const darkness =
     2 +
@@ -270,18 +267,16 @@ export function computeScores(
     (f.hasDim ? 2 : 0) +
     (f.hasBII ? 2 : 0) +
     (f.hasV7 ? 1 : 0) +
-    (f.hasAug ? 1 : 0) +
-    (["dark", "tense"].includes(mood) ? 1 : 0) +
-    jitter()
+    (f.hasAug ? 1 : 0)
 
   const cinematic =
     3 +
     (f.hasBviBviiTonic ? 3 : 0) +
+    (f.hasBVI || f.hasBVII ? 1 : 0) +
     (f.largeArc ? 1 : 0) +
-    (liftSection ? 1 : 0) +
-    (cinematicStyle ? 1 : 0) +
-    (f.dominantPrep ? 1 : 0) +
-    jitter()
+    (f.ascendingBass ? 1 : 0) +
+    (f.pedalBass || f.hasSlash ? 1 : 0) +
+    (f.dominantPrep ? 1 : 0)
 
   return {
     mylene: clamp(mylene),
