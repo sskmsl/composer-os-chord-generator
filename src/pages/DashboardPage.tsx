@@ -45,7 +45,6 @@ export function DashboardPage() {
     <div className="flex flex-col gap-10">
       <div className="flex flex-col items-start gap-4 py-6">
         <h1 className="text-4xl font-semibold tracking-wide">Chord Generator</h1>
-        <p className="text-sm text-muted-foreground">Style → Key → Section → 生成 → 比較 → 保存 → 曲の構成</p>
         <Button className="h-11 px-6 text-base" onClick={() => navigate("/generator")}>
           <Sparkles data-icon="inline-start" />
           進行を生成する
