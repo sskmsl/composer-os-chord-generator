@@ -88,6 +88,20 @@ describe("chordName", () => {
     expect(chordName(parseToken("#ivdim"), C_MAJ)).toBe("F#dim")
   })
 
+  it("spells the added keys with their own accidentals (D#m and C# with sharps, Gb with flats)", () => {
+    const dSharpMinor = { tonic: "D#", mode: "minor" } as const
+    expect(["i", "iv", "v", "bIII", "bVI", "bVII", "bVII/bIII"].map((t) => chordName(parseToken(t), dSharpMinor)))
+      .toEqual(["D#m", "G#m", "A#m", "F#", "B", "C#", "C#/F#"])
+    // 短調の bVII は調の中の音なので、♯系の短調では♯で綴る(以前は G#m の bVII が Gb になっていた)
+    expect(chordName(parseToken("bVII"), { tonic: "G#", mode: "minor" })).toBe("F#")
+    // 調の外の♭(短調の bII)は従来どおり♭
+    expect(chordName(parseToken("bII"), dSharpMinor)).toBe("E")
+    const gFlat = { tonic: "Gb", mode: "major" } as const
+    expect(["I", "IV", "V", "vi"].map((t) => chordName(parseToken(t), gFlat))).toEqual(["Gb", "B", "Db", "Ebm"])
+    const cSharp = { tonic: "C#", mode: "major" } as const
+    expect(["I", "IV", "V", "vi"].map((t) => chordName(parseToken(t), cSharp))).toEqual(["C#", "F#", "G#", "A#m"])
+  })
+
   it("names extended and altered qualities", () => {
     expect(chordName(parseToken("i(add9)"), AM)).toBe("Am(add9)")
     expect(chordName(parseToken("V7"), AM)).toBe("E7")

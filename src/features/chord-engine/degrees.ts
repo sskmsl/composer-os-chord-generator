@@ -39,7 +39,7 @@ export const NOTE_TO_PC: Record<string, number> = {
 
 /** フラット表記を使うキー(それ以外はシャープ表記) */
 const FLAT_KEYS = new Set([
-  "F-major", "Bb-major", "Eb-major", "Ab-major", "Db-major",
+  "F-major", "Bb-major", "Eb-major", "Ab-major", "Db-major", "Gb-major",
   "D-minor", "G-minor", "C-minor", "F-minor", "Bb-minor", "Eb-minor",
 ])
 
@@ -85,12 +85,22 @@ export function degreeSemitone(acc: number, roman: string): number {
   return (base + acc + 12) % 12
 }
 
+/** フラット表記の調か(Ebm・Gb など)。同じ音の調が2つあるとき、元の調に綴りを揃えるのに使う */
+export function isFlatKey(key: MusicKey): boolean {
+  return FLAT_KEYS.has(`${key.tonic}-${key.mode}`)
+}
+
+/** 短調の bIII・bVI・bVII は自然短音階の音(調の中の音)なので、調の綴りに従う */
+const MINOR_SCALE_FLAT_DEGREES = new Set(["III", "VI", "VII"])
+
 /**
  * @param acc 度数に付いた臨時記号。♭の付いた度数(bVII等)は調に関わらず♭で、
  *   ♯の付いた度数(#iv等)は♯で綴る。Cメジャーの bVII が "A#" ではなく "Bb" になる。
+ *   ただし短調の bIII・bVI・bVII は調の綴り(G#m の bVII は Gb ではなく F#)。
  */
-function noteName(pc: number, key: MusicKey, acc = 0): string {
-  const useFlats = acc === -1 || (acc === 0 && FLAT_KEYS.has(`${key.tonic}-${key.mode}`))
+function noteName(pc: number, key: MusicKey, acc = 0, roman = ""): string {
+  const inMinorScale = acc === -1 && key.mode === "minor" && MINOR_SCALE_FLAT_DEGREES.has(roman)
+  const useFlats = inMinorScale ? isFlatKey(key) : acc === -1 || (acc === 0 && isFlatKey(key))
   return (useFlats ? FLAT_NAMES : SHARP_NAMES)[pc]
 }
 
@@ -107,7 +117,7 @@ export function bassPc(parsed: ParsedChord, key: MusicKey): number {
 
 /** 実コード名を生成する(例: F#m(add9), Dmaj7/F#) */
 export function chordName(parsed: ParsedChord, key: MusicKey): string {
-  const root = noteName(rootPc(parsed, key), key, parsed.acc)
+  const root = noteName(rootPc(parsed, key), key, parsed.acc, parsed.roman)
   let quality: string
   switch (parsed.suffix) {
     case "dim":
@@ -152,13 +162,13 @@ export function chordName(parsed: ParsedChord, key: MusicKey): string {
   }
   let name = root + quality
   if (parsed.bass) {
-    name += "/" + noteName(bassPc(parsed, key), key, parsed.bass.acc)
+    name += "/" + noteName(bassPc(parsed, key), key, parsed.bass.acc, parsed.bass.roman)
   }
   return name
 }
 
 export function bassNoteName(parsed: ParsedChord, key: MusicKey): string {
-  return noteName(bassPc(parsed, key), key, parsed.bass?.acc ?? parsed.acc)
+  return noteName(bassPc(parsed, key), key, parsed.bass?.acc ?? parsed.acc, parsed.bass?.roman ?? parsed.roman)
 }
 
 /**

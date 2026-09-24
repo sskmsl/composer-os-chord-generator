@@ -1,4 +1,4 @@
-import { NOTE_TO_PC } from "./degrees"
+import { isFlatKey, NOTE_TO_PC } from "./degrees"
 import { MAJOR_KEYS, MINOR_KEYS, type MusicKey } from "@/types/music"
 import type { SectionId } from "@/types/music"
 
@@ -74,11 +74,16 @@ export const NEXT_SECTIONS: Record<SectionId, SectionSuggestion[]> = {
   outro: [],
 }
 
+/** 調号が♯7つの調。同じ音の♭の調(Db・Bbm)の方が読みやすい */
+const SEVEN_SHARP_KEYS = new Set(["C#-major", "A#-minor"])
+
 /**
  * KeyMoveTypeから実際の推奨KEYを算出する。
  * - relative: マイナーなら関係長調(+3半音)、メジャーなら関係短調(-3半音)
  * - up: 同じモードのまま全音(+2半音)上げる
  * 実用キーリスト(MINOR_KEYS/MAJOR_KEYS)内から一致するものを探す。
+ * 同じ音の調が2つある(D#m/Ebm 等)ときは、調号の少ない方(C#よりDb、A#mよりBbm)を選び、
+ * 同じ数なら元の調と同じ♯・♭の綴りに揃える。
  */
 export function resolveKeyMove(key: MusicKey, move: KeyMoveType): MusicKey {
   const tonicPc = NOTE_TO_PC[key.tonic]
@@ -87,7 +92,10 @@ export function resolveKeyMove(key: MusicKey, move: KeyMoveType): MusicKey {
   const targetPc = (tonicPc + semitones + 12) % 12
 
   const candidates = targetMode === "minor" ? MINOR_KEYS : MAJOR_KEYS
-  return candidates.find((k) => NOTE_TO_PC[k.tonic] === targetPc) ?? key
+  const rank = (k: MusicKey) =>
+    (SEVEN_SHARP_KEYS.has(`${k.tonic}-${k.mode}`) ? 2 : 0) + (isFlatKey(k) === isFlatKey(key) ? 0 : 1)
+  const matches = candidates.filter((k) => NOTE_TO_PC[k.tonic] === targetPc).sort((a, b) => rank(a) - rank(b))
+  return matches[0] ?? key
 }
 
 /** 王道のフル構成(参考表示用) */
