@@ -137,7 +137,10 @@ export function chordCountLabel(count: ChordCount): string {
   return count === PERIOD_CHORD_COUNT ? "8小節(問いと答え)" : `${count}コード`
 }
 
-/** 実用重視のキーリスト(マイナー優先・一般的な綴りのみ) */
+/**
+ * 実用重視のキーリスト(マイナー優先)。同じ音の調は、譜面でよく見る綴りを両方載せる
+ * (D#m/Ebm・C#/Db・F#/Gb・A#m/Bbm)。調号7つのCb・Abmは綴りが読みにくいため載せない
+ */
 export const MINOR_KEYS: MusicKey[] = [
   { tonic: "A", mode: "minor" },
   { tonic: "E", mode: "minor" },
@@ -145,6 +148,8 @@ export const MINOR_KEYS: MusicKey[] = [
   { tonic: "F#", mode: "minor" },
   { tonic: "C#", mode: "minor" },
   { tonic: "G#", mode: "minor" },
+  { tonic: "D#", mode: "minor" },
+  { tonic: "A#", mode: "minor" },
   { tonic: "D", mode: "minor" },
   { tonic: "G", mode: "minor" },
   { tonic: "C", mode: "minor" },
@@ -161,11 +166,13 @@ export const MAJOR_KEYS: MusicKey[] = [
   { tonic: "E", mode: "major" },
   { tonic: "B", mode: "major" },
   { tonic: "F#", mode: "major" },
+  { tonic: "C#", mode: "major" },
   { tonic: "F", mode: "major" },
   { tonic: "Bb", mode: "major" },
   { tonic: "Eb", mode: "major" },
   { tonic: "Ab", mode: "major" },
   { tonic: "Db", mode: "major" },
+  { tonic: "Gb", mode: "major" },
 ]
 
 export function keyId(key: MusicKey): string {
