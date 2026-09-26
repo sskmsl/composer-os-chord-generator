@@ -1,4 +1,4 @@
-import { FolderPlus } from "lucide-react"
+import { FolderOpen, FolderPlus } from "lucide-react"
 import { toast } from "sonner"
 import { GeneratorForm } from "@/components/generator/GeneratorForm"
 import { NextSectionSuggestion } from "@/components/generator/NextSectionSuggestion"
@@ -47,16 +47,13 @@ export function GeneratorPage() {
 
       {results.length > 0 ? (
         <>
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <p className="text-sm text-muted-foreground">
-              {results.length}件の候補
-              {results.length < params.count &&
-                `(重複を除いたユニークな進行は${results.length}件でした)`}
-            </p>
-            <div className="flex items-center gap-2">
-              <span className="text-xs tracking-wider text-muted-foreground uppercase">
+          <div className="flex flex-col gap-3">
+            {/* 保存先は保存ボタンを押す前に目に入るよう、候補一覧の上に枠付きで置く */}
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-2 rounded-xl border border-primary/40 bg-primary/10 px-4 py-3">
+              <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
+                <FolderOpen className="size-4 text-primary" aria-hidden />
                 保存先
-              </span>
+              </div>
               <Select
                 items={[
                   { value: "none", label: "未分類" },
@@ -65,7 +62,7 @@ export function GeneratorPage() {
                 value={saveTargetFolderId ?? "none"}
                 onValueChange={(v) => setSaveTargetFolder(v === "none" ? null : (v as string))}
               >
-                <SelectTrigger size="sm" aria-label="保存先フォルダ">
+                <SelectTrigger className="min-w-44 bg-background font-medium" aria-label="保存先フォルダ">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -87,12 +84,23 @@ export function GeneratorPage() {
                   toast.success(`フォルダ「${folder.name}」を作成しました`)
                 }}
                 trigger={
-                  <Button variant="outline" size="icon-sm" aria-label="フォルダを作成">
+                  <Button variant="outline" size="sm" aria-label="フォルダを作成">
                     <FolderPlus />
+                    新しいフォルダ
                   </Button>
                 }
               />
+              <p className="basis-full text-xs text-muted-foreground sm:basis-auto">
+                {saveTargetFolderId
+                  ? "保存した進行はこのフォルダに入ります"
+                  : "曲ごとにまとめるなら、フォルダを選ぶか作ってから保存してください"}
+              </p>
             </div>
+            <p className="text-sm text-muted-foreground">
+              {results.length}件の候補
+              {results.length < params.count &&
+                `(重複を除いたユニークな進行は${results.length}件でした)`}
+            </p>
           </div>
           <div className="grid items-stretch gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {results.map((p) => (
