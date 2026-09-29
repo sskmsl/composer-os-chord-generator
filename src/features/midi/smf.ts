@@ -82,6 +82,8 @@ export interface SmfTrack {
    * 「今どのパートか」がDAW上で分かるようにするためのもの。
    */
   textEvents?: MidiMarker[]
+  /** 指定すると、曲頭にこの楽器番号(GM、0始まり)のプログラムチェンジを、このトラックのチャンネルで書く(GM向けの書き出し) */
+  program?: number
 }
 
 /** 調号(Key Signature)。sharpsFlats は ♯ の数(正)または ♭ の数(負) */
@@ -146,6 +148,9 @@ export function buildSmf(song: SmfSong): Uint8Array {
         data: metaEvent(0x01, textBytes(m.text)),
       })),
     ]
+    if (track.program != null) {
+      events.push({ tick: 0, order: 1, data: [0xc0 | ((track.notes[0]?.channel ?? 0) & 0x0f), track.program & 0x7f] })
+    }
     for (const n of track.notes) {
       events.push({
         tick: n.start,

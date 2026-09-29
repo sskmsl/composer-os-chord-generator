@@ -1,0 +1,119 @@
+/**
+ * GM(General MIDI)の楽器。試聴(GM音源)と、MIDI書き出し(GM向け)の楽器番号に共通で使う。
+ * 名前は GM の128音色の並び(プログラム番号 0〜127)で、試聴用のサンプル(MIDI.js Soundfonts の FluidR3_GM)のファイル名と同じ。
+ * Composer Arranger(src/core/gmInstruments.ts)と同じ表を使う。
+ */
+export const GM_PROGRAM_FILES = [
+  "acoustic_grand_piano", "bright_acoustic_piano", "electric_grand_piano", "honkytonk_piano", "electric_piano_1", "electric_piano_2", "harpsichord", "clavinet",
+  "celesta", "glockenspiel", "music_box", "vibraphone", "marimba", "xylophone", "tubular_bells", "dulcimer",
+  "drawbar_organ", "percussive_organ", "rock_organ", "church_organ", "reed_organ", "accordion", "harmonica", "tango_accordion",
+  "acoustic_guitar_nylon", "acoustic_guitar_steel", "electric_guitar_jazz", "electric_guitar_clean", "electric_guitar_muted", "overdriven_guitar", "distortion_guitar", "guitar_harmonics",
+  "acoustic_bass", "electric_bass_finger", "electric_bass_pick", "fretless_bass", "slap_bass_1", "slap_bass_2", "synth_bass_1", "synth_bass_2",
+  "violin", "viola", "cello", "contrabass", "tremolo_strings", "pizzicato_strings", "orchestral_harp", "timpani",
+  "string_ensemble_1", "string_ensemble_2", "synth_strings_1", "synth_strings_2", "choir_aahs", "voice_oohs", "synth_choir", "orchestra_hit",
+  "trumpet", "trombone", "tuba", "muted_trumpet", "french_horn", "brass_section", "synth_brass_1", "synth_brass_2",
+  "soprano_sax", "alto_sax", "tenor_sax", "baritone_sax", "oboe", "english_horn", "bassoon", "clarinet",
+  "piccolo", "flute", "recorder", "pan_flute", "blown_bottle", "shakuhachi", "whistle", "ocarina",
+  "lead_1_square", "lead_2_sawtooth", "lead_3_calliope", "lead_4_chiff", "lead_5_charang", "lead_6_voice", "lead_7_fifths", "lead_8_bass__lead",
+  "pad_1_new_age", "pad_2_warm", "pad_3_polysynth", "pad_4_choir", "pad_5_bowed", "pad_6_metallic", "pad_7_halo", "pad_8_sweep",
+  "fx_1_rain", "fx_2_soundtrack", "fx_3_crystal", "fx_4_atmosphere", "fx_5_brightness", "fx_6_goblins", "fx_7_echoes", "fx_8_scifi",
+  "sitar", "banjo", "shamisen", "koto", "kalimba", "bagpipe", "fiddle", "shanai",
+  "tinkle_bell", "agogo", "steel_drums", "woodblock", "taiko_drum", "melodic_tom", "synth_drum", "reverse_cymbal",
+  "guitar_fret_noise", "breath_noise", "seashore", "bird_tweet", "telephone_ring", "helicopter", "applause", "gunshot",
+] as const
+
+/** 画面で選べる楽器(よく使うものに絞る)。番号は GM のプログラム番号(0始まり) */
+export const GM_INSTRUMENT_CHOICES: ReadonlyArray<{ program: number; label: string }> = [
+  { program: 0, label: "ピアノ" },
+  { program: 1, label: "明るいピアノ" },
+  { program: 4, label: "エレピ(ローズ)" },
+  { program: 5, label: "エレピ(FM)" },
+  { program: 6, label: "チェンバロ" },
+  { program: 8, label: "チェレスタ" },
+  { program: 10, label: "オルゴール" },
+  { program: 11, label: "ビブラフォン" },
+  { program: 12, label: "マリンバ" },
+  { program: 19, label: "パイプオルガン" },
+  { program: 24, label: "ナイロンギター" },
+  { program: 25, label: "スチールギター" },
+  { program: 27, label: "クリーンギター" },
+  { program: 32, label: "ウッドベース" },
+  { program: 33, label: "エレキベース" },
+  { program: 38, label: "シンセベース" },
+  { program: 40, label: "バイオリン" },
+  { program: 41, label: "ビオラ" },
+  { program: 42, label: "チェロ" },
+  { program: 45, label: "弦のピチカート" },
+  { program: 46, label: "ハープ" },
+  { program: 48, label: "弦楽合奏" },
+  { program: 49, label: "弦楽合奏(やわらかい)" },
+  { program: 50, label: "シンセストリングス" },
+  { program: 52, label: "コーラス(アー)" },
+  { program: 53, label: "コーラス(ウー)" },
+  { program: 56, label: "トランペット" },
+  { program: 60, label: "ホルン" },
+  { program: 65, label: "アルトサックス" },
+  { program: 68, label: "オーボエ" },
+  { program: 71, label: "クラリネット" },
+  { program: 73, label: "フルート" },
+  { program: 75, label: "パンフルート" },
+  { program: 79, label: "オカリナ" },
+  { program: 80, label: "シンセリード(矩形)" },
+  { program: 81, label: "シンセリード(のこぎり)" },
+  { program: 88, label: "パッド(ニューエイジ)" },
+  { program: 89, label: "パッド(あたたかい)" },
+  { program: 91, label: "パッド(クワイア)" },
+  { program: 92, label: "パッド(ボウ)" },
+  { program: 94, label: "パッド(ヘイロー)" },
+  { program: 108, label: "カリンバ" },
+]
+
+/** 試聴と書き出しで楽器を分けるパート(Chords / Bass トラックと同じ) */
+export type SoundPart = "chords" | "bass"
+
+export const SOUND_PARTS: ReadonlyArray<{ id: SoundPart; label: string }> = [
+  { id: "chords", label: "コード" },
+  { id: "bass", label: "ベース" },
+]
+
+export const DEFAULT_PART_PROGRAMS: Readonly<Record<SoundPart, number>> = {
+  chords: 0,
+  bass: 32,
+}
+
+/** 試聴の音(シンプル = これまでのスタイルごとの合成音、gm = GM音源のサンプル)と、MIDI書き出しの形式 */
+export interface SoundSettings {
+  playback: "simple" | "gm"
+  /** logic = これまでどおり(楽器指定なし)。gm = トラックごとに楽器番号を入れる */
+  midiExport: "logic" | "gm"
+  programs: Record<SoundPart, number>
+}
+
+export const DEFAULT_SOUND_SETTINGS: SoundSettings = {
+  playback: "simple",
+  midiExport: "logic",
+  programs: { ...DEFAULT_PART_PROGRAMS },
+}
+
+const isProgram = (value: unknown): value is number =>
+  typeof value === "number" && Number.isInteger(value) && value >= 0 && value <= 127
+
+/** 保存された設定を読み、足りない項目や壊れた値は既定値で補う */
+export function normalizeSoundSettings(raw: unknown): SoundSettings {
+  const r = (raw && typeof raw === "object" ? raw : {}) as Partial<SoundSettings>
+  const savedPrograms = (r.programs && typeof r.programs === "object" ? r.programs : {}) as Partial<Record<SoundPart, unknown>>
+  const programs = { ...DEFAULT_PART_PROGRAMS }
+  for (const { id } of SOUND_PARTS) {
+    const value = savedPrograms[id]
+    if (isProgram(value)) programs[id] = value
+  }
+  return {
+    playback: r.playback === "gm" ? "gm" : "simple",
+    midiExport: r.midiExport === "gm" ? "gm" : "logic",
+    programs,
+  }
+}
+
+export function gmFileForProgram(program: number): string {
+  return GM_PROGRAM_FILES[Math.max(0, Math.min(127, Math.round(program)))]
+}

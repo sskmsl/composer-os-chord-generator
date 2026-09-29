@@ -2,6 +2,7 @@ import { create } from "zustand"
 import { generateProgressions, rootSkeletonOf, type GenerateParams } from "@/features/chord-engine/generateProgressions"
 import { downloadComposerSongExchange } from "@/features/exchange/composerSongExchange"
 import { downloadSongSmf } from "@/features/midi/exportSong"
+import { gmExportPrograms } from "@/features/audio/soundSettings"
 import { downloadBackup, parseBackup } from "@/features/storage/backup"
 import { feedbackRepository } from "@/features/storage/feedbackRepository"
 import { learnPreference, type PreferenceModel } from "@/features/preference/preferenceModel"
@@ -448,7 +449,7 @@ export const useAppStore = create<AppStore>((set, get) => ({
   exportFolderAsMidi(folderId) {
     const folder = get().folders.find((f) => f.id === folderId)
     if (!folder) throw new Error("フォルダが見つかりません")
-    downloadSongSmf(folder, get().saved)
+    downloadSongSmf(folder, get().saved, gmExportPrograms())
   },
 
   exportFolderForArranger(folderId) {

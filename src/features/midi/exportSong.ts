@@ -4,6 +4,7 @@ import type { Folder } from "@/types/folder"
 import { SECTION_OPTIONS } from "@/types/music"
 import type { SavedProgression } from "@/types/progression"
 import type { Mode } from "@/types/music"
+import type { SoundSettings } from "@/features/audio/gmInstruments"
 import { buildSmf, TICKS_PER_QUARTER, type MidiKeySignature, type MidiMarker, type MidiNote } from "./smf"
 
 /** 1拍(4分音符)のtick数。既定は1コード=4拍=1小節だが、和声のリズムに合わせてコードごとに変える */
@@ -62,8 +63,13 @@ function sectionLabel(p: SavedProgression): string {
  * セクションは repeatCount 回繰り返す。
  * Chords(コードトーン)と Bass(コードのベース音、スラッシュコード対応)を
  * 別トラックに分け、Logic側で個別に音源を割り当てられるようにする。
+ * gmPrograms を渡すと(GM向けの書き出し)、各トラックの頭に GM の楽器番号を入れる。省略時(Logic向け)は入れない。
  */
-export function buildSongSmf(folder: Folder, progressions: SavedProgression[]): Uint8Array {
+export function buildSongSmf(
+  folder: Folder,
+  progressions: SavedProgression[],
+  gmPrograms?: SoundSettings["programs"],
+): Uint8Array {
   const sections = songSections(folder, progressions)
   const tempo = resolveTempo(folder, sections)
 
@@ -117,15 +123,19 @@ export function buildSongSmf(folder: Folder, progressions: SavedProgression[]): 
       // コンダクター側のマーカーだけでなく、各トラック自身にも同じラベルを
       // メモ書き(Text event)として埋め込み、そのトラックだけを見ても
       // 今どのパートかが分かるようにする
-      { name: "Chords", notes: chordNotes, textEvents: markers },
-      { name: "Bass", notes: bassNotes, textEvents: markers },
+      { name: "Chords", notes: chordNotes, textEvents: markers, ...(gmPrograms ? { program: gmPrograms.chords } : {}) },
+      { name: "Bass", notes: bassNotes, textEvents: markers, ...(gmPrograms ? { program: gmPrograms.bass } : {}) },
     ],
   })
 }
 
 /** 生成したSMFを .mid としてダウンロードさせる */
-export function downloadSongSmf(folder: Folder, progressions: SavedProgression[]): void {
-  const bytes = buildSongSmf(folder, progressions)
+export function downloadSongSmf(
+  folder: Folder,
+  progressions: SavedProgression[],
+  gmPrograms?: SoundSettings["programs"],
+): void {
+  const bytes = buildSongSmf(folder, progressions, gmPrograms)
   // buildSmf は number[] から生成した専用バッファなので buffer をそのまま使える
   const blob = new Blob([bytes.buffer as ArrayBuffer], { type: "audio/midi" })
   const url = URL.createObjectURL(blob)
