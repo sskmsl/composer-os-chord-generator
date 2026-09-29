@@ -71,13 +71,13 @@ export function SoundSettingsMenu() {
         aria-expanded={open}
         onClick={() => setOpen((v) => !v)}
         className={cn(
-          "flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground",
+          "flex items-center gap-1.5 rounded-md px-2 py-1.5 text-sm text-muted-foreground sm:px-2.5 transition-colors hover:text-foreground",
           open && "bg-accent text-accent-foreground",
         )}
         title="試聴の音色とMIDI書き出しの形式"
       >
         <SlidersHorizontal className="size-4" />
-        <span className="hidden sm:inline">音色</span>
+        <span className="hidden lg:inline">音色</span>
         {loadState === "loading" && <span className="text-xs text-primary">読み込み中…</span>}
       </button>
       {open && (

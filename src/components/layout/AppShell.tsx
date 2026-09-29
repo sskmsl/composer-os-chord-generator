@@ -25,16 +25,16 @@ export function AppShell() {
     <AuthGate>
       <div className="min-h-dvh bg-background text-foreground">
         <header className="sticky top-0 z-40 border-b border-border/60 bg-background/80 pt-[env(safe-area-inset-top)] backdrop-blur">
-          <div className="no-scrollbar mx-auto flex h-16 max-w-6xl items-center gap-4 overflow-x-auto px-4 sm:gap-8 sm:px-8">
+          <div className="no-scrollbar mx-auto flex h-16 max-w-6xl items-center gap-2 overflow-x-auto px-3 sm:gap-4 sm:px-6 lg:gap-8 lg:px-8">
             <NavLink to="/" className="flex shrink-0 items-center gap-2.5">
-              {/* スマホ幅ではタイトルとメニューが収まらず「Saved」が画面外に押し出されていたため、短縮表記にする */}
-              <span className="hidden text-sm font-semibold tracking-[0.14em] whitespace-nowrap uppercase min-[440px]:inline sm:text-base sm:tracking-[0.18em]">
+              {/* スマホ幅ではタイトルとメニューが収まらず、「Saved」や右端の操作履歴・音色が画面外に押し出されていたため、短縮表記にする */}
+              <span className="hidden text-sm font-semibold tracking-[0.14em] whitespace-nowrap uppercase md:inline md:text-base md:tracking-[0.18em]">
                 Chord Generator
               </span>
-              <span aria-hidden className="text-sm font-semibold tracking-[0.14em] min-[440px]:hidden">
+              <span aria-hidden className="text-sm font-semibold tracking-[0.14em] md:hidden">
                 CG
               </span>
-              <span className="sr-only min-[440px]:hidden">Chord Generator</span>
+              <span className="sr-only md:hidden">Chord Generator</span>
             </NavLink>
             <nav className="flex shrink-0 items-center gap-1">
               {NAV_ITEMS.map((item) => (
@@ -44,7 +44,7 @@ export function AppShell() {
                   end={item.to === "/"}
                   className={({ isActive }) =>
                     cn(
-                      "shrink-0 rounded-md px-3 py-1.5 text-sm whitespace-nowrap text-muted-foreground transition-colors hover:text-foreground",
+                      "shrink-0 rounded-md px-2 py-1.5 text-sm whitespace-nowrap sm:px-3 text-muted-foreground transition-colors hover:text-foreground",
                       isActive && "bg-accent text-accent-foreground",
                     )
                   }
