@@ -3,6 +3,7 @@ import { NavLink, Outlet } from "react-router-dom"
 import { Toaster } from "@/components/ui/sonner"
 import { AuthGate } from "@/features/sync/AuthGate"
 import { UndoHistoryMenu } from "./UndoHistoryMenu"
+import { SoundSettingsMenu } from "./SoundSettingsMenu"
 import { useAppStore } from "@/store/useAppStore"
 import { cn } from "@/lib/utils"
 
@@ -53,6 +54,7 @@ export function AppShell() {
               ))}
             </nav>
             <UndoHistoryMenu />
+            <SoundSettingsMenu />
           </div>
         </header>
         <main className="mx-auto max-w-6xl px-4 py-8 sm:px-8 sm:py-12">

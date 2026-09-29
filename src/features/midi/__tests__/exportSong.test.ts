@@ -44,3 +44,25 @@ describe("MIDI書き出しの調号", () => {
     ])
   })
 })
+
+/** SMF中のプログラムチェンジ(Cn pp)を [チャンネル, 楽器番号] で取り出す(トラック名などのデータと区別するため、デルタタイム0の直後だけを見る) */
+function programChanges(bytes: Uint8Array): Array<[number, number]> {
+  const found: Array<[number, number]> = []
+  for (let i = 1; i + 1 < bytes.length; i++) {
+    if (bytes[i - 1] === 0x00 && (bytes[i] & 0xf0) === 0xc0 && bytes[i + 1] < 0x80) found.push([bytes[i] & 0x0f, bytes[i + 1]])
+  }
+  return found
+}
+
+describe("MIDI書き出しの形式", () => {
+  const folder = createFolder("曲")
+  const progressions = [section({ tonic: "A", mode: "minor" }, folder.id, 0)]
+
+  it("Logic向け(既定)は楽器番号を入れない", () => {
+    expect(programChanges(buildSongSmf(folder, progressions))).toEqual([])
+  })
+
+  it("GM向けは、コード(1ch)とベース(2ch)のトラックに楽器番号を入れる", () => {
+    expect(programChanges(buildSongSmf(folder, progressions, { chords: 4, bass: 33 }))).toEqual([[0, 4], [1, 33]])
+  })
+})

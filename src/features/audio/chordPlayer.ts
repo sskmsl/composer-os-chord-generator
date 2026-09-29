@@ -1,10 +1,13 @@
 import type { StyleId } from "@/types/music"
 import { midiToFreq, parseChordSymbol } from "./chordSymbols"
+import { gmFileForProgram, type SoundSettings } from "./gmInstruments"
+import { gmBufferKey, gmSampleFor, loadGmBuffers, scheduleGmSample, type GmBufferKey } from "./gmSampler"
+import { getSoundSettings, setGmLoadState } from "./soundSettings"
 
 /**
  * Web Audio API によるコード進行プレイヤー。
- * 外部音源を使わず、スタイルごとに音色(波形・フィルタ・エンベロープ)を
- * 変えたシンセ音で1コード=4拍ずつ再生する。
+ * 既定(シンプル)では外部音源を使わず、スタイルごとに音色(波形・フィルタ・エンベロープ)を
+ * 変えたシンセ音で1コード=4拍ずつ再生する。音色の設定が GM音源なら、コード・ベースの楽器のサンプルで鳴らす。
  */
 export interface PlayOptions {
   bpm: number
@@ -241,6 +244,36 @@ const LOOKAHEAD_SECONDS = 6
 /** 先読みを補充する間隔(ミリ秒) */
 const SCHEDULER_INTERVAL_MS = 500
 
+/** GM音源で鳴らすときに読み込む音(楽器ファイル → 音の高さ)。startIndex より前のセクションは読み込まない */
+export function gmSequenceRequests(
+  segments: readonly PlaySegment[],
+  startIndex: number,
+  programs: SoundSettings["programs"],
+): Map<string, Set<number>> {
+  const requests = new Map<string, Set<number>>()
+  const add = (program: number, pitch: number) => {
+    const file = gmFileForProgram(program)
+    let pitches = requests.get(file)
+    if (!pitches) requests.set(file, (pitches = new Set()))
+    pitches.add(pitch)
+  }
+  segments.forEach((segment, index) => {
+    if (index < startIndex) return
+    for (const symbol of segment.chords) {
+      const voicing = parseChordSymbol(symbol)
+      if (!voicing) continue
+      for (const pitch of voicing.notes) add(programs.chords, pitch)
+      add(programs.bass, voicing.bass)
+    }
+  })
+  return requests
+}
+
+interface GmVoices {
+  programs: SoundSettings["programs"]
+  buffers: Map<GmBufferKey, AudioBuffer>
+}
+
 interface ScheduledChord {
   /** 再生開始からの秒数 */
   at: number
@@ -254,6 +287,8 @@ class ChordPlayer {
   private ctx: AudioContext | null = null
   private endTimer: number | null = null
   private schedulerTimer: number | null = null
+  /** GM音源の読み込み中(まだ鳴らし始めていない) */
+  private loading = false
 
   async play(chords: string[], { bpm, style, onEnded, beats }: PlayOptions): Promise<void> {
     return this.playSequence([{ chords, beats, style }], { bpm, onEnded })
@@ -275,6 +310,25 @@ class ChordPlayer {
     await ctx.resume()
     // resume を待つ間に停止・別の再生が始まっていたら何もしない
     if (this.ctx !== ctx) return
+
+    // 音色が GM音源なら、使う楽器と音だけを読み込んでから鳴らす。読み込めなければシンセ音で鳴らす
+    const settings = getSoundSettings()
+    let gm: GmVoices | null = null
+    if (settings.playback === "gm") {
+      this.loading = true
+      setGmLoadState("loading")
+      try {
+        const buffers = await loadGmBuffers(gmSequenceRequests(segments, startIndex, settings.programs))
+        if (this.ctx !== ctx) return
+        gm = { programs: settings.programs, buffers }
+        setGmLoadState("idle")
+      } catch {
+        if (this.ctx !== ctx) return
+        setGmLoadState("failed")
+      } finally {
+        if (this.ctx === ctx) this.loading = false
+      }
+    }
 
     // マスターチェーン: コンプレッサー → マスターゲイン
     const master = ctx.createGain()
@@ -312,7 +366,9 @@ class ChordPlayer {
         const chord = timeline[next]
         const voicing = parseChordSymbol(chord.symbol)
         if (voicing) {
-          this.scheduleChord(ctx, compressor, voicing.bass, voicing.notes, start + chord.at, chord.dur, chord.voice)
+          if (!(gm && this.scheduleGmChord(ctx, compressor, gm, voicing.bass, voicing.notes, start + chord.at, chord.dur))) {
+            this.scheduleChord(ctx, compressor, voicing.bass, voicing.notes, start + chord.at, chord.dur, chord.voice)
+          }
         }
         next += 1
       }
@@ -332,6 +388,28 @@ class ChordPlayer {
       this.dispose()
       onEnded()
     }, total * 1000)
+  }
+
+  /** GM音源のサンプルでコードとベースを鳴らす。必要なサンプルがそろっていなければ false(シンセ音で鳴らす) */
+  private scheduleGmChord(
+    ctx: AudioContext,
+    dest: AudioNode,
+    gm: GmVoices,
+    bass: number,
+    notes: number[],
+    t0: number,
+    dur: number,
+  ): boolean {
+    const bufferFor = (program: number, pitch: number) =>
+      gm.buffers.get(gmBufferKey(gmFileForProgram(program), gmSampleFor(pitch).sampleMidi))
+    const bassBuffer = bufferFor(gm.programs.bass, bass)
+    const noteBuffers = notes.map((pitch) => bufferFor(gm.programs.chords, pitch))
+    if (!bassBuffer || noteBuffers.some((buffer) => !buffer)) return false
+    // コード末にわずかな隙間を残す(書き出しと同じ)
+    const length = Math.max(0.05, dur - 0.04)
+    notes.forEach((pitch, index) => scheduleGmSample(ctx, dest, noteBuffers[index]!, pitch, 62, t0, length, 0.35))
+    scheduleGmSample(ctx, dest, bassBuffer, bass, 76, t0, length, 0.3)
+    return true
   }
 
   private scheduleChord(
@@ -401,6 +479,11 @@ class ChordPlayer {
   }
 
   stop(): void {
+    // 読み込みの途中で止めたら、読み込み中の表示も消す(読み込み自体は続き、次の再生で使う)
+    if (this.loading) {
+      this.loading = false
+      setGmLoadState("idle")
+    }
     if (this.endTimer != null) {
       clearTimeout(this.endTimer)
       this.endTimer = null
