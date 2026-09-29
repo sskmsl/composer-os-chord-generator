@@ -71,13 +71,13 @@ export function UndoHistoryMenu() {
         aria-expanded={open}
         onClick={() => setOpen((v) => !v)}
         className={cn(
-          "flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground",
+          "flex items-center gap-1.5 rounded-md px-2 py-1.5 text-sm text-muted-foreground sm:px-2.5 transition-colors hover:text-foreground",
           open && "bg-accent text-accent-foreground",
         )}
         title="操作履歴(入力欄の外では Ctrl+Z / ⌘Z で最後の操作を元に戻せます)"
       >
         <History className="size-4" />
-        <span className="hidden sm:inline">操作履歴</span>
+        <span className="hidden lg:inline">操作履歴</span>
         {history.length > 0 && <span className="tabular-nums text-xs">({history.length})</span>}
       </button>
       {open && (
