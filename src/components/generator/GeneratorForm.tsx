@@ -1,5 +1,6 @@
 import { Sparkles, Undo2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { cn } from "@/lib/utils"
 import { Label } from "@/components/ui/label"
 import {
   Select,
@@ -51,7 +52,8 @@ export function GeneratorForm() {
   return (
     <div className="flex flex-col gap-4 rounded-xl border border-border/60 bg-card/50 p-4 sm:p-5">
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
-        <Field label="Style">
+        {/* スマホでは Romance • Nostalgia のような長い名前が切れないよう、1行を使う */}
+        <Field label="Style" className="col-span-2 sm:col-span-1">
           <Select
             items={STYLE_ITEMS}
             value={params.style}
@@ -182,9 +184,9 @@ export function GeneratorForm() {
   )
 }
 
-function Field({ label, children }: { label: string; children: React.ReactNode }) {
+function Field({ label, children, className }: { label: string; children: React.ReactNode; className?: string }) {
   return (
-    <div className="flex flex-col gap-1.5">
+    <div className={cn("flex flex-col gap-1.5", className)}>
       <Label className="text-xs tracking-wider text-muted-foreground uppercase">{label}</Label>
       {children}
     </div>

@@ -233,6 +233,18 @@ const STYLE_VOICES: Partial<Record<StyleId, Partial<VoiceProfile>>> = {
     release: 0.8,
     chordGain: 0.05,
   },
+  romanceNostalgia: {
+    // 夢の中で鳴るエレピ+やわらかなパッド: 明るすぎず、ゆっくり立ち上がって余韻を残す
+    waveform: "triangle",
+    detune: 7,
+    filterBase: 800,
+    filterPeak: 1700,
+    attack: 0.1,
+    sustainLevel: 0.75,
+    decay: 0.35,
+    release: 1.0,
+    chordGain: 0.05,
+  },
 }
 
 function getVoice(style: StyleId): VoiceProfile {

@@ -181,6 +181,36 @@ const fifthsDescent = (chords: ParsedChord[]) => {
   return best
 }
 
+/** ベース音(スラッシュベースがあればそのベース)が半音〜全音ずつ下る動きが連続する最大回数 */
+const bassDescent = (chords: ParsedChord[]) => {
+  const bassOf = (c: ParsedChord) => (c.bass ? degreeSemitone(c.bass.acc, c.bass.roman) : degreeSemitone(c.acc, c.roman))
+  let best = 0
+  let run = 0
+  for (let i = 1; i < chords.length; i++) {
+    const drop = (bassOf(chords[i - 1]) - bassOf(chords[i]) + 12) % 12
+    run = drop === 1 || drop === 2 ? run + 1 : 0
+    best = Math.max(best, run)
+  }
+  return best
+}
+
+/** 柔らかい色彩(maj7/add9/m9/6)の和音。Romance • Nostalgia の「夢見心地」を作る */
+const DREAMY_SUFFIXES = new Set(["maj7", "add9", "m9", "6", "7"])
+
+/**
+ * Romance • Nostalgia の「切なさ」を作る動き。
+ * 長調: 借用の短四和音(iv)・bVII・bVI、vi/ii へ向かう副属七(III7/VI7/II7)、階段状に下るベース。
+ * 短調: ドリアンの長いIV、V(属七の引力)、iiø、階段状に下るベース。
+ */
+function hasLongingMove(chords: ParsedChord[], mode: Mode): boolean {
+  if (bassDescent(chords) >= 2) return true
+  if (mode === "minor") return has(chords, "IV", "V") || chords.some((c) => c.suffix === "ø")
+  return (
+    has(chords, "iv", "bVII", "bVI") ||
+    chords.some((c) => isDominantSeventh(c) && ["III", "VI", "II"].includes(chordRoot(c)))
+  )
+}
+
 /**
  * そのスタイルに「聞こえる」ための最低条件。語彙(styleVocabulary)に収まって
  * いても、組み合わせ次第ではスタイルの性格が抜け落ちる(French Popなのに副属七も
@@ -235,6 +265,8 @@ const STYLE_SIGNATURES: Record<StyleId, (chords: ParsedChord[], mode: Mode) => b
   kayokyoku: (cs) =>
     (cs.some((c) => isMajorV(c) || isDominantSeventh(c)) || fifthsDescent(cs) >= 2) &&
     cs.every((c) => ["", "7", "6", "maj7", "ø", "sus4", "7sus4"].includes(c.suffix)),
+  // 柔らかい色彩(maj7/add9/m9/6/7)が半分以上(夢見心地)で、切なさの動き(借用iv・副属七・下降ベース等)を含む
+  romanceNostalgia: (cs, mode) => share(cs, (c) => DREAMY_SUFFIXES.has(c.suffix) || c.suffix === "ø") >= 0.5 && hasLongingMove(cs, mode),
 }
 
 export function matchesStyleSignature(style: StyleId, chords: ParsedChord[], mode: Mode): boolean {

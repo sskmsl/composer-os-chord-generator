@@ -1,9 +1,9 @@
 import { describe, it, expect } from "vitest"
-import type { Mode, SectionId, StyleId } from "@/types/music"
-import { parseToken } from "../degrees"
+import { normalizeStyleId, type Mode, type SectionId, type StyleId } from "@/types/music"
+import { degreeSemitone, parseToken } from "../degrees"
 import { clearSessionSkeletonHistory, generateProgressions, rootSkeletonOf } from "../generateProgressions"
 import { commonToneSubstitutes, matchesStyleSignature, rootKey, styleVocabulary } from "../styleGrammar"
-import { STYLE_OPTIONS, STYLE_TEMPLATES } from "../templates"
+import { STYLE_OPTIONS, STYLE_TEMPLATES, STYLE_TEMPO } from "../templates"
 
 const MODES: Mode[] = ["minor", "major"]
 const SECTIONS: SectionId[] = [
@@ -206,6 +206,85 @@ describe("8小節フレーズ(問いと答え)", () => {
         expect(matchesStyleSignature(style, parsed.slice(0, 4), "minor"), `${style}: ${p.romanNumerals.join(" ")}`).toBe(true)
         expect(matchesStyleSignature(style, parsed.slice(4), "minor"), `${style}: ${p.romanNumerals.join(" ")}`).toBe(true)
       }
+    }
+  })
+})
+
+describe("Romance • Nostalgia", () => {
+  const parse = (tokens: string[]) => tokens.map(parseToken)
+  const colored = (tokens: string[]) => tokens.filter((t) => parseToken(t).suffix !== "").length / tokens.length
+
+  it("is an available style with a slow-ballad tempo", () => {
+    const option = STYLE_OPTIONS.find((o) => o.value === "romanceNostalgia")
+    expect(option?.label).toBe("Romance • Nostalgia")
+    expect(normalizeStyleId("romanceNostalgia")).toBe("romanceNostalgia")
+    expect(STYLE_TEMPO.romanceNostalgia).toBeGreaterThanOrEqual(70)
+    expect(STYLE_TEMPO.romanceNostalgia).toBeLessThanOrEqual(84)
+  })
+
+  it("keeps the dreamy colors (maj7/add9/m9/6/7) on at least half of the chords", () => {
+    for (const mode of MODES) {
+      for (const p of generateAll("romanceNostalgia", mode)) {
+        expect(colored(p.romanNumerals), p.romanNumerals.join(" ")).toBeGreaterThanOrEqual(0.5)
+      }
+    }
+  })
+
+  it("always carries a longing move, never just soft chords", () => {
+    // シグネチャーの実装とは別に、テスト側で「切なさの動き」を数え直す。
+    // 長調: 借用iv / bVII / bVI、vi・iiへ向かう副属七、階段状に下るベース。短調: 長いIV / V / iiø / 下るベース
+    const bassSemitone = (c: ReturnType<typeof parseToken>) => (c.bass ? degreeSemitone(c.bass.acc, c.bass.roman) : degreeSemitone(c.acc, c.roman))
+    const steppedDescents = (chords: ReturnType<typeof parseToken>[]) => {
+      let best = 0
+      let run = 0
+      for (let i = 1; i < chords.length; i++) {
+        const drop = (bassSemitone(chords[i - 1]) - bassSemitone(chords[i]) + 12) % 12
+        run = drop === 1 || drop === 2 ? run + 1 : 0
+        best = Math.max(best, run)
+      }
+      return best
+    }
+    const longing = (tokens: string[], mode: Mode): boolean => {
+      const chords = parse(tokens)
+      const roots = chords.map((c) => rootKey(c.token))
+      if (steppedDescents(chords) >= 2) return true
+      if (mode === "minor") return roots.some((r) => r === "IV" || r === "V") || chords.some((c) => c.suffix === "ø")
+      const secondaryDominant = chords.some((c) => !c.lower && c.suffix === "7" && c.acc === 0 && ["III", "VI", "II"].includes(c.roman))
+      return roots.some((r) => ["iv", "bVII", "bVI"].includes(r)) || secondaryDominant
+    }
+    for (const mode of MODES) {
+      for (const p of generateAll("romanceNostalgia", mode)) {
+        expect(longing(p.romanNumerals, mode), p.romanNumerals.join(" ")).toBe(true)
+      }
+    }
+  })
+
+  it("rejects plain or generic soft progressions that have no longing move", () => {
+    const sig = (tokens: string[], mode: Mode) => matchesStyleSignature("romanceNostalgia", parse(tokens), mode)
+    // 三和音だけの循環(甘さも切なさも無い)
+    expect(sig(["I", "vi", "IV", "V"], "major")).toBe(false)
+    // 柔らかい響きだが、切なさの動きが無い(借用iv・bVII・副属七・下降ベースのどれも無い)
+    expect(sig(["Imaj7", "vi7", "IVmaj7", "Iadd9"], "major")).toBe(false)
+    expect(sig(["im9", "bVImaj7", "bIIImaj7", "bVIImaj7"], "minor")).toBe(false)
+    // 借用ivの「ため息」/ vi へ向かう副属七 / 階段状に下るベース
+    expect(sig(["Imaj7", "IVmaj7", "iv", "I6"], "major")).toBe(true)
+    expect(sig(["IVmaj7", "III7", "vi7", "Imaj7"], "major")).toBe(true)
+    expect(sig(["Imaj7", "V/VII", "vi7", "Imaj7/V"], "major")).toBe(true)
+    // 短調: ドリアンの長いIV / V7の引力 / iiø / 下るベース
+    expect(sig(["im9", "IV", "bVImaj7", "bVII"], "minor")).toBe(true)
+    expect(sig(["im9", "bVImaj7", "iiø", "V7"], "minor")).toBe(true)
+    expect(sig(["im9", "im9/bVII", "bVImaj7", "im9/V"], "minor")).toBe(true)
+  })
+
+  it("does not borrow the 歌謡曲 signature: soft add9/m9/maj7 colors appear, unlike the plain triads of 歌謡曲", () => {
+    const suffixes = new Set(generateAll("romanceNostalgia", "minor").flatMap((p) => p.romanNumerals.map((t) => parseToken(t).suffix)))
+    expect([...suffixes].some((s) => ["add9", "m9", "maj7"].includes(s))).toBe(true)
+  })
+
+  it("gives the section endings some variety instead of always stopping on V", () => {
+    for (const mode of MODES) {
+      const endings = new Set(generateAll("romanceNostalgia", mode).map((p) => rootKey(p.romanNumerals.at(-1)!)))
+      expect(endings.size, `${mode}: ${[...endings].join(",")}`).toBeGreaterThanOrEqual(3)
     }
   })
 })

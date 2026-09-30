@@ -423,6 +423,36 @@ export const STYLE_TEMPLATES: Record<StyleId, Record<Mode, string[][]>> = {
       ["I", "V/VII", "vi", "III7"],
     ],
   },
+  romanceNostalgia: {
+    // Romance • Nostalgia: 夢見心地・失恋・郷愁・哀愁を帯びた美しさ。
+    // 柔らかい和音(maj7/add9/m9/6)の浮遊感を土台に、「切なさ」を作る動きを必ず1つ含める。
+    //  - 長調: 借用の短四和音(IV→iv の「ため息」)、ドミナントではなく vi へ向かう副属七(III7)、
+    //    bVII の遠い記憶のような響き、ベースが階段状に下りていく進行(I → V/VII → vi → I/V)
+    //  - 短調: 長調に転じたような maj7(bVImaj7/bIIImaj7)の明るさの後に、V7 の引力や iiø で胸に刺さる、
+    //    ドリアンの長いIV、下降するベース(i → i/bVII → bVI → i/V)
+    // 終わり方も1つに揃えない(V7で止める・bVImaj7で宙に浮かせる・ドリアンのIVで懐かしさに着地する等)。
+    // 歌謡曲のように三和音+7thの直線的な哀愁ではなく、add9/maj7の甘さを残した哀しさにする。
+    minor: [
+      ["im9", "bVImaj7", "iiø", "V7"],
+      ["i(add9)", "bVIImaj7", "bVImaj7", "V7"],
+      ["im9", "IV", "bVImaj7", "bVII"],
+      ["bVImaj7", "bIIImaj7", "iv7", "V7"],
+      ["i(add9)", "bIIImaj7", "IV", "bVImaj7"],
+      ["im9", "im9/bVII", "bVImaj7", "im9/V"],
+      ["iiø", "V7", "im9", "bVImaj7"],
+      ["bVImaj7", "V7", "im9", "IV"],
+    ],
+    major: [
+      ["Imaj7", "IVmaj7", "iv", "I6"],
+      ["IVmaj7", "III7", "vi7", "Imaj7"],
+      ["Imaj7", "V/VII", "vi7", "Imaj7/V"],
+      ["bVII", "IVmaj7", "Iadd9", "vi7"],
+      ["Iadd9", "iii7", "IVmaj7", "bVII"],
+      ["vi(add9)", "IVmaj7", "Imaj7", "III7"],
+      ["Imaj7", "V7", "vi7", "iv"],
+      ["Imaj7", "bVII", "vi7", "IVmaj7"],
+    ],
+  },
 }
 
 /** スタイルごとの標準テンポ(BPM)。試聴とMIDI書き出しのデフォルトに使う */
@@ -445,6 +475,7 @@ export const STYLE_TEMPO: Record<StyleId, number> = {
   slowcore: 60,
   frenchPop: 104,
   kayokyoku: 84,
+  romanceNostalgia: 78,
 }
 
 export const STYLE_OPTIONS: { value: StyleId; label: string; tagline: string }[] = [
@@ -466,6 +497,7 @@ export const STYLE_OPTIONS: { value: StyleId; label: string; tagline: string }[]
   { value: "slowcore", label: "Sadcore / Slowcore", tagline: "遅く静かに、少ない三和音で沈んでいく" },
   { value: "frenchPop", label: "French Pop", tagline: "maj7と循環コード・洒脱で軽やかな憂い" },
   { value: "kayokyoku", label: "歌謡曲", tagline: "80年代ニューミュージックの哀愁・泣きの短調" },
+  { value: "romanceNostalgia", label: "Romance • Nostalgia", tagline: "夢見心地・失恋・郷愁、哀愁を帯びた美しさ" },
 ]
 
 interface StylePrefs {
@@ -596,6 +628,14 @@ export const STYLE_PREFS: Record<StyleId, StylePrefs> = {
     slashProb: 0.2,
     minorColors: ["7", "6"],
     majorColors: ["maj7"],
+  },
+  romanceNostalgia: {
+    // 甘さ(maj7/add9/6)を多めに、短調の和音にはm9とm7で切なさを足す。
+    // スラッシュベース(下降するベース)で「思い出が遠ざかる」動きを作る
+    decorationProb: 0.55,
+    slashProb: 0.25,
+    minorColors: ["m9", "7", "add9"],
+    majorColors: ["maj7", "maj7", "add9", "6"],
   },
 }
 
