@@ -78,7 +78,16 @@ export function SoundSettingsMenu() {
       >
         <SlidersHorizontal className="size-4" />
         <span className="hidden lg:inline">音色</span>
-        {loadState === "loading" && <span className="text-xs text-primary">読み込み中…</span>}
+        {/* いまの試聴の音を、ボタンのまま読めるようにする(別の端末では設定が違うことがある) */}
+        {loadState === "loading" ? (
+          <span className="text-xs text-primary">読み込み中…</span>
+        ) : settings.playback === "gm" && loadState === "failed" ? (
+          <span className="text-xs text-amber-500">シンプル音で再生</span>
+        ) : (
+          <span className={cn("text-xs", settings.playback === "gm" ? "text-primary" : "text-muted-foreground")}>
+            {settings.playback === "gm" ? "GM" : "シンプル"}
+          </span>
+        )}
       </button>
       {open && (
         // ヘッダーは横スクロールするため absolute だと切れる。fixed でヘッダーの直下に出す(操作履歴と同じ)
