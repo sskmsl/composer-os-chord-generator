@@ -90,7 +90,7 @@ export interface SoundSettings {
 }
 
 export const DEFAULT_SOUND_SETTINGS: SoundSettings = {
-  playback: "simple",
+  playback: "gm",
   midiExport: "logic",
   programs: { ...DEFAULT_PART_PROGRAMS },
 }
@@ -108,7 +108,8 @@ export function normalizeSoundSettings(raw: unknown): SoundSettings {
     if (isProgram(value)) programs[id] = value
   }
   return {
-    playback: r.playback === "gm" ? "gm" : "simple",
+    // 選んだことがあればそれを使い、無ければ(初めて開く端末・ブラウザ)GM音源から始める
+    playback: r.playback === "simple" || r.playback === "gm" ? r.playback : DEFAULT_SOUND_SETTINGS.playback,
     midiExport: r.midiExport === "gm" ? "gm" : "logic",
     programs,
   }
