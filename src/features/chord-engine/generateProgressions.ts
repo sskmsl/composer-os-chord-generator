@@ -55,6 +55,11 @@ export interface GenerateParams {
   previous?: PreviousSection
   /** 曲の原調。転調したあとのセクションで、原調へ戻る判断に使う */
   originalKey?: MusicKey
+  /**
+   * 次に相対長調のサビへ向かうBメロとして作る(短調のプレコーラスのみ)。渡すと末尾を
+   * 相対長調のV7(短調のbVII7)にする候補が出る。渡さなければ従来どおり。
+   */
+  approachRelativeMajor?: boolean
 }
 
 /**
@@ -175,7 +180,7 @@ function generateOne(params: GenerateParams): GeneratedProgression {
   const reuse = isPeriod ? null : reusablePrevious(params)
   let tokens = isPeriod
     ? buildPeriod(style, key.mode, mood, section)
-    : adaptToSection(generateChain(style, key.mode, mood, length), section, key, style, reuse, returningHome(params))
+    : adaptToSection(generateChain(style, key.mode, mood, length), section, key, style, reuse, returningHome(params), params.approachRelativeMajor === true)
   // 8小節フレーズは「同じ出だし」自体が構造なので、代理和音で崩さない
   if (!isPeriod && chance(SUBSTITUTION_PROBABILITY)) tokens = substituteOneChord(tokens, style, key.mode)
   const decorated = limitDefiniteDominants(decorateProgression(tokens.map(parseToken), style, mood, key.mode), style, key.mode)
@@ -467,6 +472,19 @@ export function withHomeReturnTail(tokens: string[], style: StyleId, mode: Music
   return [...tokens.slice(0, n - tail.length), ...tail]
 }
 
+/** 相対長調のサビへ向かうBメロが、末尾をbVII7にする確率 */
+const RELATIVE_APPROACH_PROBABILITY = 0.7
+
+/**
+ * 短調から相対長調へ入る直前の和音。相対長調のV7は、短調のbVII7(例: Bm の A7 → D)。
+ * そのスタイルが bVII の根音と 7 の装飾を語彙に持つときだけ返す(スタイル外の響きを足さない)。
+ */
+export function relativeMajorDominant(style: StyleId, mode: MusicKey["mode"]): string | null {
+  if (mode !== "minor") return null
+  const vocab = styleVocabulary(style, mode)
+  return vocab.roots.has("bVII") && vocab.suffixes.has("7") ? "bVII7" : null
+}
+
 /** CHORD_ENGINE_SPEC §6 のセクションルールでテンプレートを変形する */
 function adaptToSection(
   tokens: string[],
@@ -475,6 +493,7 @@ function adaptToSection(
   style: StyleId,
   previous: ReusableLoop | null,
   homeReturn: boolean,
+  approachRelativeMajor: boolean,
 ): string[] {
   const mode = key.mode
   let result = [...tokens]
@@ -520,10 +539,15 @@ function adaptToSection(
       }
       break
 
-    case "preChorus":
-      // 末尾を、そのスタイルが実際に使う「トニック以外の終わり方」にして緊張を作る
-      replaceLast(tensionTokens(style, mode))
+    case "preChorus": {
+      // 相対長調のサビへ向かうなら、末尾を相対長調のV7(短調のbVII7)にする候補を出す。
+      // そうでなければ、そのスタイルが実際に使う「トニック以外の終わり方」にして緊張を作る
+      const dominant = approachRelativeMajor && chance(RELATIVE_APPROACH_PROBABILITY) ? relativeMajorDominant(style, mode) : null
+      const beforeLast = result.length >= 2 ? rootKey(result[result.length - 2]) : null
+      if (dominant && beforeLast !== rootKey(dominant)) result[last()] = dominant
+      else replaceLast(tensionTokens(style, mode))
       break
+    }
 
     case "chorus":
       // 前のセクションのループを、別の和音から始めて使い回す

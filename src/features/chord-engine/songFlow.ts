@@ -23,6 +23,8 @@ export interface SectionSuggestion {
   reason: string
   /** 展開としてふさわしいKEY変更がある場合のみ指定。なければ現在のKEYを維持 */
   keyMove?: { type: KeyMoveType; reason: string }
+  /** "relative": 次に相対長調のサビへ向かうセクションとして作る(プレコーラスの終わりを相対長調のV7にする) */
+  approach?: "relative"
   /** 指定したモードの曲でだけ提案する(短調の曲から相対長調へ移す提案など) */
   onlyIn?: MusicKey["mode"]
 }
@@ -39,6 +41,12 @@ export const NEXT_SECTIONS: Record<SectionId, SectionSuggestion[]> = {
   ],
   verse: [
     { section: "pre-chorus", reason: "Bメロで緊張を高めてからサビへ" },
+    {
+      section: "pre-chorus",
+      reason: "Bメロの終わりを相対長調のV7(短調のbVII7)にして、相対長調のサビへ入る準備をする",
+      approach: "relative",
+      onlyIn: "minor",
+    },
     { section: "chorus", reason: "Bメロを挟まず直接サビへ(シンプルな構成)" },
     {
       section: "chorus",

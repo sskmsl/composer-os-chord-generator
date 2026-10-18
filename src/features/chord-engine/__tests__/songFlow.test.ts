@@ -192,7 +192,7 @@ describe("relative-major chorus suggestions for minor songs", () => {
 
   it("keeps the existing suggestions, and adds no new key move type", () => {
     const minor = key("A", "minor")
-    expect(suggestionsFor("verse", minor).map((s) => s.section)).toEqual(["pre-chorus", "chorus", "chorus"])
+    expect(suggestionsFor("verse", minor).map((s) => s.section)).toEqual(["pre-chorus", "pre-chorus", "chorus", "chorus"])
     expect(suggestionsFor("verse", key("C", "major")).map((s) => s.section)).toEqual(["pre-chorus", "chorus"])
     expect(suggestionsFor("pre-chorus", key("C", "major"))).toHaveLength(1)
     expect(suggestionsFor("chorus", minor)).toEqual(NEXT_SECTIONS.chorus)

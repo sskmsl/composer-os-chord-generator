@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { beforeEach, describe, expect, it, vi } from "vitest"
-import { fireEvent, render, screen } from "@testing-library/react"
+import { act, fireEvent, render, screen } from "@testing-library/react"
 
 vi.mock("@/features/storage/feedbackRepository", () => ({
   feedbackRepository: { recordShown: vi.fn().mockResolvedValue(undefined), list: vi.fn().mockResolvedValue([]) },
@@ -126,5 +126,31 @@ describe("NextSectionSuggestion: relative-major chorus", () => {
     render(<NextSectionSuggestion />)
     expect(screen.getAllByRole("button").filter((b) => b.textContent?.startsWith("サビ を生成"))).toHaveLength(1)
     expect(findButton("サビ を生成")?.textContent).not.toMatch(/Key:/)
+  })
+})
+
+describe("NextSectionSuggestion: pre-chorus toward the relative major", () => {
+  const verseResult = { ...chorusResult, section: "verse" as const, romanNumerals: ["i", "bVII", "bVI", "V"], chords: ["Am", "G", "F", "E"] }
+  const preChorusButtons = () => screen.getAllByRole("button").filter((b) => b.textContent?.startsWith("Bメロ を生成") || b.textContent?.startsWith("プレコーラス を生成") || /^(B|Pre)/.test(b.textContent ?? ""))
+
+  it("passes the approach only when that suggestion is chosen", () => {
+    useAppStore.setState({ params: { ...useAppStore.getState().params, section: "verse" }, results: [verseResult] })
+    render(<NextSectionSuggestion />)
+    const buttons = preChorusButtons()
+    expect(buttons).toHaveLength(2)
+    expect(buttons.some((b) => b.textContent?.includes("bVII7"))).toBe(true)
+    const plain = buttons.find((b) => !b.textContent?.includes("bVII7"))!
+    fireEvent.click(plain)
+    expect(vi.mocked(generateProgressions).mock.lastCall![0].approachRelativeMajor).toBeUndefined()
+    expect(useAppStore.getState().params.key).toEqual({ tonic: "A", mode: "minor" })
+    act(() => useAppStore.setState({ params: { ...useAppStore.getState().params, section: "verse" }, results: [verseResult] }))
+    // 描画し直された画面から、改めて提案を探す
+    const approachNow = preChorusButtons().find((b) => b.textContent?.includes("bVII7"))!
+    fireEvent.click(approachNow)
+    expect(vi.mocked(generateProgressions).mock.lastCall![0].approachRelativeMajor).toBe(true)
+    expect(useAppStore.getState().params.key).toEqual({ tonic: "A", mode: "minor" })
+    // 続けて相対長調のサビへ進むと、この指定は引き継がれない
+    useAppStore.getState().continueToSection("chorus", { tonic: "C", mode: "major" })
+    expect(vi.mocked(generateProgressions).mock.lastCall![0].approachRelativeMajor).toBeUndefined()
   })
 })

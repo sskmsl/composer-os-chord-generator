@@ -31,18 +31,18 @@ export function NextSectionSuggestion() {
         </span>
       </div>
       <div className="flex flex-wrap gap-2">
-        {suggestions.map(({ section, reason, keyMove }) => {
+        {suggestions.map(({ section, reason, keyMove, approach }) => {
           const label = SECTION_OPTIONS.find((s) => s.value === section)?.label
           const targetKey = keyMove ? resolveKeyMove(params.key, keyMove.type, originalKey) : params.key
           const keyChanges = keyMove && keyLabel(targetKey) !== keyLabel(params.key)
           return (
             <Button
-              key={`${section}-${keyMove?.type ?? "same"}`}
+              key={`${section}-${keyMove?.type ?? "same"}-${approach ?? ""}`}
               variant="outline"
               // 説明文が長いと折り返さずに画面幅を超えていたため、折り返しを許可する
               className="h-auto max-w-full shrink flex-col items-start gap-0.5 px-3 py-2 text-left whitespace-normal"
               onClick={() => {
-                continueToSection(section, keyChanges ? targetKey : undefined)
+                continueToSection(section, keyChanges ? targetKey : undefined, approach === "relative" ? { approachRelativeMajor: true } : undefined)
                 // 新しい結果一覧の先頭が見えるようページ上部へ戻す
                 window.scrollTo({ top: 0, behavior: "smooth" })
               }}

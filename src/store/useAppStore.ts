@@ -96,6 +96,8 @@ export interface SongContext {
   originalKey: MusicKey
   /** 直前のセクション(提案をクリックした時点の先頭の候補) */
   previous?: PreviousSection
+  /** 相対長調のサビへ向かうセクションとして作る(プレコーラスの終わりを相対長調のV7にする) */
+  approachRelativeMajor?: boolean
 }
 
 /** 生成結果から、次のセクションが使い回すための文脈を取り出す。調は候補のkey表記から引き、無ければfallback */
@@ -123,7 +125,7 @@ interface AppStore {
    * 「次のセクション」の提案を選んで生成する。直前の結果の先頭を前セクションとして渡し、
    * 転調する提案なら key に新しい調を渡す。原調は流れの最初の調を覚えておく。
    */
-  continueToSection(section: SectionId, key?: MusicKey): void
+  continueToSection(section: SectionId, key?: MusicKey, options?: { approachRelativeMajor?: boolean }): void
   generate(): void
   restorePrevious(): void
 
@@ -197,11 +199,11 @@ export const useAppStore = create<AppStore>((set, get) => ({
     set({ params: { ...get().params, ...partial }, songContext: null })
   },
 
-  continueToSection(section, key) {
+  continueToSection(section, key, options) {
     const { params, results, songContext } = get()
     const previous = previousSectionFrom(results[0], params.key)
     const originalKey = songContext?.originalKey ?? previous?.key ?? params.key
-    set({ params: { ...params, section, ...(key ? { key } : {}) }, songContext: { originalKey, previous } })
+    set({ params: { ...params, section, ...(key ? { key } : {}) }, songContext: { originalKey, previous, ...(options?.approachRelativeMajor ? { approachRelativeMajor: true } : {}) } })
     get().generate()
   },
 
@@ -219,6 +221,7 @@ export const useAppStore = create<AppStore>((set, get) => ({
       preference,
       previous: songContext?.previous,
       originalKey: songContext?.originalKey,
+      approachRelativeMajor: songContext?.approachRelativeMajor,
     }
     const generated = generateProgressions(generateParams)
     set({

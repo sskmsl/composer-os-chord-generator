@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it, vi } from "vitest"
-import { clearSessionSkeletonHistory, generateProgressions, limitDefiniteDominants, returningHome, reusablePrevious, rotatedChorusLoop, rootSkeletonOf, withHomeReturnTail, type GenerateParams, type PreviousSection } from "../generateProgressions"
+import { clearSessionSkeletonHistory, generateProgressions, limitDefiniteDominants, relativeMajorDominant, returningHome, reusablePrevious, rotatedChorusLoop, rootSkeletonOf, withHomeReturnTail, type GenerateParams, type PreviousSection } from "../generateProgressions"
 import { SEEDS, withSeed } from "./seeded"
-import { chordName, parseToken } from "../degrees"
+import { chordName, NOTE_TO_PC, parseToken, rootPc } from "../degrees"
 import { resolveKeyMove, rotateLoop, toParallelMinor } from "../songFlow"
 import { isDefiniteMajorV, matchesStyleSignature, rootKey, spiceTokens, styleVocabulary } from "../styleGrammar"
 import { STYLE_OPTIONS, STYLE_TEMPLATES } from "../templates"
@@ -528,5 +528,78 @@ describe("chorus in the relative major after a minor verse", () => {
         }
       }
     })
+  })
+})
+
+describe("pre-chorus ending toward the relative major", () => {
+  const ALL = STYLE_OPTIONS.map((s) => s.value)
+  const withDominant = ALL.filter((style) => relativeMajorDominant(style, "minor") !== null)
+  const withoutDominant = ALL.filter((style) => relativeMajorDominant(style, "minor") === null)
+  const endsOnBVII7 = (tokens: string[]) => tokens[tokens.length - 1] === "bVII7"
+  const preChorus = (style: StyleId, approach: boolean | undefined, key: MusicKey = A_MINOR, section: SectionId = "pre-chorus") =>
+    generateProgressions({ key, style, section, mood: "melancholic", count: 5, length: 4, approachRelativeMajor: approach })
+  const rows = (style: StyleId, approach: boolean | undefined, key?: MusicKey, section?: SectionId) =>
+    Array.from({ length: 40 }, () => preChorus(style, approach, key, section)).flat()
+
+  it("offers bVII7 only to styles that have both the bVII root and the 7 colour", () => {
+    expect(withDominant.length).toBeGreaterThan(5)
+    expect(withDominant).toContain("finale")
+    expect(withoutDominant).toEqual(expect.arrayContaining(["ethereal", "cinematic", "newWave", "slowcore"]))
+    expect(relativeMajorDominant("finale", "major")).toBeNull()
+    for (const style of withDominant) {
+      const vocab = styleVocabulary(style, "minor")
+      expect(vocab.roots.has("bVII") && vocab.suffixes.has("7"), style).toBe(true)
+    }
+  })
+
+  it.each(SEEDS)("ends the pre-chorus on bVII7 far more often when heading to the relative major (seed %i)", (seed) => {
+    for (const style of withDominant) {
+      const control = withSeed(seed, () => rows(style, undefined))
+      const approach = withSeed(seed, () => rows(style, true))
+      const share = (list: typeof control) => list.filter((p) => endsOnBVII7(p.romanNumerals)).length / list.length
+      // 採点と選抜を通ったあとも残る(語彙・シグネチャーに合わない組み合わせは落ちるので、全スタイルで正とは限らない)
+      expect(share(approach), style).toBeGreaterThanOrEqual(share(control))
+    }
+    const surviving = withDominant.filter((style) => {
+      const approach = withSeed(seed, () => rows(style, true))
+      return approach.some((p) => endsOnBVII7(p.romanNumerals))
+    })
+    expect(surviving.length).toBeGreaterThanOrEqual(3)
+  })
+
+  it("leaves the output unchanged when the approach is not chosen, and for other sections", () => {
+    for (const style of ["finale", "romanticDark", "cinematic", "ethereal"] as const) {
+      const none = withSeed(SEEDS[0], () => rows(style, undefined).map((p) => p.chords))
+      const off = withSeed(SEEDS[0], () => rows(style, false).map((p) => p.chords))
+      expect(off, style).toEqual(none)
+      for (const section of ["verse", "chorus", "bridge"] as const) {
+        const a = withSeed(SEEDS[1], () => rows(style, undefined, A_MINOR, section).map((p) => p.chords))
+        const b = withSeed(SEEDS[1], () => rows(style, true, A_MINOR, section).map((p) => p.chords))
+        expect(b, `${style} ${section}`).toEqual(a)
+      }
+    }
+  })
+
+  it("does not put bVII7 into styles without it, and not in major", () => {
+    withSeed(SEEDS[2], () => {
+      for (const style of withoutDominant) {
+        for (const p of rows(style, true)) expect(p.romanNumerals.includes("bVII7"), style).toBe(false)
+      }
+      for (const p of rows("finale", true, { tonic: "C", mode: "major" })) expect(endsOnBVII7(p.romanNumerals)).toBe(false)
+    })
+  })
+
+  it("lands on the dominant of the relative major in all 12 minor keys", () => {
+    for (const k of MINOR_KEYS) {
+      const found = withSeed(SEEDS[0], () => rows("finale", true, k)).filter((p) => endsOnBVII7(p.romanNumerals))
+      expect(found.length, keyLabel(k)).toBeGreaterThan(0)
+      const relative = resolveKeyMove(k, "relative")
+      for (const p of found) {
+        const last = parseToken(p.romanNumerals[p.romanNumerals.length - 1])
+        // bVII7 の根音は、相対長調の属音(V)と同じ高さ
+        expect(rootPc(last, k), keyLabel(k)).toBe((NOTE_TO_PC[relative.tonic] + 7) % 12)
+        expect(p.chords[p.chords.length - 1]).toBe(chordName(last, k))
+      }
+    }
   })
 })
