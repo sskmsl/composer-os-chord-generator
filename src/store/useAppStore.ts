@@ -1,5 +1,10 @@
 import { create } from "zustand"
-import { generateProgressions, rootSkeletonOf, type GenerateParams } from "@/features/chord-engine/generateProgressions"
+import {
+  generateProgressions,
+  rootSkeletonOf,
+  type GenerateParams,
+  type PreviousSection,
+} from "@/features/chord-engine/generateProgressions"
 import { downloadComposerSongExchange } from "@/features/exchange/composerSongExchange"
 import { downloadSongSmf } from "@/features/midi/exportSong"
 import { gmExportPrograms } from "@/features/audio/soundSettings"
@@ -11,6 +16,7 @@ import { clearRemoteDeletions, pushFolder, pushProgression } from "@/features/sy
 import { deletionRepository } from "@/features/storage/deletionRepository"
 import type { Folder } from "@/types/folder"
 import { createFolder as buildFolder } from "@/types/folder"
+import { MAJOR_KEYS, MINOR_KEYS, keyLabel } from "@/types/music"
 import type { ChordCount, MoodId, MusicKey, SectionId, StyleId, VariationCount } from "@/types/music"
 import type { GeneratedProgression, SavedProgression } from "@/types/progression"
 import { toSavedProgression } from "@/types/progression"
@@ -81,13 +87,43 @@ interface GeneratorParams {
   length: ChordCount
 }
 
+/**
+ * 「次のセクション」の提案から続けて作っている間だけ持つ、曲の流れの文脈。
+ * 条件を手で変えたら破棄する(別の曲を作り始めたとみなす)。
+ */
+export interface SongContext {
+  /** 流れの最初のセクションの調。転調したあと原調へ戻る判断に使う */
+  originalKey: MusicKey
+  /** 直前のセクション(提案をクリックした時点の先頭の候補) */
+  previous?: PreviousSection
+}
+
+/** 生成結果から、次のセクションが使い回すための文脈を取り出す。調は候補のkey表記から引き、無ければfallback */
+function previousSectionFrom(progression: GeneratedProgression | undefined, fallback: MusicKey): PreviousSection | undefined {
+  if (!progression || progression.romanNumerals.length === 0) return undefined
+  const key =
+    [...MINOR_KEYS, ...MAJOR_KEYS].find((k) => k.mode === progression.mode && keyLabel(k) === progression.key) ?? fallback
+  return {
+    key,
+    loop: [...progression.romanNumerals],
+    lastChord: progression.romanNumerals[progression.romanNumerals.length - 1],
+  }
+}
+
 interface AppStore {
   // ジェネレーター
   params: GeneratorParams
   results: GeneratedProgression[]
   /** 「前の結果に戻る」用の1世代分の履歴 */
   previousResults: GeneratedProgression[] | null
+  /** 提案から続けて作っている曲の流れ。条件を手で変えると null に戻る */
+  songContext: SongContext | null
   setParams(partial: Partial<GeneratorParams>): void
+  /**
+   * 「次のセクション」の提案を選んで生成する。直前の結果の先頭を前セクションとして渡し、
+   * 転調する提案なら key に新しい調を渡す。原調は流れの最初の調を覚えておく。
+   */
+  continueToSection(section: SectionId, key?: MusicKey): void
   generate(): void
   restorePrevious(): void
 
@@ -154,20 +190,36 @@ export const useAppStore = create<AppStore>((set, get) => ({
   },
   results: [],
   previousResults: null,
+  songContext: null,
 
   setParams(partial) {
-    set({ params: { ...get().params, ...partial } })
+    // 条件を手で変えたら、別の曲を作り始めたとみなして流れの文脈を破棄する
+    set({ params: { ...get().params, ...partial }, songContext: null })
+  },
+
+  continueToSection(section, key) {
+    const { params, results, songContext } = get()
+    const previous = previousSectionFrom(results[0], params.key)
+    const originalKey = songContext?.originalKey ?? previous?.key ?? params.key
+    set({ params: { ...params, section, ...(key ? { key } : {}) }, songContext: { originalKey, previous } })
+    get().generate()
   },
 
   generate() {
-    const { params, results, saved, preference } = get()
+    const { params, results, saved, preference, songContext } = get()
     // 曲集(保存済み)で同じスタイル・調に使った骨格を渡し、数百曲作っても同じ型に偏らないようにする
     const usedSkeletons = new Set(
       saved
         .filter((p) => p.style === params.style && p.mode === params.key.mode)
         .map((p) => rootSkeletonOf(p.romanNumerals)),
     )
-    const generateParams: GenerateParams = { ...params, usedSkeletons, preference }
+    const generateParams: GenerateParams = {
+      ...params,
+      usedSkeletons,
+      preference,
+      previous: songContext?.previous,
+      originalKey: songContext?.originalKey,
+    }
     const generated = generateProgressions(generateParams)
     set({
       previousResults: results.length > 0 ? results : get().previousResults,

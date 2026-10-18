@@ -12,8 +12,10 @@ import { cn } from "@/lib/utils"
  */
 export function NextSectionSuggestion() {
   const params = useAppStore((s) => s.params)
-  const setParams = useAppStore((s) => s.setParams)
-  const generate = useAppStore((s) => s.generate)
+  const songContext = useAppStore((s) => s.songContext)
+  const continueToSection = useAppStore((s) => s.continueToSection)
+  // 提案から続けている間は流れの最初の調。なければ今の調(=まだ転調していない)
+  const originalKey = songContext?.originalKey ?? params.key
 
   const suggestions = NEXT_SECTIONS[params.section]
   if (suggestions.length === 0) return null
@@ -31,7 +33,7 @@ export function NextSectionSuggestion() {
       <div className="flex flex-wrap gap-2">
         {suggestions.map(({ section, reason, keyMove }) => {
           const label = SECTION_OPTIONS.find((s) => s.value === section)?.label
-          const targetKey = keyMove ? resolveKeyMove(params.key, keyMove.type) : params.key
+          const targetKey = keyMove ? resolveKeyMove(params.key, keyMove.type, originalKey) : params.key
           const keyChanges = keyMove && keyLabel(targetKey) !== keyLabel(params.key)
           return (
             <Button
@@ -40,8 +42,7 @@ export function NextSectionSuggestion() {
               // 説明文が長いと折り返さずに画面幅を超えていたため、折り返しを許可する
               className="h-auto max-w-full shrink flex-col items-start gap-0.5 px-3 py-2 text-left whitespace-normal"
               onClick={() => {
-                setParams(keyChanges ? { section, key: targetKey } : { section })
-                generate()
+                continueToSection(section, keyChanges ? targetKey : undefined)
                 // 新しい結果一覧の先頭が見えるようページ上部へ戻す
                 window.scrollTo({ top: 0, behavior: "smooth" })
               }}

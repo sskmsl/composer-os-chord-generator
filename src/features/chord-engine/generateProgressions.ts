@@ -2,15 +2,18 @@ import type { MoodId, MusicKey, RuleSection, SectionId, StyleId } from "@/types/
 import { keyLabel, PERIOD_CHORD_COUNT, sectionRule } from "@/types/music"
 import { alignBeatsToBars, type GeneratedProgression } from "@/types/progression"
 import type { ParsedChord } from "./degrees"
-import { bassNoteName, buildToken, chordName, parseToken, tokenFromChordSymbol } from "./degrees"
+import { bassNoteName, buildToken, chordName, NOTE_TO_PC, parseToken, tokenFromChordSymbol } from "./degrees"
 import { decorateProgression } from "./decorate"
 import { buildDescription } from "./descriptions"
 import { chance, pick } from "./random"
 import { computeScores, extractFeatures, type CadenceType } from "./scoring"
 import {
+  allStyleTokens,
   cadentialTokens,
   commonToneSubstitutes,
+  isDefiniteMajorV,
   matchesStyleSignature,
+  minorDominantAlternatives,
   openColors,
   rootKey,
   spiceTokens,
@@ -19,8 +22,19 @@ import {
   tonicTokens,
 } from "./styleGrammar"
 import { continuationsOf, generateChain } from "./transitions"
+import { rotateLoop, toParallelMinor } from "./songFlow"
 import { featureTags, preferenceBonus, type PreferenceModel } from "@/features/preference/preferenceModel"
 import { applyVoiceLeadingBass } from "./voiceLeading"
+
+/** 直前に作ったセクションの文脈。次のセクションが前のループを使い回す(回転・再配色)ための手がかり */
+export interface PreviousSection {
+  /** 前セクションの調 */
+  key: MusicKey
+  /** 前セクションのループ(度数表記。生成した進行の romanNumerals) */
+  loop: string[]
+  /** 前セクションの最終和音(度数表記)。省略時は loop の最後 */
+  lastChord?: string
+}
 
 export interface GenerateParams {
   key: MusicKey
@@ -37,6 +51,10 @@ export interface GenerateParams {
   usedSkeletons?: ReadonlySet<string>
   /** 保存の傾向から学んだ好み。渡すと、好みに近い候補を順位で少し優遇する(表示する点数は変えない) */
   preference?: PreferenceModel | null
+  /** 直前のセクション。渡さなければ従来どおり、セクション単体で作る */
+  previous?: PreviousSection
+  /** 曲の原調。転調したあとのセクションで、原調へ戻る判断に使う */
+  originalKey?: MusicKey
 }
 
 /**
@@ -154,12 +172,13 @@ function generateOne(params: GenerateParams): GeneratedProgression {
   const { key, style, section, mood, length } = params
 
   const isPeriod = length === PERIOD_CHORD_COUNT
+  const reuse = isPeriod ? null : reusablePrevious(params)
   let tokens = isPeriod
     ? buildPeriod(style, key.mode, mood, section)
-    : adaptToSection(generateChain(style, key.mode, mood, length), section, key, style)
+    : adaptToSection(generateChain(style, key.mode, mood, length), section, key, style, reuse, returningHome(params))
   // 8小節フレーズは「同じ出だし」自体が構造なので、代理和音で崩さない
   if (!isPeriod && chance(SUBSTITUTION_PROBABILITY)) tokens = substituteOneChord(tokens, style, key.mode)
-  const decorated = decorateProgression(tokens.map(parseToken), style, mood, key.mode)
+  const decorated = limitDefiniteDominants(decorateProgression(tokens.map(parseToken), style, mood, key.mode), style, key.mode)
   const { chords: parsed, invertedIndices } = applyVoiceLeadingBass(decorated, style)
 
   const chords = parsed.map((c) => chordName(c, key))
@@ -317,8 +336,146 @@ function computeHarmonicRhythm(
   return alignBeatsToBars(beats)
 }
 
+/** 同主短調へ暗転した落ちサビが、前の長調のループを借用和音にして使う確率 */
+const DARKENED_REUSE_PROBABILITY = 0.6
+
+/** サビが前のセクションのループを回して使う確率 */
+const CHORUS_ROTATION_PROBABILITY = 0.5
+
+export interface ReusableLoop {
+  loop: string[]
+  /** 前セクションと同じ調か。別の調(転調後)なら、度数のまま使うだけで同型ループの景色が変わる */
+  sameKey: boolean
+  /** 前の長調のループを同主短調の度数へ置き換えたもの(一時的な暗転)か */
+  darkened?: boolean
+  /** 前セクションの最終和音の根音。回した先頭がこれと同じ根音だと切れ目で停滞するので避ける */
+  lastRoot: string
+}
+
+/**
+ * 前セクションのループのうち、今回のスタイル・調・長さでそのまま使えるもの。
+ * 調の性格(長調/短調)が違う、長さが指定と違う、今のスタイルの語彙(根音・装飾)に無い和音を含む、
+ * のいずれかなら使わない(度数のまま移すと別の調性の響きになる/スタイルの外へ出るため)。
+ * ただし、前が長調で今が同じ主音の短調(同主短調への一時暗転)なら、度数を同主短調の借用和音へ
+ * 置き換えて使う。
+ */
+export function reusablePrevious(params: GenerateParams): ReusableLoop | null {
+  const { previous, key, style, length } = params
+  if (!previous) return null
+  const darkened =
+    previous.key.mode === "major" && key.mode === "minor" && NOTE_TO_PC[previous.key.tonic] === NOTE_TO_PC[key.tonic]
+  if (previous.key.mode !== key.mode && !darkened) return null
+  const loop = darkened ? toParallelMinor(previous.loop) : previous.loop
+  if (loop.length < 2 || (length !== undefined && loop.length !== length)) return null
+  const vocab = styleVocabulary(style, key.mode)
+  const inVocabulary = loop.every((token) => {
+    const parsed = parseToken(token)
+    return vocab.roots.has(rootKey(token)) && vocab.suffixes.has(parsed.suffix)
+  })
+  if (!inVocabulary) return null
+  const lastChord = previous.lastChord && !darkened ? previous.lastChord : loop[loop.length - 1]
+  return {
+    loop,
+    sameKey: previous.key.tonic === key.tonic && previous.key.mode === key.mode,
+    ...(darkened ? { darkened } : {}),
+    lastRoot: rootKey(lastChord),
+  }
+}
+
+/** 先頭が元の先頭と違い、前セクションの最終和音とも根音が違う開始位置で回す(無理なら元の並びに近い回し方) */
+export function rotatedChorusLoop({ loop, lastRoot }: ReusableLoop): string[] {
+  const offsets = loop.map((_, i) => i).filter((i) => i > 0)
+  const preferred = offsets.filter((i) => rootKey(loop[i]) !== lastRoot && rootKey(loop[i]) !== rootKey(loop[0]))
+  return rotateLoop(loop, pick(preferred.length > 0 ? preferred : offsets))
+}
+
+/** イントロの終わり方。repeat=2和音の反復、turnaround=V→iで主和音に着く、open=通常どおり未解決 */
+type IntroVariant = "repeat" | "turnaround" | "open"
+
+const INTRO_REPEAT_PROBABILITY = 0.25
+const INTRO_TURNAROUND_PROBABILITY = 0.08
+
+/** V→iの解決を持ち味にしない旋法・反復系のスタイル。イントロでもVへ導かない */
+const MODAL_STYLES = new Set<StyleId>([...REPETITIVE_STYLES, "dorian"])
+
+/** イントロでV→iの前に置けるV。そのスタイルのテンプレートにVがあるときだけ(旋法系のスタイルにVを足さない) */
+function introDominants(style: StyleId, mode: MusicKey["mode"]): string[] {
+  if (MODAL_STYLES.has(style)) return []
+  const roots = styleVocabulary(style, mode).roots
+  const tonic = tonicTokens(style, mode)
+  if (!roots.has("V") || tonic.length === 0) return []
+  // V→iは長3度(導音)を持つ決定的なVで。susはVの引力を弱める形なので除く
+  return allStyleTokens(style, mode).filter((t) => isDefiniteMajorV(parseToken(t)))
+}
+
+function pickIntroVariant(style: StyleId, mode: MusicKey["mode"]): IntroVariant {
+  const r = Math.random()
+  if (r < INTRO_TURNAROUND_PROBABILITY) return introDominants(style, mode).length > 0 ? "turnaround" : "open"
+  if (r < INTRO_TURNAROUND_PROBABILITY + INTRO_REPEAT_PROBABILITY) return "repeat"
+  return "open"
+}
+
+/** Cメロ・ブリッジが前のループの同型を色彩和音つきで使い回す確率 */
+const COLOR_REUSE_PROBABILITY = 0.5
+
+/**
+ * 前のループの同型を、そのスタイルの色彩和音を必ず1つ含めて使い回す。
+ * 調が変わっていれば(転調後)度数のまま同じ並びで景色が変わるので、そのまま使う。
+ * 同じ調なら並びを回して別の始まりにし、前と同じにならないようにする。
+ */
+function recoloredLoop(previous: ReusableLoop, style: StyleId, mode: MusicKey["mode"]): string[] {
+  const loop = previous.sameKey ? rotateLoop(previous.loop, 1 + Math.floor(Math.random() * (previous.loop.length - 1))) : [...previous.loop]
+  const spiceRoots = new Set(spiceTokens(style, mode).map(rootKey))
+  if (loop.some((t) => spiceRoots.has(rootKey(t)))) return loop
+  const index = Math.min(1, loop.length - 1)
+  const neighbours = new Set([loop[index - 1], loop[index + 1]].filter(Boolean).map(rootKey))
+  const candidates = spiceTokens(style, mode).filter((t) => !neighbours.has(rootKey(t)))
+  if (candidates.length === 0) return loop
+  loop[index] = pick(candidates)
+  return loop
+}
+
+/** 原調へ戻る終盤で、bVI → bVII → 主和音の着地を選ぶ確率 */
+const HOME_RETURN_PROBABILITY = 0.7
+
+/** 原調への帰還を和声で示すセクション(サビ・大サビ・アウトロ) */
+const HOME_RETURN_SECTIONS: RuleSection[] = ["chorus", "grandChorus", "outro"]
+
+const sameKey = (a: MusicKey, b: MusicKey) => NOTE_TO_PC[a.tonic] === NOTE_TO_PC[b.tonic] && a.mode === b.mode
+
+/** 今の調が原調で、直前のセクションは別の調だった(転調からの帰還)か */
+export function returningHome(params: GenerateParams): boolean {
+  const { key, previous, originalKey } = params
+  return Boolean(originalKey && previous && sameKey(key, originalKey) && !sameKey(previous.key, originalKey))
+}
+
+/**
+ * 終わりを bVI → bVII → 主和音にする(長さは変えない)。3つともそのスタイルのテンプレートにある
+ * 和音から選び、どれかが無ければ(スタイルの語彙に無い和音は使わない)進行は変えない。
+ * 進行が2和音のときや、直前がすでに bVI のときは、bVII → 主和音だけにして同じ根音の重複を避ける。
+ */
+export function withHomeReturnTail(tokens: string[], style: StyleId, mode: MusicKey["mode"]): string[] {
+  const pool = allStyleTokens(style, mode)
+  const pickRoot = (root: string) => pool.filter((t) => rootKey(t) === root)
+  const tonic = tonicTokens(style, mode)
+  const bVI = pickRoot("bVI")
+  const bVII = pickRoot("bVII")
+  if (tonic.length === 0 || bVI.length === 0 || bVII.length === 0) return tokens
+  const n = tokens.length
+  const precededByBVI = n >= 4 && rootKey(tokens[n - 4]) === "bVI"
+  const tail = n < 3 || precededByBVI ? [pick(bVII), pick(tonic)] : [pick(bVI), pick(bVII), pick(tonic)]
+  return [...tokens.slice(0, n - tail.length), ...tail]
+}
+
 /** CHORD_ENGINE_SPEC §6 のセクションルールでテンプレートを変形する */
-function adaptToSection(tokens: string[], section: SectionId, key: MusicKey, style: StyleId): string[] {
+function adaptToSection(
+  tokens: string[],
+  section: SectionId,
+  key: MusicKey,
+  style: StyleId,
+  previous: ReusableLoop | null,
+  homeReturn: boolean,
+): string[] {
   const mode = key.mode
   let result = [...tokens]
   const rule: RuleSection = sectionRule(section)
@@ -338,11 +495,23 @@ function adaptToSection(tokens: string[], section: SectionId, key: MusicKey, sty
   }
 
   switch (rule) {
-    case "intro":
-      // 疎に: 2〜4コード、終止は未解決に
+    case "intro": {
+      // 疎に: 2〜4コード。終わり方は3通り(反復で土台を示す/通常どおり未解決/ときどきV→iのターンアラウンド)
+      const variant = pickIntroVariant(style, mode)
+      if (variant === "repeat" && result.length >= 3 && rootKey(result[0]) !== rootKey(result[1])) {
+        const pair = [result[0], result[1]]
+        result = result.map((_, i) => pair[i % 2])
+        break
+      }
+      if (variant === "turnaround" && result.length >= 2) {
+        const dominant = pick(introDominants(style, mode))
+        result = [...result.slice(0, result.length - 2), dominant, pick(tonicTokens(style, mode))]
+        break
+      }
       if (chance(0.5)) result = result.slice(0, 2)
       result[last()] = unresolveToken(result[last()], style, mode)
       break
+    }
 
     case "verse":
       // 抑制: 強い解決(V7)を弱める
@@ -357,10 +526,14 @@ function adaptToSection(tokens: string[], section: SectionId, key: MusicKey, sty
       break
 
     case "chorus":
+      // 前のセクションのループを、別の和音から始めて使い回す
+      if (previous && chance(CHORUS_ROTATION_PROBABILITY)) result = rotatedChorusLoop(previous)
       break
 
     case "breakdownChorus":
-      // 落ちサビ: サビの和声感を保ちながら密度と終止感を抑える
+      // 落ちサビ: サビの和声感を保ちながら密度と終止感を抑える。同主短調へ暗転しているなら、
+      // 前の長調のループを同主短調の借用和音にして使う
+      if (previous?.darkened && chance(DARKENED_REUSE_PROBABILITY)) result = [...previous.loop]
       if (result.length > 3) result = result.slice(0, 3)
       if (chance(0.65)) {
         result[last()] = unresolveToken(result[last()], style, mode)
@@ -378,13 +551,16 @@ function adaptToSection(tokens: string[], section: SectionId, key: MusicKey, sty
 
     case "cMelody":
       // Cメロ: そのスタイルにとっての色彩和音で新しい景色を作り、後続サビへの緊張を残す
+      if (previous && chance(COLOR_REUSE_PROBABILITY)) result = recoloredLoop(previous, style, mode)
       if (!hasSpice()) result[Math.min(1, last())] = pick(spiceTokens(style, mode))
       if (chance(0.55)) replaceLast(tensionTokens(style, mode))
       break
 
     case "bridge":
-      // そのスタイルの色彩和音・意外な和音を注入する
-      if (result.length >= 2 && !hasSpice() && chance(0.35)) {
+      // そのスタイルの色彩和音・意外な和音を注入する。前のループがあれば、その同型を色彩和音つきで使い回す
+      if (previous && chance(COLOR_REUSE_PROBABILITY)) {
+        result = recoloredLoop(previous, style, mode)
+      } else if (result.length >= 2 && !hasSpice() && chance(0.35)) {
         result[1] = pick(spiceTokens(style, mode))
       }
       break
@@ -405,6 +581,10 @@ function adaptToSection(tokens: string[], section: SectionId, key: MusicKey, sty
         result[last()] = unresolveToken(result[last()], style, mode)
       }
       break
+  }
+  // 転調から原調へ戻ってきた終盤は、bVI → bVII → 主和音で原調に着地する
+  if (homeReturn && HOME_RETURN_SECTIONS.includes(rule) && chance(HOME_RETURN_PROBABILITY)) {
+    result = withHomeReturnTail(result, style, mode)
   }
   return result
 }
@@ -429,6 +609,51 @@ function unresolveToken(token: string, style: StyleId, mode: MusicKey["mode"]): 
     parsed.suffix = pick(colors)
   }
   return buildToken(parsed)
+}
+
+/** 短調の1進行に置く決定的なメジャーV(導音を持つV)の上限 */
+const MAX_DEFINITE_DOMINANTS = 1
+
+/** 8小節フレーズで、後半の出だし2和音(4・5番目)が対応する前半の和音(0・1番目)。それ以外は null */
+function openingMirror(index: number, length: number): number | null {
+  if (length !== PERIOD_CHORD_COUNT) return null
+  if (index < 2) return index + 4
+  return index >= 4 && index < 6 ? index - 4 : null
+}
+
+/**
+ * 短調の進行で、決定的なメジャーVを1か所までに抑える(装飾・代理・8小節フレーズの後に呼ぶ)。
+ * 残すのはトニックへ向かう最後の1か所で、それ以外はそのスタイルの未解決形(sus)へ、
+ * susを持たないスタイルなら語彙にある v / bVII へ、それも無ければ前後と別根音の語彙内の和音へ
+ * 置き換える。Vを新しく足すことはしないので、旋法系のスタイルにVは入らない。
+ * 8小節フレーズは後半が前半と同じ出だしで始まる構造なので、根音ごと置き換えるときは対応する位置も同じ和音にする。
+ */
+export function limitDefiniteDominants(chords: ParsedChord[], style: StyleId, mode: MusicKey["mode"]): ParsedChord[] {
+  if (mode !== "minor") return chords
+  const dominantIndices = (list: ParsedChord[]) => list.flatMap((c, i) => (isDefiniteMajorV(c) ? [i] : []))
+  if (dominantIndices(chords).length <= MAX_DEFINITE_DOMINANTS) return chords
+
+  const result = [...chords]
+  const extras = dominantIndices(result).slice(0, -MAX_DEFINITE_DOMINANTS)
+  for (const index of extras) {
+    if (!isDefiniteMajorV(result[index])) continue
+    const softened = parseToken(unresolveToken(result[index].token, style, mode))
+    if (!isDefiniteMajorV(softened)) {
+      result[index] = softened
+      continue
+    }
+    const neighbours = new Set([result[index - 1], result[index + 1]].filter(Boolean).map((c) => rootKey(c.token)))
+    const usable = (candidates: string[]) => candidates.filter((t) => !neighbours.has(rootKey(t)) && !isDefiniteMajorV(parseToken(t)))
+    const alternatives = usable(minorDominantAlternatives(style, mode))
+    const fallback = usable(allStyleTokens(style, mode).filter((t) => rootKey(t) !== "i"))
+    const pool = alternatives.length > 0 ? alternatives : fallback
+    // 置き換え先がどこにも無いときだけトニックにする(Vは足さない)
+    const replacement = parseToken(pool.length > 0 ? pick(pool) : "i")
+    result[index] = replacement
+    const mirror = openingMirror(index, result.length)
+    if (mirror !== null && rootKey(result[mirror].token) === "V") result[mirror] = replacement
+  }
+  return result
 }
 
 /** ベースの動きを音名列+輪郭ラベルで表現する */

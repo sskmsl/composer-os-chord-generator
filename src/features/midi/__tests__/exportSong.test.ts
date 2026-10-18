@@ -45,11 +45,48 @@ describe("MIDI書き出しの調号", () => {
   })
 })
 
-/** SMF中のプログラムチェンジ(Cn pp)を [チャンネル, 楽器番号] で取り出す(トラック名などのデータと区別するため、デルタタイム0の直後だけを見る) */
+/**
+ * SMFを読み進めて、プログラムチェンジ(Cn pp)を [チャンネル, 楽器番号] で取り出す。
+ * バイト列を走査すると、トラック名や和音のデータ内の値がたまたま一致して誤検出するため、
+ * トラックのチャンクとイベントの区切り(デルタタイム・ランニングステータス・メタ・SysEx)をたどる。
+ */
 function programChanges(bytes: Uint8Array): Array<[number, number]> {
   const found: Array<[number, number]> = []
-  for (let i = 1; i + 1 < bytes.length; i++) {
-    if (bytes[i - 1] === 0x00 && (bytes[i] & 0xf0) === 0xc0 && bytes[i + 1] < 0x80) found.push([bytes[i] & 0x0f, bytes[i + 1]])
+  const ascii = (at: number) => String.fromCharCode(...bytes.slice(at, at + 4))
+  const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength)
+  let pos = 8 + view.getUint32(4) // ヘッダチャンク(MThd)を飛ばす
+  while (pos + 8 <= bytes.length && ascii(pos) === "MTrk") {
+    const end = pos + 8 + view.getUint32(pos + 4)
+    pos += 8
+    let status = 0
+    while (pos < end) {
+      while (bytes[pos++] & 0x80) { /* デルタタイム(可変長)を読み飛ばす */ }
+      if (bytes[pos] >= 0x80) status = bytes[pos++]
+      if (status === 0xff) {
+        pos++ // メタイベントの種類
+        let length = 0
+        let b: number
+        do {
+          b = bytes[pos++]
+          length = (length << 7) | (b & 0x7f)
+        } while (b & 0x80)
+        pos += length
+      } else if (status === 0xf0 || status === 0xf7) {
+        let length = 0
+        let b: number
+        do {
+          b = bytes[pos++]
+          length = (length << 7) | (b & 0x7f)
+        } while (b & 0x80)
+        pos += length
+      } else if ((status & 0xf0) === 0xc0 || (status & 0xf0) === 0xd0) {
+        if ((status & 0xf0) === 0xc0) found.push([status & 0x0f, bytes[pos]])
+        pos += 1
+      } else {
+        pos += 2
+      }
+    }
+    pos = end
   }
   return found
 }
