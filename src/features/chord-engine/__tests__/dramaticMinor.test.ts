@@ -58,6 +58,7 @@ describe("i-bVI-bVII-bIII templates", () => {
             if (isLoop(p.romanNumerals)) loops++
           }
         }
+        expect(loops, `${style} survives selection at least once`).toBeGreaterThan(0)
         expect(loops / total, style).toBeLessThan(0.3)
       }
     })
@@ -442,5 +443,58 @@ describe("return to the original key", () => {
     const verses = (withOriginal: boolean) =>
       withSeed(SEEDS[2], () => Array.from({ length: 40 }, () => generateReturn(a, "verse", withOriginal)).flat().map((p) => p.chords))
     expect(verses(true)).toEqual(verses(false))
+  })
+})
+
+describe("intro V to i turnaround survives selection as a decisive V", () => {
+  const isDecisiveTurnaround = (tokens: string[]) =>
+    tokens.length >= 2 && isDefiniteMajorV(parseToken(tokens[tokens.length - 2])) && rootKey(tokens[tokens.length - 1]) === "i"
+
+  it.each(SEEDS)("keeps decisive V to i endings after selection, as a minority (seed %i)", (seed) => {
+    withSeed(seed, () => {
+      for (const style of ["romanticDark", "finale", "neoclassical", "cinematic", "jChanson"] as const) {
+        const intros = Array.from({ length: 50 }, () =>
+          generateProgressions({ key: A_MINOR, style, section: "intro", mood: "melancholic", count: 5 }),
+        ).flat().map((p) => p.romanNumerals)
+        const decisive = intros.filter(isDecisiveTurnaround).length
+        expect(decisive, `${style} decisive V to i`).toBeGreaterThan(0)
+        expect(decisive / intros.length, style).toBeLessThan(0.5)
+        for (const tokens of intros) expect(tokens.map(parseToken).filter(isDefiniteMajorV).length).toBeLessThanOrEqual(1)
+      }
+    })
+  })
+})
+
+describe("one loop keeps several decorations, inversions and basses", () => {
+  const loop = ["i", "bVI", "bVII", "bIII"]
+  const loopRotationSkeletons = loop.map((_, i) => rotateLoop(loop, i).join("-"))
+  const slashBass = (token: string) => token.includes("/")
+
+  it.each(SEEDS)("gives different suffixes, slash basses and bass lines for the same skeleton (seed %i)", (seed) => {
+    for (const style of ["cinematic", "finale"] as const) {
+      const rows = withSeed(seed, () =>
+        Array.from({ length: 120 }, () =>
+          generateProgressions({
+            key: A_MINOR,
+            style,
+            section: "chorus",
+            mood: "dramatic",
+            count: 5,
+            length: 4,
+            previous: { key: A_MINOR, loop },
+          }),
+        ).flat(),
+      ).filter((p) => loopRotationSkeletons.includes(rootSkeletonOf(p.romanNumerals)))
+
+      expect(rows.length, `${style} loop outputs`).toBeGreaterThan(5)
+      const tokenSets = new Set(rows.map((p) => p.romanNumerals.join(" ")))
+      const suffixSets = new Set(rows.map((p) => p.romanNumerals.map((t) => parseToken(t).suffix).join("|")))
+      const bassLines = new Set(rows.map((p) => p.bassMovement))
+      expect(tokenSets.size, `${style} distinct spellings`).toBeGreaterThanOrEqual(3)
+      expect(suffixSets.size, `${style} distinct decoration patterns`).toBeGreaterThanOrEqual(2)
+      expect(bassLines.size, `${style} distinct bass lines`).toBeGreaterThanOrEqual(2)
+      expect(rows.some((p) => p.romanNumerals.some(slashBass)), `${style} has inversions or pedals`).toBe(true)
+      expect(rows.some((p) => !p.romanNumerals.some(slashBass)), `${style} has root-position versions`).toBe(true)
+    }
   })
 })

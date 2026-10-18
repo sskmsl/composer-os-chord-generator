@@ -404,7 +404,8 @@ function introDominants(style: StyleId, mode: MusicKey["mode"]): string[] {
   const roots = styleVocabulary(style, mode).roots
   const tonic = tonicTokens(style, mode)
   if (!roots.has("V") || tonic.length === 0) return []
-  return allStyleTokens(style, mode).filter((t) => rootKey(t) === "V")
+  // V→iは長3度(導音)を持つ決定的なVで。susはVの引力を弱める形なので除く
+  return allStyleTokens(style, mode).filter((t) => isDefiniteMajorV(parseToken(t)))
 }
 
 function pickIntroVariant(style: StyleId, mode: MusicKey["mode"]): IntroVariant {
