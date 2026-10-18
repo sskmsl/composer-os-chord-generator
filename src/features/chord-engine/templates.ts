@@ -61,6 +61,8 @@ export const STYLE_TEMPLATES: Record<StyleId, Record<Mode, string[][]>> = {
       ["bIII", "bVII", "bVI", "i(add9)"],
       ["i(add9)", "bIII", "bVImaj7", "V7sus4"],
       ["bVII", "bVI", "bIII", "i"],
+      // 短調のドラマティックな循環(i → bVI → bVII → bIII)。ドミナントを使わず三和音の巡りで押す
+      ["i(add9)", "bVI", "bVII", "bIII"],
     ],
     major: [
       ["I", "bVII", "IVmaj7", "I"],
@@ -155,6 +157,8 @@ export const STYLE_TEMPLATES: Record<StyleId, Record<Mode, string[][]>> = {
       ["bVI", "V7", "i", "i"],
       ["i", "iv", "V7", "bVI"],
       ["bIII", "bVI", "V7", "i"],
+      // 短調のドラマティックな循環(i → bVI → bVII → bIII)。次の周回でbVIから回して使える
+      ["i", "bVImaj7", "bVII", "bIII"],
     ],
     major: [
       ["IV", "V", "vi", "I"],
