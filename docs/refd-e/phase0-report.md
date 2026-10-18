@@ -37,4 +37,4 @@
 
 ## その他の確認
 - 参照音源は手元に無く、探していない。観察は方向性として扱う。
-- 先の指示の `boutonnat` 採点式、`PROGRESSION_SCHEMA_VERSION`、Composer Song Exchange の `format` / `version` は変更しない。
+- 先の指示の 主スコアの採点式、`PROGRESSION_SCHEMA_VERSION`、Composer Song Exchange の `format` / `version` は変更しない。
