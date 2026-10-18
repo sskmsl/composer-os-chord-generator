@@ -1,6 +1,7 @@
 import type { Mode, MoodId, StyleId } from "@/types/music"
 import { MOOD_PROFILES, STYLE_TEMPLATES } from "./templates"
 import { chance, pick } from "./random"
+import { rootKey } from "./styleGrammar"
 
 /**
  * STYLE_TEMPLATES(スタイルごとに手作りした16パターン=長調/短調各8)を
@@ -18,14 +19,8 @@ interface TransitionData {
   table: Record<string, string[]>
 }
 
-const ROOT_RE = /^([b#]?)(i{1,3}|iv|v|vi{0,2}|I{1,3}|IV|V|VI{0,2})/
-
 /** サフィックス・スラッシュベースを無視し、ルート度数(例: "bVI", "V")だけ取り出す */
-function rootOf(token: string): string {
-  const main = token.replace(/[()]/g, "").split("/")[0]
-  const m = ROOT_RE.exec(main)
-  return m ? `${m[1]}${m[2]}` : main
-}
+const rootOf = rootKey
 
 function buildTransitionTable(templates: string[][]): TransitionData {
   const starts: string[] = []
