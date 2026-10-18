@@ -1,0 +1,272 @@
+{
+  "conditions": {
+    "seeds": [
+      17,
+      97,
+      301,
+      1009,
+      8191
+    ],
+    "rounds": 40,
+    "count": 5,
+    "length": 4,
+    "minorKey": "A",
+    "majorKey": "C",
+    "mood": "melancholic"
+  },
+  "preChorusApproach": {
+    "ethereal": {
+      "offered": false,
+      "control": 0,
+      "approach": 0
+    },
+    "romanticDark": {
+      "offered": true,
+      "control": 0,
+      "approach": 0.335
+    },
+    "cinematic": {
+      "offered": false,
+      "control": 0,
+      "approach": 0
+    },
+    "newWave": {
+      "offered": false,
+      "control": 0,
+      "approach": 0
+    },
+    "sadcorePop": {
+      "offered": false,
+      "control": 0,
+      "approach": 0
+    },
+    "ritual": {
+      "offered": false,
+      "control": 0,
+      "approach": 0
+    },
+    "finale": {
+      "offered": true,
+      "control": 0,
+      "approach": 0.35
+    },
+    "cool": {
+      "offered": true,
+      "control": 0.241,
+      "approach": 0.394
+    },
+    "tripHop": {
+      "offered": true,
+      "control": 0.244,
+      "approach": 0.535
+    },
+    "neoclassical": {
+      "offered": true,
+      "control": 0,
+      "approach": 0.273
+    },
+    "minimalism": {
+      "offered": false,
+      "control": 0,
+      "approach": 0
+    },
+    "jChanson": {
+      "offered": true,
+      "control": 0,
+      "approach": 0.328
+    },
+    "hiNRG": {
+      "offered": true,
+      "control": 0.032,
+      "approach": 0.286
+    },
+    "dorian": {
+      "offered": false,
+      "control": 0,
+      "approach": 0
+    },
+    "electronica": {
+      "offered": true,
+      "control": 0,
+      "approach": 0.481
+    },
+    "slowcore": {
+      "offered": false,
+      "control": 0,
+      "approach": 0
+    },
+    "frenchPop": {
+      "offered": true,
+      "control": 0,
+      "approach": 0.356
+    },
+    "kayokyoku": {
+      "offered": true,
+      "control": 0,
+      "approach": 0.387
+    },
+    "romanceNostalgia": {
+      "offered": true,
+      "control": 0,
+      "approach": 0.279
+    }
+  },
+  "susContrast": {
+    "ethereal": {
+      "susInVocabulary": true,
+      "sevenInVocabulary": false,
+      "contrasted": 0,
+      "maxDecisiveV": 0
+    },
+    "romanticDark": {
+      "susInVocabulary": false,
+      "sevenInVocabulary": true,
+      "contrasted": 0,
+      "maxDecisiveV": 1
+    },
+    "cinematic": {
+      "susInVocabulary": true,
+      "sevenInVocabulary": false,
+      "contrasted": 0,
+      "maxDecisiveV": 1
+    },
+    "newWave": {
+      "susInVocabulary": false,
+      "sevenInVocabulary": false,
+      "contrasted": 0,
+      "maxDecisiveV": 0
+    },
+    "sadcorePop": {
+      "susInVocabulary": false,
+      "sevenInVocabulary": false,
+      "contrasted": 0,
+      "maxDecisiveV": 0
+    },
+    "ritual": {
+      "susInVocabulary": true,
+      "sevenInVocabulary": false,
+      "contrasted": 0,
+      "maxDecisiveV": 0
+    },
+    "finale": {
+      "susInVocabulary": true,
+      "sevenInVocabulary": true,
+      "contrasted": 0.146,
+      "maxDecisiveV": 1
+    },
+    "cool": {
+      "susInVocabulary": false,
+      "sevenInVocabulary": true,
+      "contrasted": 0,
+      "maxDecisiveV": 1
+    },
+    "tripHop": {
+      "susInVocabulary": false,
+      "sevenInVocabulary": true,
+      "contrasted": 0,
+      "maxDecisiveV": 0
+    },
+    "neoclassical": {
+      "susInVocabulary": false,
+      "sevenInVocabulary": true,
+      "contrasted": 0,
+      "maxDecisiveV": 1
+    },
+    "minimalism": {
+      "susInVocabulary": true,
+      "sevenInVocabulary": false,
+      "contrasted": 0,
+      "maxDecisiveV": 0
+    },
+    "jChanson": {
+      "susInVocabulary": false,
+      "sevenInVocabulary": true,
+      "contrasted": 0,
+      "maxDecisiveV": 1
+    },
+    "hiNRG": {
+      "susInVocabulary": false,
+      "sevenInVocabulary": true,
+      "contrasted": 0,
+      "maxDecisiveV": 1
+    },
+    "dorian": {
+      "susInVocabulary": true,
+      "sevenInVocabulary": false,
+      "contrasted": 0,
+      "maxDecisiveV": 0
+    },
+    "electronica": {
+      "susInVocabulary": false,
+      "sevenInVocabulary": true,
+      "contrasted": 0,
+      "maxDecisiveV": 0
+    },
+    "slowcore": {
+      "susInVocabulary": true,
+      "sevenInVocabulary": false,
+      "contrasted": 0,
+      "maxDecisiveV": 0
+    },
+    "frenchPop": {
+      "susInVocabulary": false,
+      "sevenInVocabulary": true,
+      "contrasted": 0,
+      "maxDecisiveV": 1
+    },
+    "kayokyoku": {
+      "susInVocabulary": false,
+      "sevenInVocabulary": true,
+      "contrasted": 0,
+      "maxDecisiveV": 1
+    },
+    "romanceNostalgia": {
+      "susInVocabulary": false,
+      "sevenInVocabulary": true,
+      "contrasted": 0,
+      "maxDecisiveV": 1
+    }
+  },
+  "majorTemplate": {
+    "ethereal": 0,
+    "romanticDark": 0,
+    "cinematic": 0,
+    "newWave": 0,
+    "sadcorePop": 0,
+    "ritual": 0,
+    "finale": 0,
+    "cool": 0.001,
+    "tripHop": 0,
+    "neoclassical": 0,
+    "minimalism": 0,
+    "jChanson": 0,
+    "hiNRG": 0,
+    "dorian": 0,
+    "electronica": 0,
+    "slowcore": 0,
+    "frenchPop": 0,
+    "kayokyoku": 0,
+    "romanceNostalgia": 0.018
+  },
+  "majorVocabularyRoots": {
+    "ethereal": true,
+    "romanticDark": false,
+    "cinematic": true,
+    "newWave": true,
+    "sadcorePop": false,
+    "ritual": true,
+    "finale": false,
+    "cool": true,
+    "tripHop": true,
+    "neoclassical": true,
+    "minimalism": true,
+    "jChanson": false,
+    "hiNRG": true,
+    "dorian": true,
+    "electronica": false,
+    "slowcore": false,
+    "frenchPop": false,
+    "kayokyoku": false,
+    "romanceNostalgia": true
+  }
+}
