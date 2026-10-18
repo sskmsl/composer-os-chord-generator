@@ -1,0 +1,715 @@
+{
+  "conditions": {
+    "seeds": [
+      17,
+      97,
+      301,
+      1009,
+      8191
+    ],
+    "rounds": 40,
+    "count": 5,
+    "tonic": "A",
+    "mode": "minor",
+    "mood": "melancholic",
+    "previousLoop": [
+      "bVII",
+      "i",
+      "bIII",
+      "bVI"
+    ]
+  },
+  "chorusRotation": {
+    "ethereal": {
+      "control": 0.017,
+      "withPrevious": 0.252,
+      "count": 1000
+    },
+    "romanticDark": {
+      "control": 0,
+      "withPrevious": 0,
+      "count": 1000
+    },
+    "cinematic": {
+      "control": 0.043,
+      "withPrevious": 0.206,
+      "count": 1000
+    },
+    "newWave": {
+      "control": 0.018,
+      "withPrevious": 0.213,
+      "count": 1000
+    },
+    "sadcorePop": {
+      "control": 0,
+      "withPrevious": 0,
+      "count": 1000
+    },
+    "ritual": {
+      "control": 0,
+      "withPrevious": 0,
+      "count": 1000
+    },
+    "finale": {
+      "control": 0.082,
+      "withPrevious": 0.303,
+      "count": 1000
+    },
+    "cool": {
+      "control": 0.012,
+      "withPrevious": 0.24,
+      "count": 1000
+    },
+    "tripHop": {
+      "control": 0,
+      "withPrevious": 0,
+      "count": 1000
+    },
+    "neoclassical": {
+      "control": 0,
+      "withPrevious": 0,
+      "count": 1000
+    },
+    "minimalism": {
+      "control": 0.024,
+      "withPrevious": 0.594,
+      "count": 1000
+    },
+    "jChanson": {
+      "control": 0,
+      "withPrevious": 0.087,
+      "count": 1000
+    },
+    "hiNRG": {
+      "control": 0.006,
+      "withPrevious": 0.078,
+      "count": 1000
+    },
+    "dorian": {
+      "control": 0,
+      "withPrevious": 0,
+      "count": 1000
+    },
+    "electronica": {
+      "control": 0.158,
+      "withPrevious": 0.451,
+      "count": 1000
+    },
+    "slowcore": {
+      "control": 0,
+      "withPrevious": 0,
+      "count": 1000
+    },
+    "frenchPop": {
+      "control": 0.004,
+      "withPrevious": 0.002,
+      "count": 1000
+    },
+    "kayokyoku": {
+      "control": 0,
+      "withPrevious": 0,
+      "count": 1000
+    },
+    "romanceNostalgia": {
+      "control": 0,
+      "withPrevious": 0.006,
+      "count": 1000
+    }
+  },
+  "cMelodyBridgeReuse": {
+    "c-melody": {
+      "ethereal": {
+        "control": 0.021,
+        "withPrevious": 0.123
+      },
+      "romanticDark": {
+        "control": 0,
+        "withPrevious": 0
+      },
+      "cinematic": {
+        "control": 0.031,
+        "withPrevious": 0.105
+      },
+      "newWave": {
+        "control": 0.037,
+        "withPrevious": 0.111
+      },
+      "sadcorePop": {
+        "control": 0,
+        "withPrevious": 0
+      },
+      "ritual": {
+        "control": 0,
+        "withPrevious": 0
+      },
+      "finale": {
+        "control": 0.056,
+        "withPrevious": 0.13
+      },
+      "cool": {
+        "control": 0.013,
+        "withPrevious": 0.114
+      },
+      "tripHop": {
+        "control": 0,
+        "withPrevious": 0
+      },
+      "neoclassical": {
+        "control": 0,
+        "withPrevious": 0
+      },
+      "minimalism": {
+        "control": 0.036,
+        "withPrevious": 0.311
+      },
+      "jChanson": {
+        "control": 0,
+        "withPrevious": 0.041
+      },
+      "hiNRG": {
+        "control": 0.007,
+        "withPrevious": 0.058
+      },
+      "dorian": {
+        "control": 0,
+        "withPrevious": 0
+      },
+      "electronica": {
+        "control": 0.085,
+        "withPrevious": 0.271
+      },
+      "slowcore": {
+        "control": 0,
+        "withPrevious": 0
+      },
+      "frenchPop": {
+        "control": 0,
+        "withPrevious": 0.002
+      },
+      "kayokyoku": {
+        "control": 0,
+        "withPrevious": 0
+      },
+      "romanceNostalgia": {
+        "control": 0,
+        "withPrevious": 0
+      }
+    },
+    "bridge": {
+      "ethereal": {
+        "control": 0.017,
+        "withPrevious": 0.242
+      },
+      "romanticDark": {
+        "control": 0,
+        "withPrevious": 0
+      },
+      "cinematic": {
+        "control": 0.037,
+        "withPrevious": 0.226
+      },
+      "newWave": {
+        "control": 0.026,
+        "withPrevious": 0.253
+      },
+      "sadcorePop": {
+        "control": 0,
+        "withPrevious": 0
+      },
+      "ritual": {
+        "control": 0,
+        "withPrevious": 0
+      },
+      "finale": {
+        "control": 0.081,
+        "withPrevious": 0.259
+      },
+      "cool": {
+        "control": 0.011,
+        "withPrevious": 0.257
+      },
+      "tripHop": {
+        "control": 0,
+        "withPrevious": 0
+      },
+      "neoclassical": {
+        "control": 0,
+        "withPrevious": 0
+      },
+      "minimalism": {
+        "control": 0.034,
+        "withPrevious": 0.572
+      },
+      "jChanson": {
+        "control": 0,
+        "withPrevious": 0.088
+      },
+      "hiNRG": {
+        "control": 0.005,
+        "withPrevious": 0.124
+      },
+      "dorian": {
+        "control": 0,
+        "withPrevious": 0
+      },
+      "electronica": {
+        "control": 0.168,
+        "withPrevious": 0.525
+      },
+      "slowcore": {
+        "control": 0,
+        "withPrevious": 0
+      },
+      "frenchPop": {
+        "control": 0.004,
+        "withPrevious": 0.004
+      },
+      "kayokyoku": {
+        "control": 0,
+        "withPrevious": 0
+      },
+      "romanceNostalgia": {
+        "control": 0,
+        "withPrevious": 0.007
+      }
+    }
+  },
+  "intro": {
+    "ethereal": {
+      "repeat": 0.15,
+      "turnaround": 0.07,
+      "endsOnTonic": 0.227
+    },
+    "romanticDark": {
+      "repeat": 0.069,
+      "turnaround": 0.331,
+      "endsOnTonic": 0.331
+    },
+    "cinematic": {
+      "repeat": 0.156,
+      "turnaround": 0.133,
+      "endsOnTonic": 0.34
+    },
+    "newWave": {
+      "repeat": 0.135,
+      "turnaround": 0,
+      "endsOnTonic": 0.045
+    },
+    "sadcorePop": {
+      "repeat": 0.161,
+      "turnaround": 0,
+      "endsOnTonic": 0.211
+    },
+    "ritual": {
+      "repeat": 0.261,
+      "turnaround": 0,
+      "endsOnTonic": 0.188
+    },
+    "finale": {
+      "repeat": 0.058,
+      "turnaround": 0.301,
+      "endsOnTonic": 0.464
+    },
+    "cool": {
+      "repeat": 0.176,
+      "turnaround": 0.154,
+      "endsOnTonic": 0.241
+    },
+    "tripHop": {
+      "repeat": 0.273,
+      "turnaround": 0,
+      "endsOnTonic": 0.139
+    },
+    "neoclassical": {
+      "repeat": 0.111,
+      "turnaround": 0.199,
+      "endsOnTonic": 0.199
+    },
+    "minimalism": {
+      "repeat": 0.272,
+      "turnaround": 0,
+      "endsOnTonic": 0.215
+    },
+    "jChanson": {
+      "repeat": 0.12,
+      "turnaround": 0.192,
+      "endsOnTonic": 0.209
+    },
+    "hiNRG": {
+      "repeat": 0.01,
+      "turnaround": 0.127,
+      "endsOnTonic": 0.137
+    },
+    "dorian": {
+      "repeat": 0.26,
+      "turnaround": 0,
+      "endsOnTonic": 0.131
+    },
+    "electronica": {
+      "repeat": 0.158,
+      "turnaround": 0,
+      "endsOnTonic": 0.139
+    },
+    "slowcore": {
+      "repeat": 0.267,
+      "turnaround": 0,
+      "endsOnTonic": 0.254
+    },
+    "frenchPop": {
+      "repeat": 0.037,
+      "turnaround": 0.15,
+      "endsOnTonic": 0.153
+    },
+    "kayokyoku": {
+      "repeat": 0.021,
+      "turnaround": 0.233,
+      "endsOnTonic": 0.253
+    },
+    "romanceNostalgia": {
+      "repeat": 0.016,
+      "turnaround": 0.207,
+      "endsOnTonic": 0.225
+    }
+  },
+  "definiteMajorV": {
+    "ethereal": {
+      "maxPerProgression": 0
+    },
+    "romanticDark": {
+      "maxPerProgression": 1
+    },
+    "cinematic": {
+      "maxPerProgression": 1
+    },
+    "newWave": {
+      "maxPerProgression": 0
+    },
+    "sadcorePop": {
+      "maxPerProgression": 0
+    },
+    "ritual": {
+      "maxPerProgression": 0
+    },
+    "finale": {
+      "maxPerProgression": 1
+    },
+    "cool": {
+      "maxPerProgression": 1
+    },
+    "tripHop": {
+      "maxPerProgression": 0
+    },
+    "neoclassical": {
+      "maxPerProgression": 1
+    },
+    "minimalism": {
+      "maxPerProgression": 0
+    },
+    "jChanson": {
+      "maxPerProgression": 1
+    },
+    "hiNRG": {
+      "maxPerProgression": 1
+    },
+    "dorian": {
+      "maxPerProgression": 0
+    },
+    "electronica": {
+      "maxPerProgression": 0
+    },
+    "slowcore": {
+      "maxPerProgression": 0
+    },
+    "frenchPop": {
+      "maxPerProgression": 1
+    },
+    "kayokyoku": {
+      "maxPerProgression": 1
+    },
+    "romanceNostalgia": {
+      "maxPerProgression": 1
+    }
+  },
+  "loopTemplate": {
+    "cinematic": {
+      "share": 0.014
+    },
+    "finale": {
+      "share": 0.026
+    }
+  },
+  "plainDiatonic": {
+    "ethereal": {
+      "raw": {
+        "plainShare": 0,
+        "meanPlain": null,
+        "meanOther": 5.013
+      },
+      "selected": {
+        "plainShare": 0,
+        "meanPlain": null,
+        "meanOther": 6.118
+      },
+      "selectedLoop": {
+        "count": 15,
+        "plainShare": 0,
+        "meanPlain": null,
+        "meanOther": 6.666666666666667
+      }
+    },
+    "romanticDark": {
+      "raw": {
+        "plainShare": 0.002,
+        "meanPlain": 1.5,
+        "meanOther": 6.1062124248497
+      },
+      "selected": {
+        "plainShare": 0,
+        "meanPlain": null,
+        "meanOther": 7.94
+      },
+      "selectedLoop": null
+    },
+    "cinematic": {
+      "raw": {
+        "plainShare": 0.017,
+        "meanPlain": 1.588235294117647,
+        "meanOther": 4.387589013224822
+      },
+      "selected": {
+        "plainShare": 0,
+        "meanPlain": null,
+        "meanOther": 6.595
+      },
+      "selectedLoop": {
+        "count": 14,
+        "plainShare": 0,
+        "meanPlain": null,
+        "meanOther": 6.785714285714286
+      }
+    },
+    "newWave": {
+      "raw": {
+        "plainShare": 1,
+        "meanPlain": 1.549,
+        "meanOther": null
+      },
+      "selected": {
+        "plainShare": 0,
+        "meanPlain": null,
+        "meanOther": 5.284
+      },
+      "selectedLoop": null
+    },
+    "sadcorePop": {
+      "raw": {
+        "plainShare": 0.009,
+        "meanPlain": 1.7777777777777777,
+        "meanOther": 4.5761856710393545
+      },
+      "selected": {
+        "plainShare": 0,
+        "meanPlain": null,
+        "meanOther": 5.863
+      },
+      "selectedLoop": null
+    },
+    "ritual": {
+      "raw": {
+        "plainShare": 0.278,
+        "meanPlain": 1.6942446043165467,
+        "meanOther": 5.041551246537396
+      },
+      "selected": {
+        "plainShare": 0,
+        "meanPlain": null,
+        "meanOther": 6.296
+      },
+      "selectedLoop": null
+    },
+    "finale": {
+      "raw": {
+        "plainShare": 0.133,
+        "meanPlain": 1.4661654135338347,
+        "meanOther": 5.8523644752018456
+      },
+      "selected": {
+        "plainShare": 0,
+        "meanPlain": null,
+        "meanOther": 7.605
+      },
+      "selectedLoop": {
+        "count": 26,
+        "plainShare": 0,
+        "meanPlain": null,
+        "meanOther": 6.461538461538462
+      }
+    },
+    "cool": {
+      "raw": {
+        "plainShare": 0.321,
+        "meanPlain": 1.6292834890965733,
+        "meanOther": 4.7378497790868925
+      },
+      "selected": {
+        "plainShare": 0,
+        "meanPlain": null,
+        "meanOther": 6.363
+      },
+      "selectedLoop": null
+    },
+    "tripHop": {
+      "raw": {
+        "plainShare": 0.343,
+        "meanPlain": 1.4635568513119535,
+        "meanOther": 4.436834094368341
+      },
+      "selected": {
+        "plainShare": 0,
+        "meanPlain": null,
+        "meanOther": 6.34
+      },
+      "selectedLoop": null
+    },
+    "neoclassical": {
+      "raw": {
+        "plainShare": 0,
+        "meanPlain": null,
+        "meanOther": 6.848
+      },
+      "selected": {
+        "plainShare": 0,
+        "meanPlain": null,
+        "meanOther": 8.454
+      },
+      "selectedLoop": null
+    },
+    "minimalism": {
+      "raw": {
+        "plainShare": 1,
+        "meanPlain": 1.241,
+        "meanOther": null
+      },
+      "selected": {
+        "plainShare": 0,
+        "meanPlain": null,
+        "meanOther": 5.745
+      },
+      "selectedLoop": null
+    },
+    "jChanson": {
+      "raw": {
+        "plainShare": 0,
+        "meanPlain": null,
+        "meanOther": 6.875
+      },
+      "selected": {
+        "plainShare": 0,
+        "meanPlain": null,
+        "meanOther": 7.974
+      },
+      "selectedLoop": {
+        "count": 6,
+        "plainShare": 0,
+        "meanPlain": null,
+        "meanOther": 6.833333333333333
+      }
+    },
+    "hiNRG": {
+      "raw": {
+        "plainShare": 0.156,
+        "meanPlain": 1.75,
+        "meanOther": 6.644549763033176
+      },
+      "selected": {
+        "plainShare": 0,
+        "meanPlain": null,
+        "meanOther": 7.877
+      },
+      "selectedLoop": null
+    },
+    "dorian": {
+      "raw": {
+        "plainShare": 0.747,
+        "meanPlain": 1,
+        "meanOther": 3.4071146245059287
+      },
+      "selected": {
+        "plainShare": 0,
+        "meanPlain": null,
+        "meanOther": 5.293
+      },
+      "selectedLoop": null
+    },
+    "electronica": {
+      "raw": {
+        "plainShare": 0,
+        "meanPlain": null,
+        "meanOther": 5.378
+      },
+      "selected": {
+        "plainShare": 0,
+        "meanPlain": null,
+        "meanOther": 6.516
+      },
+      "selectedLoop": null
+    },
+    "slowcore": {
+      "raw": {
+        "plainShare": 0.772,
+        "meanPlain": 1.13860103626943,
+        "meanOther": 4.9605263157894735
+      },
+      "selected": {
+        "plainShare": 0,
+        "meanPlain": null,
+        "meanOther": 5.669
+      },
+      "selectedLoop": null
+    },
+    "frenchPop": {
+      "raw": {
+        "plainShare": 0,
+        "meanPlain": null,
+        "meanOther": 6.529
+      },
+      "selected": {
+        "plainShare": 0,
+        "meanPlain": null,
+        "meanOther": 7.726
+      },
+      "selectedLoop": {
+        "count": 5,
+        "plainShare": 0,
+        "meanPlain": null,
+        "meanOther": 6.2
+      }
+    },
+    "kayokyoku": {
+      "raw": {
+        "plainShare": 0.218,
+        "meanPlain": 1.146788990825688,
+        "meanOther": 6.586956521739131
+      },
+      "selected": {
+        "plainShare": 0,
+        "meanPlain": null,
+        "meanOther": 7.589
+      },
+      "selectedLoop": null
+    },
+    "romanceNostalgia": {
+      "raw": {
+        "plainShare": 0,
+        "meanPlain": null,
+        "meanOther": 6.04
+      },
+      "selected": {
+        "plainShare": 0,
+        "meanPlain": null,
+        "meanOther": 7.911
+      },
+      "selectedLoop": null
+    }
+  }
+}
