@@ -689,3 +689,47 @@ describe("sus chords against a single decisive V7", () => {
     })
   })
 })
+
+describe("I-bVII-I-ii major template", () => {
+  const SHAPE = ["I", "bVII", "I", "ii"]
+  const shapeRotations = SHAPE.map((_, i) => rotateLoop(SHAPE, i).join("-"))
+  const isShape = (tokens: string[]) => shapeRotations.includes(rootSkeletonOf(tokens))
+  const holders = STYLE_OPTIONS.map((s) => s.value).filter((style: StyleId) => STYLE_TEMPLATES[style].major.some(isShape))
+  const C_MAJOR: MusicKey = { tonic: "C", mode: "major" }
+
+  it("is registered in one style only, once, with colours from that style's vocabulary", () => {
+    expect(holders).toEqual(["romanceNostalgia"])
+    const added = STYLE_TEMPLATES.romanceNostalgia.major.filter(isShape)
+    expect(added).toHaveLength(1)
+    const vocab = styleVocabulary("romanceNostalgia", "major")
+    for (const token of added[0]) {
+      expect(vocab.roots.has(rootKey(token))).toBe(true)
+      expect(vocab.suffixes.has(parseToken(token).suffix), token).toBe(true)
+    }
+    expect(matchesStyleSignature("romanceNostalgia", added[0].map(parseToken), "major")).toBe(true)
+  })
+
+  it("adds no duplicate skeleton to its style", () => {
+    const others = STYLE_TEMPLATES.romanceNostalgia.major.filter((tpl) => !isShape(tpl)).map(rootSkeletonOf)
+    expect(others).not.toContain(rootSkeletonOf(STYLE_TEMPLATES.romanceNostalgia.major.find(isShape)!))
+  })
+
+  it.each(SEEDS)("produces the shape in the output after selection, as a minority (seed %i)", (seed) => {
+    withSeed(seed, () => {
+      const rows = Array.from({ length: 40 }, () =>
+        generateProgressions({ key: C_MAJOR, style: "romanceNostalgia", section: "chorus", mood: "melancholic", count: 5, length: 4 }),
+      ).flat()
+      const found = rows.filter((p) => isShape(p.romanNumerals))
+      expect(found.length).toBeGreaterThan(0)
+      expect(found.length / rows.length).toBeLessThan(0.3)
+      for (const p of found) expect(p.chords.length).toBe(4)
+    })
+  })
+
+  it("leaves every other style's major templates untouched", () => {
+    for (const { value: style } of STYLE_OPTIONS) {
+      if (style === "romanceNostalgia") continue
+      expect(STYLE_TEMPLATES[style].major.some(isShape), style).toBe(false)
+    }
+  })
+})
