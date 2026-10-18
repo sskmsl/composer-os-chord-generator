@@ -22,8 +22,19 @@ import {
   tonicTokens,
 } from "./styleGrammar"
 import { continuationsOf, generateChain } from "./transitions"
+import { rotateLoop } from "./songFlow"
 import { featureTags, preferenceBonus, type PreferenceModel } from "@/features/preference/preferenceModel"
 import { applyVoiceLeadingBass } from "./voiceLeading"
+
+/** 直前に作ったセクションの文脈。次のセクションが前のループを使い回す(回転・再配色)ための手がかり */
+export interface PreviousSection {
+  /** 前セクションの調 */
+  key: MusicKey
+  /** 前セクションのループ(度数表記。生成した進行の romanNumerals) */
+  loop: string[]
+  /** 前セクションの最終和音(度数表記)。省略時は loop の最後 */
+  lastChord?: string
+}
 
 export interface GenerateParams {
   key: MusicKey
@@ -40,6 +51,10 @@ export interface GenerateParams {
   usedSkeletons?: ReadonlySet<string>
   /** 保存の傾向から学んだ好み。渡すと、好みに近い候補を順位で少し優遇する(表示する点数は変えない) */
   preference?: PreferenceModel | null
+  /** 直前のセクション。渡さなければ従来どおり、セクション単体で作る */
+  previous?: PreviousSection
+  /** 曲の原調。転調したあとのセクションで、原調へ戻る判断に使う */
+  originalKey?: MusicKey
 }
 
 /**
@@ -157,9 +172,10 @@ function generateOne(params: GenerateParams): GeneratedProgression {
   const { key, style, section, mood, length } = params
 
   const isPeriod = length === PERIOD_CHORD_COUNT
+  const reuse = isPeriod ? null : reusablePrevious(params)
   let tokens = isPeriod
     ? buildPeriod(style, key.mode, mood, section)
-    : adaptToSection(generateChain(style, key.mode, mood, length), section, key, style)
+    : adaptToSection(generateChain(style, key.mode, mood, length), section, key, style, reuse)
   // 8小節フレーズは「同じ出だし」自体が構造なので、代理和音で崩さない
   if (!isPeriod && chance(SUBSTITUTION_PROBABILITY)) tokens = substituteOneChord(tokens, style, key.mode)
   const decorated = limitDefiniteDominants(decorateProgression(tokens.map(parseToken), style, mood, key.mode), style, key.mode)
@@ -320,8 +336,49 @@ function computeHarmonicRhythm(
   return alignBeatsToBars(beats)
 }
 
+/** サビが前のセクションのループを回して使う確率 */
+const CHORUS_ROTATION_PROBABILITY = 0.5
+
+export interface ReusableLoop {
+  loop: string[]
+  /** 前セクションの最終和音の根音。回した先頭がこれと同じ根音だと切れ目で停滞するので避ける */
+  lastRoot: string
+}
+
+/**
+ * 前セクションのループのうち、今回のスタイル・調・長さでそのまま使えるもの。
+ * 調の性格(長調/短調)が違う、長さが指定と違う、今のスタイルの語彙(根音・装飾)に無い和音を含む、
+ * のいずれかなら使わない(度数のまま移すと別の調性の響きになる/スタイルの外へ出るため)。
+ */
+export function reusablePrevious(params: GenerateParams): ReusableLoop | null {
+  const { previous, key, style, length } = params
+  if (!previous || previous.key.mode !== key.mode) return null
+  const loop = previous.loop
+  if (loop.length < 2 || (length !== undefined && loop.length !== length)) return null
+  const vocab = styleVocabulary(style, key.mode)
+  const inVocabulary = loop.every((token) => {
+    const parsed = parseToken(token)
+    return vocab.roots.has(rootKey(token)) && vocab.suffixes.has(parsed.suffix)
+  })
+  if (!inVocabulary) return null
+  return { loop, lastRoot: rootKey(previous.lastChord ?? loop[loop.length - 1]) }
+}
+
+/** 先頭が元の先頭と違い、前セクションの最終和音とも根音が違う開始位置で回す(無理なら元の並びに近い回し方) */
+export function rotatedChorusLoop({ loop, lastRoot }: ReusableLoop): string[] {
+  const offsets = loop.map((_, i) => i).filter((i) => i > 0)
+  const preferred = offsets.filter((i) => rootKey(loop[i]) !== lastRoot && rootKey(loop[i]) !== rootKey(loop[0]))
+  return rotateLoop(loop, pick(preferred.length > 0 ? preferred : offsets))
+}
+
 /** CHORD_ENGINE_SPEC §6 のセクションルールでテンプレートを変形する */
-function adaptToSection(tokens: string[], section: SectionId, key: MusicKey, style: StyleId): string[] {
+function adaptToSection(
+  tokens: string[],
+  section: SectionId,
+  key: MusicKey,
+  style: StyleId,
+  previous: ReusableLoop | null,
+): string[] {
   const mode = key.mode
   let result = [...tokens]
   const rule: RuleSection = sectionRule(section)
@@ -360,6 +417,8 @@ function adaptToSection(tokens: string[], section: SectionId, key: MusicKey, sty
       break
 
     case "chorus":
+      // 前のセクションのループを、別の和音から始めて使い回す
+      if (previous && chance(CHORUS_ROTATION_PROBABILITY)) result = rotatedChorusLoop(previous)
       break
 
     case "breakdownChorus":

@@ -1,10 +1,11 @@
 import { afterEach, describe, expect, it, vi } from "vitest"
-import { clearSessionSkeletonHistory, generateProgressions, limitDefiniteDominants, rootSkeletonOf } from "../generateProgressions"
+import { clearSessionSkeletonHistory, generateProgressions, limitDefiniteDominants, reusablePrevious, rotatedChorusLoop, rootSkeletonOf, type GenerateParams, type PreviousSection } from "../generateProgressions"
 import { SEEDS, withSeed } from "./seeded"
-import { parseToken } from "../degrees"
+import { chordName, parseToken } from "../degrees"
+import { rotateLoop } from "../songFlow"
 import { isDefiniteMajorV, matchesStyleSignature, rootKey, styleVocabulary } from "../styleGrammar"
 import { STYLE_OPTIONS, STYLE_TEMPLATES } from "../templates"
-import type { MusicKey, SectionId, StyleId } from "@/types/music"
+import { keyLabel, MINOR_KEYS, type MusicKey, type SectionId, type StyleId } from "@/types/music"
 
 afterEach(() => {
   vi.restoreAllMocks()
@@ -12,6 +13,7 @@ afterEach(() => {
 })
 
 const A_MINOR: MusicKey = { tonic: "A", mode: "minor" }
+const baseParams: GenerateParams = { key: A_MINOR, style: "cinematic", section: "chorus", mood: "dramatic", count: 5 }
 
 /** i-bVI-bVII-bIII を、どの和音から始めても同じループとみなして見分ける */
 const LOOP = ["i", "bVI", "bVII", "bIII"]
@@ -125,5 +127,75 @@ describe("definite major V cap in minor", () => {
         }
       }
     })
+  })
+})
+
+describe("chorus loop rotation", () => {
+  // 遷移表から自然には出にくい並びにして、回転によるものと偶然の一致を見分けやすくする
+  const previousLoop = ["bVII", "i", "bIII", "bVI"]
+  const lastRoot = "bVI"
+  const rotationSkeletons = previousLoop.map((_, i) => rotateLoop(previousLoop, i).join("-"))
+  const isReused = (tokens: string[]) => rotationSkeletons.includes(rootSkeletonOf(tokens))
+  const previousFor = (key: MusicKey): PreviousSection => ({ key, loop: previousLoop })
+  const generateAs = (section: SectionId, key: MusicKey, previous?: PreviousSection) =>
+    generateProgressions({ key, style: "cinematic", section, mood: "dramatic", count: 5, length: 4, previous })
+  const reuseRate = (section: SectionId, previous?: PreviousSection) => {
+    let total = 0
+    let reused = 0
+    for (let i = 0; i < 60; i++) {
+      for (const p of generateAs(section, A_MINOR, previous)) {
+        total++
+        if (isReused(p.romanNumerals)) reused++
+      }
+    }
+    return reused / total
+  }
+
+  it("rotates to a start that differs from both the old start and the previous last chord", () => {
+    const reusable = reusablePrevious({ ...baseParams, previous: previousFor(A_MINOR) })
+    expect(reusable).not.toBeNull()
+    withSeed(SEEDS[0], () => {
+      const starts = new Set<string>()
+      for (let i = 0; i < 100; i++) {
+        const rotated = rotatedChorusLoop(reusable!)
+        expect(isReused(rotated)).toBe(true)
+        expect(rootKey(rotated[0])).not.toBe(lastRoot)
+        expect(rootKey(rotated[0])).not.toBe(rootKey(previousLoop[0]))
+        starts.add(rotated[0])
+      }
+      expect(starts).toEqual(new Set(["i", "bIII"]))
+    })
+  })
+
+  it("gives the rotated chords in all 12 minor keys", () => {
+    const reusable = { loop: previousLoop, lastRoot }
+    for (const k of MINOR_KEYS) {
+      withSeed(SEEDS[1], () => {
+        const rotated = rotatedChorusLoop(reusable)
+        const offset = previousLoop.indexOf(rotated[0])
+        const names = previousLoop.map((t) => chordName(parseToken(t), k))
+        expect(rotated.map((t) => chordName(parseToken(t), k)), keyLabel(k)).toEqual(rotateLoop(names, offset))
+      })
+    }
+  })
+
+  it.each(SEEDS)("raises the share of reused loops only in the chorus (seed %i)", (seed) => {
+    const run = (section: SectionId, previous?: PreviousSection) => withSeed(seed, () => reuseRate(section, previous))
+    const control = run("chorus")
+    expect(run("chorus", previousFor(A_MINOR))).toBeGreaterThan(control + 0.08)
+    expect(run("verse", previousFor(A_MINOR))).toBeLessThan(0.08)
+  })
+
+  it("ignores a previous loop that does not fit: other mode, other length, or outside the style vocabulary", () => {
+    const params = (previous: PreviousSection, length?: number) => ({ ...baseParams, previous, length })
+    expect(reusablePrevious(params({ key: { tonic: "C", mode: "major" }, loop: ["I", "vi", "IV", "V"] }))).toBeNull()
+    expect(reusablePrevious(params({ key: A_MINOR, loop: ["i", "bVI", "bVII"] }, 4))).toBeNull()
+    expect(reusablePrevious(params({ key: A_MINOR, loop: ["i", "v", "bII", "#ivdim"] }))).toBeNull()
+    expect(reusablePrevious(params({ key: A_MINOR, loop: ["i"] }))).toBeNull()
+    expect(reusablePrevious({ ...baseParams })).toBeNull()
+  })
+
+  it("works without previous-section context, as before", () => {
+    withSeed(SEEDS[3], () => expect(generateAs("chorus", A_MINOR)).toHaveLength(5))
   })
 })
