@@ -98,6 +98,19 @@ export function resolveKeyMove(key: MusicKey, move: KeyMoveType): MusicKey {
   return matches[0] ?? key
 }
 
+/**
+ * ループを度数のまま回して、別の和音から始める(offset=1 なら2つ目の和音が先頭)。
+ * 度数(ローマ数字)は調に依存しないので、どの調でも回したあとの和音の並びは
+ * 元のコード名を同じだけ回したものと一致する。次のセクションが前のループを
+ * 開始位置を変えて使い回すときの土台(Ab–Bb–Eb–Cm → Eb–Cm–Ab–Bb 等)。
+ * offset は負数や長さ以上も受け付け、長さで折り返す。
+ */
+export function rotateLoop<T>(loop: readonly T[], offset: number): T[] {
+  if (loop.length === 0) return []
+  const n = ((offset % loop.length) + loop.length) % loop.length
+  return [...loop.slice(n), ...loop.slice(0, n)]
+}
+
 /** 王道のフル構成(参考表示用) */
 export const TYPICAL_SONG_FLOW: { section: SectionId; label: string }[] = [
   { section: "intro", label: "Intro" },
