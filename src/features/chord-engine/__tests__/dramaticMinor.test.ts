@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest"
-import { clearSessionSkeletonHistory, generateProgressions, limitDefiniteDominants, relativeMajorDominant, returningHome, reusablePrevious, rotatedChorusLoop, rootSkeletonOf, withHomeReturnTail, type GenerateParams, type PreviousSection } from "../generateProgressions"
+import { clearSessionSkeletonHistory, contrastWithSus, generateProgressions, limitDefiniteDominants, relativeMajorDominant, returningHome, reusablePrevious, rotatedChorusLoop, rootSkeletonOf, withHomeReturnTail, type GenerateParams, type PreviousSection } from "../generateProgressions"
 import { SEEDS, withSeed } from "./seeded"
 import { chordName, NOTE_TO_PC, parseToken, rootPc } from "../degrees"
 import { resolveKeyMove, rotateLoop, toParallelMinor } from "../songFlow"
@@ -601,5 +601,91 @@ describe("pre-chorus ending toward the relative major", () => {
         expect(p.chords[p.chords.length - 1]).toBe(chordName(last, k))
       }
     }
+  })
+})
+
+describe("sus chords against a single decisive V7", () => {
+  const ALL = STYLE_OPTIONS.map((s) => s.value)
+  const SECTIONS: SectionId[] = ["intro", "verse", "pre-chorus", "chorus", "c-melody", "bridge", "outro"]
+  const isSus = (token: string) => ["sus2", "sus4"].includes(parseToken(token).suffix)
+  const decisive = (tokens: string[]) => tokens.map(parseToken).filter(isDefiniteMajorV)
+  /** 決定的なV7が1か所で、V以外の半分以上がsus */
+  const contrasted = (tokens: string[]) => {
+    const v = decisive(tokens)
+    const others = tokens.filter((t) => !isDefiniteMajorV(parseToken(t)))
+    return v.length === 1 && v[0].suffix === "7" && others.length > 0 && others.filter(isSus).length * 2 >= others.length
+  }
+  const withSus = ALL.filter((style) => {
+    const suffixes = styleVocabulary(style, "minor").suffixes
+    return suffixes.has("sus2") || suffixes.has("sus4")
+  })
+
+  it("replaces the plain chords around a V7 with sus, and keeps the V7", () => {
+    withSeed(SEEDS[0], () => {
+      const chords = ["i", "i", "iv", "V7"].map(parseToken)
+      let changed: ReturnType<typeof contrastWithSus> = chords
+      for (let i = 0; i < 40 && changed === chords; i++) changed = contrastWithSus(chords, "finale", "minor")
+      expect(changed).not.toBe(chords)
+      expect(changed[3].token).toBe("V7")
+      expect(changed.slice(0, 3).filter((c) => c.suffix === "sus4").length).toBeGreaterThanOrEqual(2)
+      expect(chords.map((c) => c.suffix)).toEqual(["", "", "", "7"])
+    })
+  })
+
+  it("does nothing without a lone V7, outside minor, or when the style has no sus", () => {
+    withSeed(SEEDS[1], () => {
+      for (let i = 0; i < 40; i++) {
+        const plainV = ["i", "iv", "V", "i"].map(parseToken)
+        const twoV = ["i", "V7", "iv", "V7"].map(parseToken)
+        const noV = ["i", "iv", "bVII", "i"].map(parseToken)
+        const susV = ["i", "iv", "V7sus4", "i"].map(parseToken)
+        for (const list of [plainV, twoV, noV, susV]) expect(contrastWithSus(list, "finale", "minor")).toBe(list)
+        const major = ["I", "IV", "V7", "I"].map(parseToken)
+        expect(contrastWithSus(major, "finale", "major")).toBe(major)
+        const romantic = ["i", "iv", "bVI", "V7"].map(parseToken)
+        expect(contrastWithSus(romantic, "romanticDark", "minor")).toBe(romantic)
+      }
+    })
+  })
+
+  it("leaves chords with a slash bass and non-triad colours alone", () => {
+    withSeed(SEEDS[2], () => {
+      const chords = ["i/bVII", "ivm9", "bVImaj7", "V7"].map(parseToken)
+      for (let i = 0; i < 40; i++) expect(contrastWithSus(chords, "finale", "minor")).toBe(chords)
+    })
+  })
+
+  it("applies only to styles that have sus2 or sus4 together with the 7 colour (finale among the current styles)", () => {
+    const eligible = withSus.filter((style) => styleVocabulary(style, "minor").suffixes.has("7"))
+    expect(eligible).toEqual(["finale"])
+  })
+
+  it.each(SEEDS)("keeps contrasted progressions after selection, one decisive V at most, inside the vocabulary (seed %i)", (seed) => {
+    withSeed(seed, () => {
+      const rows = SECTIONS.flatMap((section) =>
+        Array.from({ length: 40 }, () =>
+          generateProgressions({ key: A_MINOR, style: "finale", section, mood: "melancholic", count: 5, length: 4 }),
+        ).flat(),
+      ).map((p) => p.romanNumerals)
+      expect(rows.filter(contrasted).length, "contrasted progressions survive").toBeGreaterThan(0)
+      const vocab = styleVocabulary("finale", "minor")
+      for (const tokens of rows) {
+        expect(decisive(tokens).length).toBeLessThanOrEqual(1)
+        for (const t of tokens) expect(vocab.suffixes.has(parseToken(t).suffix), t).toBe(true)
+      }
+    })
+  })
+
+  it.each(SEEDS)("never gives sus to a style that does not have it (seed %i)", (seed) => {
+    withSeed(seed, () => {
+      for (const style of ALL.filter((s) => !withSus.includes(s))) {
+        const vocab = styleVocabulary(style, "minor")
+        for (const section of ["verse", "chorus", "bridge"] as const) {
+          for (const p of generateProgressions({ key: A_MINOR, style, section, mood: "melancholic", count: 5, length: 4 })) {
+            for (const t of p.romanNumerals) expect(vocab.suffixes.has(parseToken(t).suffix), `${style}: ${t}`).toBe(true)
+          }
+        }
+      }
+    })
   })
 })

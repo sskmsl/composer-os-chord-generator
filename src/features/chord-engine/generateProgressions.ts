@@ -183,7 +183,11 @@ function generateOne(params: GenerateParams): GeneratedProgression {
     : adaptToSection(generateChain(style, key.mode, mood, length), section, key, style, reuse, returningHome(params), params.approachRelativeMajor === true)
   // 8小節フレーズは「同じ出だし」自体が構造なので、代理和音で崩さない
   if (!isPeriod && chance(SUBSTITUTION_PROBABILITY)) tokens = substituteOneChord(tokens, style, key.mode)
-  const decorated = limitDefiniteDominants(decorateProgression(tokens.map(parseToken), style, mood, key.mode), style, key.mode)
+  const decorated = contrastWithSus(
+    limitDefiniteDominants(decorateProgression(tokens.map(parseToken), style, mood, key.mode), style, key.mode),
+    style,
+    key.mode,
+  )
   const { chords: parsed, invertedIndices } = applyVoiceLeadingBass(decorated, style)
 
   const chords = parsed.map((c) => chordName(c, key))
@@ -637,6 +641,37 @@ function unresolveToken(token: string, style: StyleId, mode: MusicKey["mode"]): 
 
 /** 短調の1進行に置く決定的なメジャーV(導音を持つV)の上限 */
 const MAX_DEFINITE_DOMINANTS = 1
+
+/** 決定的なV7を1か所だけ置き、他の和音をsusで保留して対比させる確率 */
+const SUS_CONTRAST_PROBABILITY = 0.35
+
+/** susに置き換えてよい和音の装飾(素の三和音と add9。dim / aug / 7th / 6th などの性格は崩さない) */
+const SUS_REPLACEABLE_SUFFIXES = new Set(["", "add9"])
+
+/**
+ * 短調で決定的なV7がちょうど1か所あるとき、他の和音の多くをsus2 / sus4にして保留し、
+ * V7を唯一の決定的な和音として対比させる(例: isus2 – isus2 – ivsus2 – V7)。
+ * そのスタイルの語彙にsus2またはsus4があるときだけ行い(スタイル外の響きを足さない)、
+ * 置き換えたあとに、Vを除く和音の半分以上がsusにならなければ元のままにする。
+ * スラッシュベースを持つ和音は転回の意図を崩さないよう触れない。
+ */
+export function contrastWithSus(chords: ParsedChord[], style: StyleId, mode: MusicKey["mode"]): ParsedChord[] {
+  if (mode !== "minor") return chords
+  const dominants = chords.filter(isDefiniteMajorV)
+  if (dominants.length !== 1 || dominants[0].suffix !== "7") return chords
+  const suffixes = styleVocabulary(style, mode).suffixes
+  const sus = suffixes.has("sus2") ? "sus2" : suffixes.has("sus4") ? "sus4" : null
+  if (!sus || !chance(SUS_CONTRAST_PROBABILITY)) return chords
+
+  const others = chords.filter((c) => !isDefiniteMajorV(c))
+  const result = chords.map((c) =>
+    isDefiniteMajorV(c) || c.bass || !SUS_REPLACEABLE_SUFFIXES.has(c.suffix) || !chance(0.85)
+      ? c
+      : { ...c, suffix: sus, token: buildToken({ ...c, suffix: sus }) },
+  )
+  const isSus = (c: ParsedChord) => c.suffix === "sus2" || c.suffix === "sus4"
+  return result.filter((c) => !isDefiniteMajorV(c) && isSus(c)).length * 2 >= others.length ? result : chords
+}
 
 /** 8小節フレーズで、後半の出だし2和音(4・5番目)が対応する前半の和音(0・1番目)。それ以外は null */
 function openingMirror(index: number, length: number): number | null {
