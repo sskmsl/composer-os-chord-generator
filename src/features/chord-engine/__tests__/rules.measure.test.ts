@@ -6,7 +6,7 @@ import { parseToken } from "../degrees"
 import { computeScores, extractFeatures } from "../scoring"
 import { generateChain } from "../transitions"
 import { isDefiniteMajorV, rootKey } from "../styleGrammar"
-import { rotateLoop } from "../songFlow"
+import { resolveKeyMove, rotateLoop, toParallelMinor } from "../songFlow"
 import { STYLE_OPTIONS } from "../templates"
 import type { MusicKey, SectionId, StyleId } from "@/types/music"
 import { SEEDS, seededRandom } from "./seeded"
@@ -24,14 +24,18 @@ const loopRotations = LOOP_RIGHT.map((_, i) => rotateLoop(LOOP_RIGHT, i).join("-
 const ROUNDS = 40
 const originalRandom = Math.random
 
-function collect(style: StyleId, section: SectionId, options: { previous?: PreviousSection; length?: number } = {}) {
+function collect(
+  style: StyleId,
+  section: SectionId,
+  options: { previous?: PreviousSection; length?: number; key?: MusicKey; originalKey?: MusicKey } = {},
+) {
   const rows: string[][] = []
   for (const seed of SEEDS) {
     // 呼び出しを記録するspyだと乱数の呼び出し数だけメモリを使うので、直接差し替える
     Math.random = seededRandom(seed)
     clearSessionSkeletonHistory()
     for (let i = 0; i < ROUNDS; i++) {
-      for (const p of generateProgressions({ key: A_MINOR, style, section, mood: "melancholic", count: 5, length: (options.length ?? 4) as 4, previous: options.previous })) {
+      for (const p of generateProgressions({ key: options.key ?? A_MINOR, style, section, mood: "melancholic", count: 5, length: (options.length ?? 4) as 4, previous: options.previous, originalKey: options.originalKey })) {
         rows.push(p.romanNumerals)
       }
     }
@@ -63,6 +67,7 @@ it.skipIf(!process.env.CHORD_RULES_PATH)("measures how the dramatic minor rules 
       return [style, {
         repeat: rate(rows, (t) => t.length >= 4 && t.every((x, i) => rootKey(x) === rootKey(t[i % 2]))),
         turnaround: rate(rows, (t) => t.length >= 2 && rootKey(t[t.length - 2]) === "V" && rootKey(t[t.length - 1]) === "i"),
+        decisiveTurnaround: rate(rows, (t) => t.length >= 2 && isDefiniteMajorV(parseToken(t[t.length - 2])) && rootKey(t[t.length - 1]) === "i"),
         endsOnTonic: rate(rows, (t) => rootKey(t[t.length - 1]) === "i"),
       }]
     }))
@@ -77,6 +82,25 @@ it.skipIf(!process.env.CHORD_RULES_PATH)("measures how the dramatic minor rules 
       return [style, { maxPerProgression: Math.max(...Object.values(counts)) }]
     }))
     output.loopTemplate = Object.fromEntries((["cinematic", "finale"] as const).map((style) => [style, { share: rate(collect(style, "chorus"), (t) => loopRotations.includes(rootSkeletonOf(t))) }]))
+    // 原調への帰還(bVI → bVII → 主和音で着地)。対照は originalKey を渡さない同条件
+    const awayKey = resolveKeyMove(A_MINOR, "relative")
+    const away: PreviousSection = { key: awayKey, loop: PREVIOUS_LOOP }
+    const homeTail = (t: string[]) => t.slice(-3).map(rootKey).join("-") === "bVI-bVII-i"
+    output.homeReturn = Object.fromEntries(styles.map((style) => [style, Object.fromEntries((["chorus", "grand-chorus", "outro"] as const).map((section) => {
+      const control = collect(style, section, { previous: away })
+      const withOriginal = collect(style, section, { previous: away, originalKey: A_MINOR })
+      return [section, { control: rate(control, homeTail), withOriginal: rate(withOriginal, homeTail) }]
+    }))]))
+    // 同主短調への一時暗転(C長調 → C短調の落ちサビで、前の長調ループを借用和音にする)
+    const C_MAJOR: MusicKey = { tonic: "C", mode: "major" }
+    const C_MINOR = resolveKeyMove(C_MAJOR, "parallel")
+    const darkHead = toParallelMinor(["I", "vi", "IV", "V"]).slice(0, 3).map(rootKey).join("-")
+    const isDarkHead = (t: string[]) => t.slice(0, 3).map(rootKey).join("-") === darkHead
+    output.parallelDarkening = Object.fromEntries(styles.map((style) => {
+      const control = collect(style, "breakdown-chorus", { key: C_MINOR })
+      const withPrevious = collect(style, "breakdown-chorus", { key: C_MINOR, previous: { key: C_MAJOR, loop: ["I", "vi", "IV", "V"] }, originalKey: C_MAJOR })
+      return [style, { control: rate(control, isDarkHead), withPrevious: rate(withPrevious, isDarkHead) }]
+    }))
     // 採点の plainDiatonic(装飾・借用・スラッシュ・ペダル・意外性が無い進行を減点)が新しいループを不当に落とさないかの実測。
     // 選抜前(遷移表の生の進行)と選抜後で、plainDiatonic の割合と平均点を比べる
     const plainStats = (rows: string[][]) => {
@@ -109,7 +133,7 @@ it.skipIf(!process.env.CHORD_RULES_PATH)("measures how the dramatic minor rules 
         selectedLoop: loops.length > 0 ? { count: loops.length, ...plainStats(loops) } : null,
       }]
     }))
-    expect(Object.keys(output)).toHaveLength(6)
+    expect(Object.keys(output)).toHaveLength(8)
     writeFileSync(process.env.CHORD_RULES_PATH!, JSON.stringify({ conditions: { seeds: SEEDS, rounds: ROUNDS, count: 5, tonic: "A", mode: "minor", mood: "melancholic", previousLoop: PREVIOUS_LOOP }, ...output }, null, 2) + "\n")
   } finally {
     Math.random = originalRandom
