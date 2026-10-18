@@ -341,6 +341,8 @@ const CHORUS_ROTATION_PROBABILITY = 0.5
 
 export interface ReusableLoop {
   loop: string[]
+  /** 前セクションと同じ調か。別の調(転調後)なら、度数のまま使うだけで同型ループの景色が変わる */
+  sameKey: boolean
   /** 前セクションの最終和音の根音。回した先頭がこれと同じ根音だと切れ目で停滞するので避ける */
   lastRoot: string
 }
@@ -361,7 +363,11 @@ export function reusablePrevious(params: GenerateParams): ReusableLoop | null {
     return vocab.roots.has(rootKey(token)) && vocab.suffixes.has(parsed.suffix)
   })
   if (!inVocabulary) return null
-  return { loop, lastRoot: rootKey(previous.lastChord ?? loop[loop.length - 1]) }
+  return {
+    loop,
+    sameKey: previous.key.tonic === key.tonic && previous.key.mode === key.mode,
+    lastRoot: rootKey(previous.lastChord ?? loop[loop.length - 1]),
+  }
 }
 
 /** 先頭が元の先頭と違い、前セクションの最終和音とも根音が違う開始位置で回す(無理なら元の並びに近い回し方) */
@@ -394,6 +400,26 @@ function pickIntroVariant(style: StyleId, mode: MusicKey["mode"]): IntroVariant 
   if (r < INTRO_TURNAROUND_PROBABILITY) return introDominants(style, mode).length > 0 ? "turnaround" : "open"
   if (r < INTRO_TURNAROUND_PROBABILITY + INTRO_REPEAT_PROBABILITY) return "repeat"
   return "open"
+}
+
+/** Cメロ・ブリッジが前のループの同型を色彩和音つきで使い回す確率 */
+const COLOR_REUSE_PROBABILITY = 0.5
+
+/**
+ * 前のループの同型を、そのスタイルの色彩和音を必ず1つ含めて使い回す。
+ * 調が変わっていれば(転調後)度数のまま同じ並びで景色が変わるので、そのまま使う。
+ * 同じ調なら並びを回して別の始まりにし、前と同じにならないようにする。
+ */
+function recoloredLoop(previous: ReusableLoop, style: StyleId, mode: MusicKey["mode"]): string[] {
+  const loop = previous.sameKey ? rotateLoop(previous.loop, 1 + Math.floor(Math.random() * (previous.loop.length - 1))) : [...previous.loop]
+  const spiceRoots = new Set(spiceTokens(style, mode).map(rootKey))
+  if (loop.some((t) => spiceRoots.has(rootKey(t)))) return loop
+  const index = Math.min(1, loop.length - 1)
+  const neighbours = new Set([loop[index - 1], loop[index + 1]].filter(Boolean).map(rootKey))
+  const candidates = spiceTokens(style, mode).filter((t) => !neighbours.has(rootKey(t)))
+  if (candidates.length === 0) return loop
+  loop[index] = pick(candidates)
+  return loop
 }
 
 /** CHORD_ENGINE_SPEC §6 のセクションルールでテンプレートを変形する */
@@ -477,13 +503,16 @@ function adaptToSection(
 
     case "cMelody":
       // Cメロ: そのスタイルにとっての色彩和音で新しい景色を作り、後続サビへの緊張を残す
+      if (previous && chance(COLOR_REUSE_PROBABILITY)) result = recoloredLoop(previous, style, mode)
       if (!hasSpice()) result[Math.min(1, last())] = pick(spiceTokens(style, mode))
       if (chance(0.55)) replaceLast(tensionTokens(style, mode))
       break
 
     case "bridge":
-      // そのスタイルの色彩和音・意外な和音を注入する
-      if (result.length >= 2 && !hasSpice() && chance(0.35)) {
+      // そのスタイルの色彩和音・意外な和音を注入する。前のループがあれば、その同型を色彩和音つきで使い回す
+      if (previous && chance(COLOR_REUSE_PROBABILITY)) {
+        result = recoloredLoop(previous, style, mode)
+      } else if (result.length >= 2 && !hasSpice() && chance(0.35)) {
         result[1] = pick(spiceTokens(style, mode))
       }
       break

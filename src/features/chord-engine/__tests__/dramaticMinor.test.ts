@@ -3,7 +3,7 @@ import { clearSessionSkeletonHistory, generateProgressions, limitDefiniteDominan
 import { SEEDS, withSeed } from "./seeded"
 import { chordName, parseToken } from "../degrees"
 import { rotateLoop } from "../songFlow"
-import { isDefiniteMajorV, matchesStyleSignature, rootKey, styleVocabulary } from "../styleGrammar"
+import { isDefiniteMajorV, matchesStyleSignature, rootKey, spiceTokens, styleVocabulary } from "../styleGrammar"
 import { STYLE_OPTIONS, STYLE_TEMPLATES } from "../templates"
 import { keyLabel, MINOR_KEYS, type MusicKey, type SectionId, type StyleId } from "@/types/music"
 
@@ -168,7 +168,7 @@ describe("chorus loop rotation", () => {
   })
 
   it("gives the rotated chords in all 12 minor keys", () => {
-    const reusable = { loop: previousLoop, lastRoot }
+    const reusable = { loop: previousLoop, lastRoot, sameKey: true }
     for (const k of MINOR_KEYS) {
       withSeed(SEEDS[1], () => {
         const rotated = rotatedChorusLoop(reusable)
@@ -257,6 +257,49 @@ describe("intro endings", () => {
           }
         }
       }
+    })
+  })
+})
+
+describe("c-melody and bridge colour", () => {
+  const previousLoop = ["bVII", "i", "bIII", "bVI"]
+  const F_SHARP_MINOR: MusicKey = { tonic: "F#", mode: "minor" }
+  const rotationSkeletons = previousLoop.map((_, i) => rotateLoop(previousLoop, i).join("-"))
+  const spiceRoots = new Set(spiceTokens("cinematic", "minor").map(rootKey))
+  const hasSpice = (tokens: string[]) => tokens.some((t) => spiceRoots.has(rootKey(t)))
+  const collect = (section: SectionId, key: MusicKey, previous?: PreviousSection) =>
+    Array.from({ length: 60 }, () =>
+      generateProgressions({ key, style: "cinematic", section, mood: "dramatic", count: 5, length: 4, previous }),
+    ).flat().map((p) => p.romanNumerals)
+  const share = (rows: string[][], test: (tokens: string[]) => boolean) => rows.filter(test).length / rows.length
+
+  it.each(SEEDS)("reuses the previous loop with a colour chord in both sections (seed %i)", (seed) => {
+    for (const section of ["c-melody", "bridge"] as const) {
+      const control = withSeed(seed, () => collect(section, A_MINOR))
+      const reused = withSeed(seed, () => collect(section, A_MINOR, { key: A_MINOR, loop: previousLoop }))
+      const isShape = (tokens: string[]) => rotationSkeletons.includes(rootSkeletonOf(tokens))
+      expect(share(reused, isShape), section).toBeGreaterThan(share(control, isShape) + 0.05)
+      // 前のループの同型として現れる進行には、そのスタイルの色彩和音が必ず入る
+      for (const tokens of reused.filter(isShape)) {
+        expect(hasSpice(tokens) || tokens.length === 0, `${section}: ${tokens.join(" ")}`).toBe(true)
+      }
+    }
+  })
+
+  it("keeps the previous chords as they are when the key has moved, so the same shape sounds in the new key", () => {
+    withSeed(SEEDS[0], () => {
+      const reused = collect("bridge", F_SHARP_MINOR, { key: A_MINOR, loop: previousLoop })
+      const same = reused.filter((t) => rootSkeletonOf(t) === previousLoop.join("-"))
+      expect(same.length).toBeGreaterThan(0)
+    })
+  })
+
+  it("does not reuse the loop in other sections", () => {
+    withSeed(SEEDS[1], () => {
+      const control = collect("verse", A_MINOR)
+      const withPrevious = collect("verse", A_MINOR, { key: A_MINOR, loop: previousLoop })
+      const isShape = (tokens: string[]) => rotationSkeletons.includes(rootSkeletonOf(tokens))
+      expect(share(withPrevious, isShape)).toBeLessThan(share(control, isShape) + 0.05)
     })
   })
 })
