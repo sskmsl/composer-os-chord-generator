@@ -7,8 +7,15 @@ import type { SectionId } from "@/types/music"
  * Generatorで現在のセクションを作り終えたユーザーに、次の一手を示す。
  */
 
-/** relative=関係調(平行調)へ、up=ラスサビ転調(全音上げ)へ */
-export type KeyMoveType = "relative" | "up"
+/**
+ * relative=関係調(平行調)へ、up=ラスサビ転調(全音上げ)へ、
+ * down=同じモードのまま3半音下げ(短3度下。例: Eb → C、Am → F#m)へ、
+ * home=曲の原調へ戻る
+ */
+export type KeyMoveType = "relative" | "up" | "down" | "home"
+
+/** 3半音下げの移動量。参照ループ Ab–Bb–Eb–Cm → F–G–C–Am の間隔(いずれも3半音下) */
+export const KEY_DOWN_SEMITONES = 3
 
 export interface SectionSuggestion {
   section: SectionId
@@ -37,6 +44,11 @@ export const NEXT_SECTIONS: Record<SectionId, SectionSuggestion[]> = {
       reason: "Cメロで新しい旋律と和声の景色へ転換する",
       keyMove: { type: "relative", reason: "関係調に転調して景色を変える" },
     },
+    {
+      section: "bridge",
+      reason: "ブリッジで同型のループを別の景色へ移す",
+      keyMove: { type: "down", reason: "3半音下げて半音階的に景色を変える" },
+    },
     { section: "outro", reason: "サビの余韻のまま締めくくる(短い曲向き)" },
   ],
   "breakdown-chorus": [
@@ -48,7 +60,11 @@ export const NEXT_SECTIONS: Record<SectionId, SectionSuggestion[]> = {
     { section: "chorus", reason: "通常のサビへ戻して解放する" },
   ],
   "grand-chorus": [
-    { section: "outro", reason: "大サビの残響をアウトロへつなぐ" },
+    {
+      section: "outro",
+      reason: "大サビの残響をアウトロへつなぐ",
+      keyMove: { type: "home", reason: "原調に戻って終える" },
+    },
   ],
   "c-melody": [
     {
@@ -56,7 +72,11 @@ export const NEXT_SECTIONS: Record<SectionId, SectionSuggestion[]> = {
       reason: "Cメロの転換から大サビへ向かう",
       keyMove: { type: "up", reason: "全音上げで最後の高まりを作る" },
     },
-    { section: "chorus", reason: "新しい景色から通常のサビへ回帰する" },
+    {
+      section: "chorus",
+      reason: "新しい景色から通常のサビへ回帰する",
+      keyMove: { type: "home", reason: "原調に戻る" },
+    },
   ],
   bridge: [
     { section: "c-melody", reason: "ブリッジを経てCメロへ入り、物語を深める" },
@@ -81,14 +101,17 @@ const SEVEN_SHARP_KEYS = new Set(["C#-major", "A#-minor"])
  * KeyMoveTypeから実際の推奨KEYを算出する。
  * - relative: マイナーなら関係長調(+3半音)、メジャーなら関係短調(-3半音)
  * - up: 同じモードのまま全音(+2半音)上げる
+ * - down: 同じモードのまま3半音(短3度)下げる
+ * - home: 原調(originalKey)へ戻る。原調が分からなければ今の調のまま
  * 実用キーリスト(MINOR_KEYS/MAJOR_KEYS)内から一致するものを探す。
  * 同じ音の調が2つある(D#m/Ebm 等)ときは、調号の少ない方(C#よりDb、A#mよりBbm)を選び、
  * 同じ数なら元の調と同じ♯・♭の綴りに揃える。
  */
-export function resolveKeyMove(key: MusicKey, move: KeyMoveType): MusicKey {
+export function resolveKeyMove(key: MusicKey, move: KeyMoveType, originalKey?: MusicKey): MusicKey {
+  if (move === "home") return originalKey ?? key
   const tonicPc = NOTE_TO_PC[key.tonic]
   const targetMode = move === "relative" ? (key.mode === "minor" ? "major" : "minor") : key.mode
-  const semitones = move === "relative" ? (key.mode === "minor" ? 3 : -3) : 2
+  const semitones = move === "relative" ? (key.mode === "minor" ? 3 : -3) : move === "down" ? -KEY_DOWN_SEMITONES : 2
   const targetPc = (tonicPc + semitones + 12) % 12
 
   const candidates = targetMode === "minor" ? MINOR_KEYS : MAJOR_KEYS

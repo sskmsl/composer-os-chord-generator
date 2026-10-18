@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest"
 import { MAJOR_KEYS, MINOR_KEYS, keyLabel, type MusicKey } from "@/types/music"
 import { chordName, NOTE_TO_PC, parseToken } from "../degrees"
-import { resolveKeyMove, rotateLoop } from "../songFlow"
+import { KEY_DOWN_SEMITONES, NEXT_SECTIONS, resolveKeyMove, rotateLoop } from "../songFlow"
 
 const key = (tonic: string, mode: MusicKey["mode"]): MusicKey => ({ tonic, mode })
 
@@ -67,5 +67,57 @@ describe("rotateLoop", () => {
     const tokens = ["I", "vi", "IV", "V"]
     expect(tokens.map((t) => chordName(parseToken(t), eb))).toEqual(["Eb", "Cm", "Ab", "Bb"])
     expect(rotateLoop(tokens, 2).map((t) => chordName(parseToken(t), eb))).toEqual(["Ab", "Bb", "Eb", "Cm"])
+  })
+})
+
+describe("key moves down by 3 semitones and back home", () => {
+  const ALL_KEYS = [...MINOR_KEYS, ...MAJOR_KEYS]
+  const semitoneDistance = (from: MusicKey, to: MusicKey) => (NOTE_TO_PC[to.tonic] - NOTE_TO_PC[from.tonic] + 12) % 12
+
+  it("is 3 semitones, the same as the reference loop (Ab–Bb–Eb–Cm to F–G–C–Am), not a major third", () => {
+    expect(KEY_DOWN_SEMITONES).toBe(3)
+    const eb = key("Eb", "major")
+    const c = resolveKeyMove(eb, "down")
+    expect(c).toEqual(key("C", "major"))
+    const loop = ["IV", "V", "I", "vi"]
+    expect(loop.map((t) => chordName(parseToken(t), eb))).toEqual(["Ab", "Bb", "Eb", "Cm"])
+    expect(loop.map((t) => chordName(parseToken(t), c))).toEqual(["F", "G", "C", "Am"])
+  })
+
+  it("moves every one of the 24 listed keys down 3 semitones, keeping the mode", () => {
+    for (const k of ALL_KEYS) {
+      const moved = resolveKeyMove(k, "down")
+      expect(moved.mode, keyLabel(k)).toBe(k.mode)
+      expect(semitoneDistance(k, moved), keyLabel(k)).toBe(9)
+      expect([...MINOR_KEYS, ...MAJOR_KEYS].some((c) => c.tonic === moved.tonic && c.mode === moved.mode)).toBe(true)
+    }
+  })
+
+  it("keeps the spelling rules for the moved key", () => {
+    expect(resolveKeyMove(key("A", "minor"), "down")).toEqual(key("F#", "minor"))
+    expect(resolveKeyMove(key("C", "minor"), "down")).toEqual(key("A", "minor"))
+    expect(resolveKeyMove(key("Db", "major"), "down")).toEqual(key("Bb", "major"))
+    expect(resolveKeyMove(key("C", "major"), "down")).toEqual(key("A", "major"))
+  })
+
+  it("returns to the original key from any moved key, in all 24 keys, and stays when the original is unknown", () => {
+    for (const original of ALL_KEYS) {
+      for (const move of ["relative", "up", "down"] as const) {
+        const moved = resolveKeyMove(original, move)
+        expect(resolveKeyMove(moved, "home", original), `${keyLabel(original)} ${move}`).toEqual(original)
+      }
+      expect(resolveKeyMove(original, "home")).toEqual(original)
+    }
+  })
+
+  it("is wired into the section suggestions: bridge goes down 3 semitones, and the way back is home", () => {
+    expect(NEXT_SECTIONS.chorus.find((s) => s.section === "bridge")?.keyMove?.type).toBe("down")
+    expect(NEXT_SECTIONS["c-melody"].find((s) => s.section === "chorus")?.keyMove?.type).toBe("home")
+    expect(NEXT_SECTIONS["grand-chorus"].find((s) => s.section === "outro")?.keyMove?.type).toBe("home")
+    for (const suggestions of Object.values(NEXT_SECTIONS)) {
+      for (const { keyMove } of suggestions) {
+        if (keyMove) for (const k of ALL_KEYS) expect(resolveKeyMove(k, keyMove.type, k)).toBeTruthy()
+      }
+    }
   })
 })
