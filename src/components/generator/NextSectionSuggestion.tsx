@@ -17,7 +17,7 @@ export function NextSectionSuggestion() {
   // 提案から続けている間は流れの最初の調。なければ今の調(=まだ転調していない)
   const originalKey = songContext?.originalKey ?? params.key
 
-  const suggestions = suggestionsFor(params.section, params.key)
+  const suggestions = suggestionsFor(params.section, params.key, params.style)
   if (suggestions.length === 0) return null
 
   const currentLabel = SECTION_OPTIONS.find((s) => s.value === params.section)?.label

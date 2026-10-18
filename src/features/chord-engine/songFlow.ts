@@ -1,5 +1,6 @@
 import { buildToken, isFlatKey, NOTE_TO_PC, parseToken } from "./degrees"
-import { MAJOR_KEYS, MINOR_KEYS, type MusicKey } from "@/types/music"
+import { MAJOR_KEYS, MINOR_KEYS, type MusicKey, type StyleId } from "@/types/music"
+import { relativeMajorDominant } from "./styleGrammar"
 import type { SectionId } from "@/types/music"
 
 /**
@@ -29,9 +30,17 @@ export interface SectionSuggestion {
   onlyIn?: MusicKey["mode"]
 }
 
-/** 今の調で出してよい提案だけに絞る */
-export function suggestionsFor(section: SectionId, key: MusicKey): SectionSuggestion[] {
-  return NEXT_SECTIONS[section].filter((s) => s.onlyIn === undefined || s.onlyIn === key.mode)
+/**
+ * 今の調とスタイルで出してよい提案だけに絞る。
+ * 相対長調のV7(短調のbVII7)で終わるBメロの提案(approach)は、そのスタイルがその終止を出せるときだけ。
+ * 出せないスタイルでは、効果の無い提案を約束しないよう出さない。
+ */
+export function suggestionsFor(section: SectionId, key: MusicKey, style: StyleId): SectionSuggestion[] {
+  return NEXT_SECTIONS[section].filter(
+    (s) =>
+      (s.onlyIn === undefined || s.onlyIn === key.mode) &&
+      (s.approach !== "relative" || relativeMajorDominant(style, key.mode) !== null),
+  )
 }
 
 export const NEXT_SECTIONS: Record<SectionId, SectionSuggestion[]> = {

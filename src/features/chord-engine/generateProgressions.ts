@@ -14,6 +14,7 @@ import {
   isDefiniteMajorV,
   matchesStyleSignature,
   minorDominantAlternatives,
+  relativeMajorDominant,
   openColors,
   rootKey,
   spiceTokens,
@@ -491,16 +492,6 @@ export function withHomeReturnTail(tokens: string[], style: StyleId, mode: Music
 
 /** 相対長調のサビへ向かうBメロが、末尾をbVII7にする確率 */
 const RELATIVE_APPROACH_PROBABILITY = 0.7
-
-/**
- * 短調から相対長調へ入る直前の和音。相対長調のV7は、短調のbVII7(例: Bm の A7 → D)。
- * そのスタイルが bVII の根音と 7 の装飾を語彙に持つときだけ返す(スタイル外の響きを足さない)。
- */
-export function relativeMajorDominant(style: StyleId, mode: MusicKey["mode"]): string | null {
-  if (mode !== "minor") return null
-  const vocab = styleVocabulary(style, mode)
-  return vocab.roots.has("bVII") && vocab.suffixes.has("7") ? "bVII7" : null
-}
 
 /** CHORD_ENGINE_SPEC §6 のセクションルールでテンプレートを変形する */
 function adaptToSection(

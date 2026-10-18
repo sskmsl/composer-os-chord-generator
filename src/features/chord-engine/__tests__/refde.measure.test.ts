@@ -1,9 +1,9 @@
 /// <reference types="node" />
 import { writeFileSync } from "node:fs"
 import { expect, it } from "vitest"
-import { clearSessionSkeletonHistory, generateProgressions, rootSkeletonOf, relativeMajorDominant } from "../generateProgressions"
+import { clearSessionSkeletonHistory, generateProgressions, rootSkeletonOf } from "../generateProgressions"
 import { parseToken } from "../degrees"
-import { isDefiniteMajorV, rootKey, styleVocabulary } from "../styleGrammar"
+import { isDefiniteMajorV, relativeMajorDominant, rootKey, styleVocabulary } from "../styleGrammar"
 import { rotateLoop } from "../songFlow"
 import { STYLE_OPTIONS } from "../templates"
 import type { MusicKey, SectionId, StyleId } from "@/types/music"

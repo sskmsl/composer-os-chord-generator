@@ -1,9 +1,9 @@
 import { afterEach, describe, expect, it, vi } from "vitest"
-import { clearSessionSkeletonHistory, contrastWithSus, generateProgressions, limitDefiniteDominants, relativeMajorDominant, returningHome, reusablePrevious, rotatedChorusLoop, rootSkeletonOf, withHomeReturnTail, type GenerateParams, type PreviousSection } from "../generateProgressions"
+import { clearSessionSkeletonHistory, contrastWithSus, generateProgressions, limitDefiniteDominants, returningHome, reusablePrevious, rotatedChorusLoop, rootSkeletonOf, withHomeReturnTail, type GenerateParams, type PreviousSection } from "../generateProgressions"
 import { SEEDS, withSeed } from "./seeded"
 import { chordName, NOTE_TO_PC, parseToken, rootPc } from "../degrees"
 import { resolveKeyMove, rotateLoop, toParallelMinor } from "../songFlow"
-import { isDefiniteMajorV, matchesStyleSignature, rootKey, spiceTokens, styleVocabulary } from "../styleGrammar"
+import { isDefiniteMajorV, matchesStyleSignature, relativeMajorDominant, rootKey, spiceTokens, styleVocabulary } from "../styleGrammar"
 import { STYLE_OPTIONS, STYLE_TEMPLATES } from "../templates"
 import { keyLabel, MAJOR_KEYS, MINOR_KEYS, type MusicKey, type SectionId, type StyleId } from "@/types/music"
 

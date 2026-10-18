@@ -131,26 +131,63 @@ describe("NextSectionSuggestion: relative-major chorus", () => {
 
 describe("NextSectionSuggestion: pre-chorus toward the relative major", () => {
   const verseResult = { ...chorusResult, section: "verse" as const, romanNumerals: ["i", "bVII", "bVI", "V"], chords: ["Am", "G", "F", "E"] }
-  const preChorusButtons = () => screen.getAllByRole("button").filter((b) => b.textContent?.startsWith("Bメロ を生成") || b.textContent?.startsWith("プレコーラス を生成") || /^(B|Pre)/.test(b.textContent ?? ""))
+  const preChorusButtons = () => screen.getAllByRole("button").filter((b) => /^(B|Pre)/.test(b.textContent ?? ""))
+  const openVerse = (style: "finale" | "cinematic") =>
+    act(() =>
+      useAppStore.setState({
+        params: { ...useAppStore.getState().params, style, section: "verse" },
+        results: [{ ...verseResult, style }],
+      }),
+    )
 
-  it("passes the approach only when that suggestion is chosen", () => {
-    useAppStore.setState({ params: { ...useAppStore.getState().params, section: "verse" }, results: [verseResult] })
+  it("supported style (finale): passes the approach only when that suggestion is chosen", () => {
+    openVerse("finale")
     render(<NextSectionSuggestion />)
     const buttons = preChorusButtons()
     expect(buttons).toHaveLength(2)
     expect(buttons.some((b) => b.textContent?.includes("bVII7"))).toBe(true)
-    const plain = buttons.find((b) => !b.textContent?.includes("bVII7"))!
-    fireEvent.click(plain)
+    fireEvent.click(buttons.find((b) => !b.textContent?.includes("bVII7"))!)
     expect(vi.mocked(generateProgressions).mock.lastCall![0].approachRelativeMajor).toBeUndefined()
     expect(useAppStore.getState().params.key).toEqual({ tonic: "A", mode: "minor" })
-    act(() => useAppStore.setState({ params: { ...useAppStore.getState().params, section: "verse" }, results: [verseResult] }))
+    openVerse("finale")
     // 描画し直された画面から、改めて提案を探す
-    const approachNow = preChorusButtons().find((b) => b.textContent?.includes("bVII7"))!
-    fireEvent.click(approachNow)
+    fireEvent.click(preChorusButtons().find((b) => b.textContent?.includes("bVII7"))!)
     expect(vi.mocked(generateProgressions).mock.lastCall![0].approachRelativeMajor).toBe(true)
     expect(useAppStore.getState().params.key).toEqual({ tonic: "A", mode: "minor" })
     // 続けて相対長調のサビへ進むと、この指定は引き継がれない
     useAppStore.getState().continueToSection("chorus", { tonic: "C", mode: "major" })
     expect(vi.mocked(generateProgressions).mock.lastCall![0].approachRelativeMajor).toBeUndefined()
+  })
+
+  it("supported style: the chosen suggestion really changes the output, 4 chords and 8 bars", () => {
+    for (const length of [4, 8] as const) {
+      openVerse("finale")
+      useAppStore.setState({ params: { ...useAppStore.getState().params, section: "pre-chorus", length } })
+      const ends = (approach: boolean) => {
+        let hits = 0
+        let total = 0
+        for (let i = 0; i < 30; i++) {
+          useAppStore.setState({ songContext: approach ? { originalKey: { tonic: "A", mode: "minor" }, approachRelativeMajor: true } : null })
+          useAppStore.getState().generate()
+          for (const p of useAppStore.getState().results) {
+            total++
+            if (p.romanNumerals[p.romanNumerals.length - 1] === "bVII7") hits++
+          }
+        }
+        return hits / total
+      }
+      expect(ends(true), `length ${length}`).toBeGreaterThan(ends(false))
+    }
+  })
+
+  it("unsupported style (cinematic): the bVII7 suggestion is hidden, and the plain pre-chorus stays", () => {
+    openVerse("cinematic")
+    render(<NextSectionSuggestion />)
+    const buttons = preChorusButtons()
+    expect(buttons).toHaveLength(1)
+    expect(buttons[0].textContent).not.toMatch(/bVII7/)
+    // 相対長調のサビの提案(転調あり)は、スタイルに関係なく出る
+    const choruses = screen.getAllByRole("button").filter((b) => b.textContent?.startsWith("サビ を生成"))
+    expect(choruses.some((b) => b.textContent?.includes("Key: C"))).toBe(true)
   })
 })
