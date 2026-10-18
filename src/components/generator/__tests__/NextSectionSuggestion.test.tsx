@@ -99,3 +99,32 @@ describe("NextSectionSuggestion: temporary darkening", () => {
     expect(button?.textContent).not.toMatch(/Key:/)
   })
 })
+
+describe("NextSectionSuggestion: relative-major chorus", () => {
+  const verseResult = { ...chorusResult, section: "verse" as const, romanNumerals: ["i", "bVII", "bVI", "V"], chords: ["Am", "G", "F", "E"] }
+  const findButton = (label: string) => screen.getAllByRole("button").find((b) => b.textContent?.startsWith(label))
+
+  it("offers a chorus in the relative major from a minor verse and generates there", () => {
+    useAppStore.setState({ params: { ...useAppStore.getState().params, section: "verse" }, results: [verseResult] })
+    render(<NextSectionSuggestion />)
+    const choruses = screen.getAllByRole("button").filter((b) => b.textContent?.startsWith("サビ を生成"))
+    expect(choruses).toHaveLength(2)
+    const relative = choruses.find((b) => b.textContent?.includes("Key: C"))
+    expect(relative).toBeTruthy()
+    fireEvent.click(relative!)
+    const call = vi.mocked(generateProgressions).mock.lastCall![0]
+    expect(call.section).toBe("chorus")
+    expect(call.key).toEqual({ tonic: "C", mode: "major" })
+    expect(call.originalKey).toEqual({ tonic: "A", mode: "minor" })
+  })
+
+  it("does not offer it in a major song", () => {
+    useAppStore.setState({
+      params: { ...useAppStore.getState().params, section: "verse", key: { tonic: "C", mode: "major" } },
+      results: [{ ...verseResult, key: "C", mode: "major" as const }],
+    })
+    render(<NextSectionSuggestion />)
+    expect(screen.getAllByRole("button").filter((b) => b.textContent?.startsWith("サビ を生成"))).toHaveLength(1)
+    expect(findButton("サビ を生成")?.textContent).not.toMatch(/Key:/)
+  })
+})

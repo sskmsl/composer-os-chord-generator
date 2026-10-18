@@ -498,3 +498,35 @@ describe("one loop keeps several decorations, inversions and basses", () => {
     }
   })
 })
+
+describe("chorus in the relative major after a minor verse", () => {
+  const ALL = STYLE_OPTIONS.map((s) => s.value)
+
+  it.each(SEEDS)("stays inside the major vocabulary of every style, in all 12 minor keys (seed %i)", (seed) => {
+    withSeed(seed, () => {
+      for (const minorKey of MINOR_KEYS) {
+        const target = resolveKeyMove(minorKey, "relative")
+        for (const style of ALL) {
+          const vocab = styleVocabulary(style, "major")
+          for (const p of generateProgressions({
+            key: target,
+            style,
+            section: "chorus",
+            mood: "melancholic",
+            count: 2,
+            length: 4,
+            previous: { key: minorKey, loop: ["i", "bVII", "bVI", "V"] },
+            originalKey: minorKey,
+          })) {
+            expect(p.mode).toBe("major")
+            expect(p.key).toBe(keyLabel(target))
+            for (const token of p.romanNumerals) {
+              expect(vocab.roots.has(rootKey(token)), `${style} ${keyLabel(target)}: ${token}`).toBe(true)
+              expect(vocab.suffixes.has(parseToken(token).suffix), `${style}: ${token}`).toBe(true)
+            }
+          }
+        }
+      }
+    })
+  })
+})

@@ -1,7 +1,7 @@
 import { ArrowRight, Lightbulb } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { NEXT_SECTIONS, resolveKeyMove, TYPICAL_SONG_FLOW } from "@/features/chord-engine/songFlow"
+import { resolveKeyMove, suggestionsFor, TYPICAL_SONG_FLOW } from "@/features/chord-engine/songFlow"
 import { useAppStore } from "@/store/useAppStore"
 import { keyLabel, SECTION_OPTIONS } from "@/types/music"
 import { cn } from "@/lib/utils"
@@ -17,7 +17,7 @@ export function NextSectionSuggestion() {
   // 提案から続けている間は流れの最初の調。なければ今の調(=まだ転調していない)
   const originalKey = songContext?.originalKey ?? params.key
 
-  const suggestions = NEXT_SECTIONS[params.section]
+  const suggestions = suggestionsFor(params.section, params.key)
   if (suggestions.length === 0) return null
 
   const currentLabel = SECTION_OPTIONS.find((s) => s.value === params.section)?.label
@@ -37,7 +37,7 @@ export function NextSectionSuggestion() {
           const keyChanges = keyMove && keyLabel(targetKey) !== keyLabel(params.key)
           return (
             <Button
-              key={section}
+              key={`${section}-${keyMove?.type ?? "same"}`}
               variant="outline"
               // 説明文が長いと折り返さずに画面幅を超えていたため、折り返しを許可する
               className="h-auto max-w-full shrink flex-col items-start gap-0.5 px-3 py-2 text-left whitespace-normal"
