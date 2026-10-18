@@ -371,6 +371,31 @@ export function rotatedChorusLoop({ loop, lastRoot }: ReusableLoop): string[] {
   return rotateLoop(loop, pick(preferred.length > 0 ? preferred : offsets))
 }
 
+/** イントロの終わり方。repeat=2和音の反復、turnaround=V→iで主和音に着く、open=通常どおり未解決 */
+type IntroVariant = "repeat" | "turnaround" | "open"
+
+const INTRO_REPEAT_PROBABILITY = 0.25
+const INTRO_TURNAROUND_PROBABILITY = 0.08
+
+/** V→iの解決を持ち味にしない旋法・反復系のスタイル。イントロでもVへ導かない */
+const MODAL_STYLES = new Set<StyleId>([...REPETITIVE_STYLES, "dorian"])
+
+/** イントロでV→iの前に置けるV。そのスタイルのテンプレートにVがあるときだけ(旋法系のスタイルにVを足さない) */
+function introDominants(style: StyleId, mode: MusicKey["mode"]): string[] {
+  if (MODAL_STYLES.has(style)) return []
+  const roots = styleVocabulary(style, mode).roots
+  const tonic = tonicTokens(style, mode)
+  if (!roots.has("V") || tonic.length === 0) return []
+  return allStyleTokens(style, mode).filter((t) => rootKey(t) === "V")
+}
+
+function pickIntroVariant(style: StyleId, mode: MusicKey["mode"]): IntroVariant {
+  const r = Math.random()
+  if (r < INTRO_TURNAROUND_PROBABILITY) return introDominants(style, mode).length > 0 ? "turnaround" : "open"
+  if (r < INTRO_TURNAROUND_PROBABILITY + INTRO_REPEAT_PROBABILITY) return "repeat"
+  return "open"
+}
+
 /** CHORD_ENGINE_SPEC §6 のセクションルールでテンプレートを変形する */
 function adaptToSection(
   tokens: string[],
@@ -398,11 +423,23 @@ function adaptToSection(
   }
 
   switch (rule) {
-    case "intro":
-      // 疎に: 2〜4コード、終止は未解決に
+    case "intro": {
+      // 疎に: 2〜4コード。終わり方は3通り(反復で土台を示す/通常どおり未解決/ときどきV→iのターンアラウンド)
+      const variant = pickIntroVariant(style, mode)
+      if (variant === "repeat" && result.length >= 3 && rootKey(result[0]) !== rootKey(result[1])) {
+        const pair = [result[0], result[1]]
+        result = result.map((_, i) => pair[i % 2])
+        break
+      }
+      if (variant === "turnaround" && result.length >= 2) {
+        const dominant = pick(introDominants(style, mode))
+        result = [...result.slice(0, result.length - 2), dominant, pick(tonicTokens(style, mode))]
+        break
+      }
       if (chance(0.5)) result = result.slice(0, 2)
       result[last()] = unresolveToken(result[last()], style, mode)
       break
+    }
 
     case "verse":
       // 抑制: 強い解決(V7)を弱める

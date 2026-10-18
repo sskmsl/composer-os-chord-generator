@@ -199,3 +199,64 @@ describe("chorus loop rotation", () => {
     withSeed(SEEDS[3], () => expect(generateAs("chorus", A_MINOR)).toHaveLength(5))
   })
 })
+
+describe("intro endings", () => {
+  const generateIntros = (style: StyleId, mode: MusicKey["mode"], rounds = 50) => {
+    const key: MusicKey = { tonic: "A", mode }
+    return Array.from({ length: rounds }, () =>
+      generateProgressions({ key, style, section: "intro", mood: "dramatic", count: 5 }),
+    ).flat().map((p) => p.romanNumerals)
+  }
+  const tonicRoot = (mode: MusicKey["mode"]) => (mode === "minor" ? "i" : "I")
+  const endsWithTurnaround = (tokens: string[], mode: MusicKey["mode"]) =>
+    tokens.length >= 2 && rootKey(tokens[tokens.length - 2]) === "V" && rootKey(tokens[tokens.length - 1]) === tonicRoot(mode)
+  const isRepeating = (tokens: string[]) => tokens.length >= 4 && tokens.every((t, i) => rootKey(t) === rootKey(tokens[i % 2]))
+
+  it.each(SEEDS)("mixes repeat, open and V to i endings in the intro, in minor and major (seed %i)", (seed) => {
+    withSeed(seed, () => {
+      for (const mode of ["minor", "major"] as const) {
+        for (const style of ["cinematic", "finale", "romanticDark", "neoclassical"] as const) {
+          const intros = generateIntros(style, mode)
+          const repeats = intros.filter(isRepeating).length
+          const turnarounds = intros.filter((t) => endsWithTurnaround(t, mode)).length
+          const open = intros.filter((t) => rootKey(t[t.length - 1]) !== tonicRoot(mode)).length
+          const label = `${style} ${mode}`
+          expect(repeats, `${label} repeat`).toBeGreaterThan(0)
+          expect(turnarounds, `${label} turnaround`).toBeGreaterThan(0)
+          // V→iは「ときどき」: 通常の未解決が主で、ターンアラウンドは少数に留まる
+          expect(turnarounds / intros.length, label).toBeLessThan(0.35)
+          expect(open / intros.length, label).toBeGreaterThan(0.4)
+        }
+      }
+    })
+  })
+
+  it("never leads a modal style to V, and keeps the definite V cap", () => {
+    withSeed(SEEDS[0], () => {
+      for (const style of ["dorian", "ritual", "electronica", "slowcore", "tripHop", "minimalism"] as const) {
+        for (const mode of ["minor", "major"] as const) {
+          const introsOfStyle = generateIntros(style, mode, 30)
+          for (const tokens of introsOfStyle) {
+            expect(endsWithTurnaround(tokens, mode), `${style} ${mode}: ${tokens.join(" ")}`).toBe(false)
+          }
+        }
+      }
+      for (const tokens of generateIntros("cinematic", "minor")) {
+        expect(tokens.map(parseToken).filter(isDefiniteMajorV).length).toBeLessThanOrEqual(1)
+      }
+    })
+  })
+
+  it("keeps the requested chord count when it repeats or turns around", () => {
+    withSeed(SEEDS[1], () => {
+      for (const length of [3, 4, 5] as const) {
+        for (let i = 0; i < 40; i++) {
+          for (const p of generateProgressions({ key: A_MINOR, style: "cinematic", section: "intro", mood: "dramatic", count: 5, length })) {
+            expect(p.romanNumerals.length).toBeGreaterThanOrEqual(2)
+            expect(p.romanNumerals.length).toBeLessThanOrEqual(length)
+          }
+        }
+      }
+    })
+  })
+})
