@@ -74,3 +74,28 @@ describe("NextSectionSuggestion: key moves reach the generator", () => {
     expect(screen.queryByText("Key: Am")).toBeNull()
   })
 })
+
+describe("NextSectionSuggestion: temporary darkening", () => {
+  const majorResult = { ...chorusResult, key: "C", mode: "major" as const, romanNumerals: ["I", "vi", "IV", "V"], chords: ["C", "Am", "F", "G"] }
+
+  it("offers the same-tonic minor for the soft chorus in a major song, and generates there from the major loop", () => {
+    useAppStore.setState({
+      params: { ...useAppStore.getState().params, key: { tonic: "C", mode: "major" }, section: "chorus" },
+      results: [majorResult],
+    })
+    render(<NextSectionSuggestion />)
+    expect(screen.getByText("Key: Cm")).toBeTruthy()
+    const button = screen.getAllByRole("button").find((b) => b.textContent?.startsWith("落ちサビ を生成"))
+    fireEvent.click(button!)
+    const call = vi.mocked(generateProgressions).mock.lastCall![0]
+    expect(call.key).toEqual({ tonic: "C", mode: "minor" })
+    expect(call.previous?.key).toEqual({ tonic: "C", mode: "major" })
+    expect(call.originalKey).toEqual({ tonic: "C", mode: "major" })
+  })
+
+  it("does not offer a key change for a minor song", () => {
+    render(<NextSectionSuggestion />)
+    const button = screen.getAllByRole("button").find((b) => b.textContent?.startsWith("落ちサビ を生成"))
+    expect(button?.textContent).not.toMatch(/Key:/)
+  })
+})

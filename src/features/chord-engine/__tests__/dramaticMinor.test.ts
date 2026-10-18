@@ -2,10 +2,10 @@ import { afterEach, describe, expect, it, vi } from "vitest"
 import { clearSessionSkeletonHistory, generateProgressions, limitDefiniteDominants, reusablePrevious, rotatedChorusLoop, rootSkeletonOf, type GenerateParams, type PreviousSection } from "../generateProgressions"
 import { SEEDS, withSeed } from "./seeded"
 import { chordName, parseToken } from "../degrees"
-import { rotateLoop } from "../songFlow"
+import { resolveKeyMove, rotateLoop, toParallelMinor } from "../songFlow"
 import { isDefiniteMajorV, matchesStyleSignature, rootKey, spiceTokens, styleVocabulary } from "../styleGrammar"
 import { STYLE_OPTIONS, STYLE_TEMPLATES } from "../templates"
-import { keyLabel, MINOR_KEYS, type MusicKey, type SectionId, type StyleId } from "@/types/music"
+import { keyLabel, MAJOR_KEYS, MINOR_KEYS, type MusicKey, type SectionId, type StyleId } from "@/types/music"
 
 afterEach(() => {
   vi.restoreAllMocks()
@@ -300,6 +300,70 @@ describe("c-melody and bridge colour", () => {
       const withPrevious = collect("verse", A_MINOR, { key: A_MINOR, loop: previousLoop })
       const isShape = (tokens: string[]) => rotationSkeletons.includes(rootSkeletonOf(tokens))
       expect(share(withPrevious, isShape)).toBeLessThan(share(control, isShape) + 0.05)
+    })
+  })
+})
+
+describe("temporary darkening to the parallel minor", () => {
+  const majorLoop = ["I", "vi", "IV", "V"]
+  const darkLoop = toParallelMinor(majorLoop)
+  const darkHead = darkLoop.slice(0, 3).map(rootKey).join("-")
+  const generateDark = (original: MusicKey, style: StyleId, section: SectionId, previous: boolean) =>
+    generateProgressions({
+      key: resolveKeyMove(original, "parallel"),
+      style,
+      section,
+      mood: "dramatic",
+      count: 5,
+      length: 4,
+      previous: previous ? { key: original, loop: majorLoop } : undefined,
+      originalKey: original,
+    })
+  const share = (rows: string[][], test: (tokens: string[]) => boolean) => rows.filter(test).length / rows.length
+
+  it("uses the major loop as parallel-minor borrowed chords in the soft chorus, in all 12 keys", () => {
+    for (const original of MAJOR_KEYS) {
+      const results = withSeed(SEEDS[0], () =>
+        Array.from({ length: 40 }, () => generateDark(original, "cinematic", "breakdown-chorus", true)).flat(),
+      )
+      const control = withSeed(SEEDS[0], () =>
+        Array.from({ length: 40 }, () => generateDark(original, "cinematic", "breakdown-chorus", false)).flat(),
+      )
+      const isDark = (p: (typeof results)[number]) => p.romanNumerals.slice(0, 3).map(rootKey).join("-") === darkHead
+      const found = results.filter(isDark)
+      expect(found.length, keyLabel(original)).toBeGreaterThan(control.filter(isDark).length)
+      // コード名もその調の同主短調で綴られる
+      const dark = resolveKeyMove(original, "parallel")
+      for (const p of found) expect(p.chords[0].startsWith(chordName(parseToken("i"), dark).replace(/m.*$/, ""))).toBe(true)
+    }
+  })
+
+  it.each(SEEDS)("keeps the darkened bridge on the borrowed loop with a colour chord (seed %i)", (seed) => {
+    const rows = withSeed(seed, () =>
+      Array.from({ length: 60 }, () => generateDark({ tonic: "C", mode: "major" }, "cinematic", "bridge", true)).flat(),
+    )
+    const control = withSeed(seed, () =>
+      Array.from({ length: 60 }, () => generateDark({ tonic: "C", mode: "major" }, "cinematic", "bridge", false)).flat(),
+    )
+    const isShape = (tokens: string[]) => darkLoop.every((d) => tokens.some((t) => rootKey(t) === rootKey(d)))
+    expect(share(rows.map((p) => p.romanNumerals), isShape)).toBeGreaterThan(share(control.map((p) => p.romanNumerals), isShape))
+  })
+
+  it("does not apply to a minor song, or to a loop outside the style vocabulary", () => {
+    withSeed(SEEDS[1], () => {
+      const minorKey: MusicKey = { tonic: "A", mode: "minor" }
+      const none = reusablePrevious({ ...baseParams, key: minorKey, previous: { key: minorKey, loop: ["I", "vi", "IV", "V"] } })
+      expect(none).toBeNull()
+      const outside = reusablePrevious({
+        ...baseParams,
+        style: "dorian",
+        key: { tonic: "C", mode: "minor" },
+        previous: { key: { tonic: "C", mode: "major" }, loop: ["Imaj7", "iii7", "IVmaj7", "vi"] },
+      })
+      expect(outside).toBeNull()
+      const darkened = reusablePrevious({ ...baseParams, key: { tonic: "C", mode: "minor" }, previous: { key: { tonic: "C", mode: "major" }, loop: majorLoop } })
+      expect(darkened?.darkened).toBe(true)
+      expect(darkened?.loop).toEqual(darkLoop)
     })
   })
 })

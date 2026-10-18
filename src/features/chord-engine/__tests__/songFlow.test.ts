@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest"
 import { MAJOR_KEYS, MINOR_KEYS, keyLabel, type MusicKey } from "@/types/music"
-import { chordName, NOTE_TO_PC, parseToken } from "../degrees"
-import { KEY_DOWN_SEMITONES, NEXT_SECTIONS, resolveKeyMove, rotateLoop } from "../songFlow"
+import { chordName, NOTE_TO_PC, parseToken, rootPc } from "../degrees"
+import { KEY_DOWN_SEMITONES, NEXT_SECTIONS, resolveKeyMove, rotateLoop, toParallelMinor } from "../songFlow"
 
 const key = (tonic: string, mode: MusicKey["mode"]): MusicKey => ({ tonic, mode })
 
@@ -119,5 +119,58 @@ describe("key moves down by 3 semitones and back home", () => {
         if (keyMove) for (const k of ALL_KEYS) expect(resolveKeyMove(k, keyMove.type, k)).toBeTruthy()
       }
     }
+  })
+})
+
+describe("temporary darkening to the parallel minor", () => {
+  it("moves each of the 12 major keys to the minor on the same tonic, and leaves minor keys as they are", () => {
+    for (const k of MAJOR_KEYS) {
+      const dark = resolveKeyMove(k, "parallel")
+      expect(dark.mode, keyLabel(k)).toBe("minor")
+      expect(NOTE_TO_PC[dark.tonic], keyLabel(k)).toBe(NOTE_TO_PC[k.tonic])
+      expect(MINOR_KEYS.some((m) => m.tonic === dark.tonic)).toBe(true)
+    }
+    expect(new Set(MAJOR_KEYS.map((k) => NOTE_TO_PC[k.tonic])).size).toBe(12)
+    for (const k of MINOR_KEYS) expect(resolveKeyMove(k, "parallel")).toEqual(k)
+    expect(resolveKeyMove(key("C", "major"), "parallel")).toEqual(key("C", "minor"))
+    expect(resolveKeyMove(key("Eb", "major"), "parallel")).toEqual(key("Eb", "minor"))
+  })
+
+  it("returns to the original major key from the darkened key, in all 12 keys", () => {
+    for (const original of MAJOR_KEYS) {
+      const dark = resolveKeyMove(original, "parallel")
+      expect(resolveKeyMove(dark, "home", original), keyLabel(original)).toEqual(original)
+    }
+  })
+
+  it("raises the final chorus from the original key, not from the darkened minor", () => {
+    for (const original of MAJOR_KEYS) {
+      const dark = resolveKeyMove(original, "parallel")
+      const up = resolveKeyMove(dark, "up", original)
+      expect(up, keyLabel(original)).toEqual(resolveKeyMove(original, "up"))
+      expect(up.mode).toBe("major")
+    }
+    // 暗転していない通常のラスサビ転調は従来どおり、今の調から全音上げる
+    expect(resolveKeyMove(key("A", "minor"), "up", key("A", "minor"))).toEqual(key("B", "minor"))
+  })
+
+  it("replaces the major loop's degrees with the parallel minor's borrowed chords, in all 12 keys", () => {
+    const loop = ["I", "vi", "IV", "V"]
+    expect(toParallelMinor(loop)).toEqual(["i", "bVI", "iv", "V"])
+    expect(toParallelMinor(["ii7", "iii", "vii", "Imaj7", "IVmaj7", "Vsus4", "bVII", "I/V"])).toEqual(
+      ["iiø", "bIII", "bVII", "im9", "ivm9", "Vsus4", "bVII", "i"],
+    )
+    for (const original of MAJOR_KEYS) {
+      const dark = resolveKeyMove(original, "parallel")
+      const base = NOTE_TO_PC[original.tonic]
+      const darkRoots = toParallelMinor(loop).map((t) => rootPc(parseToken(t), dark))
+      // I → 主音、vi → bVI(長調のviより半音下)、IV → 4度、V → 5度
+      expect(darkRoots, keyLabel(original)).toEqual([0, 8, 5, 7].map((d) => (base + d) % 12))
+    }
+  })
+
+  it("is wired into the suggestions: the soft chorus goes dark, and the way back is home", () => {
+    expect(NEXT_SECTIONS.chorus.find((s) => s.section === "breakdown-chorus")?.keyMove?.type).toBe("parallel")
+    expect(NEXT_SECTIONS["breakdown-chorus"].find((s) => s.section === "chorus")?.keyMove?.type).toBe("home")
   })
 })

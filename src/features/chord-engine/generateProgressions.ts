@@ -2,7 +2,7 @@ import type { MoodId, MusicKey, RuleSection, SectionId, StyleId } from "@/types/
 import { keyLabel, PERIOD_CHORD_COUNT, sectionRule } from "@/types/music"
 import { alignBeatsToBars, type GeneratedProgression } from "@/types/progression"
 import type { ParsedChord } from "./degrees"
-import { bassNoteName, buildToken, chordName, parseToken, tokenFromChordSymbol } from "./degrees"
+import { bassNoteName, buildToken, chordName, NOTE_TO_PC, parseToken, tokenFromChordSymbol } from "./degrees"
 import { decorateProgression } from "./decorate"
 import { buildDescription } from "./descriptions"
 import { chance, pick } from "./random"
@@ -22,7 +22,7 @@ import {
   tonicTokens,
 } from "./styleGrammar"
 import { continuationsOf, generateChain } from "./transitions"
-import { rotateLoop } from "./songFlow"
+import { rotateLoop, toParallelMinor } from "./songFlow"
 import { featureTags, preferenceBonus, type PreferenceModel } from "@/features/preference/preferenceModel"
 import { applyVoiceLeadingBass } from "./voiceLeading"
 
@@ -336,6 +336,9 @@ function computeHarmonicRhythm(
   return alignBeatsToBars(beats)
 }
 
+/** 同主短調へ暗転した落ちサビが、前の長調のループを借用和音にして使う確率 */
+const DARKENED_REUSE_PROBABILITY = 0.6
+
 /** サビが前のセクションのループを回して使う確率 */
 const CHORUS_ROTATION_PROBABILITY = 0.5
 
@@ -343,6 +346,8 @@ export interface ReusableLoop {
   loop: string[]
   /** 前セクションと同じ調か。別の調(転調後)なら、度数のまま使うだけで同型ループの景色が変わる */
   sameKey: boolean
+  /** 前の長調のループを同主短調の度数へ置き換えたもの(一時的な暗転)か */
+  darkened?: boolean
   /** 前セクションの最終和音の根音。回した先頭がこれと同じ根音だと切れ目で停滞するので避ける */
   lastRoot: string
 }
@@ -351,11 +356,16 @@ export interface ReusableLoop {
  * 前セクションのループのうち、今回のスタイル・調・長さでそのまま使えるもの。
  * 調の性格(長調/短調)が違う、長さが指定と違う、今のスタイルの語彙(根音・装飾)に無い和音を含む、
  * のいずれかなら使わない(度数のまま移すと別の調性の響きになる/スタイルの外へ出るため)。
+ * ただし、前が長調で今が同じ主音の短調(同主短調への一時暗転)なら、度数を同主短調の借用和音へ
+ * 置き換えて使う。
  */
 export function reusablePrevious(params: GenerateParams): ReusableLoop | null {
   const { previous, key, style, length } = params
-  if (!previous || previous.key.mode !== key.mode) return null
-  const loop = previous.loop
+  if (!previous) return null
+  const darkened =
+    previous.key.mode === "major" && key.mode === "minor" && NOTE_TO_PC[previous.key.tonic] === NOTE_TO_PC[key.tonic]
+  if (previous.key.mode !== key.mode && !darkened) return null
+  const loop = darkened ? toParallelMinor(previous.loop) : previous.loop
   if (loop.length < 2 || (length !== undefined && loop.length !== length)) return null
   const vocab = styleVocabulary(style, key.mode)
   const inVocabulary = loop.every((token) => {
@@ -363,10 +373,12 @@ export function reusablePrevious(params: GenerateParams): ReusableLoop | null {
     return vocab.roots.has(rootKey(token)) && vocab.suffixes.has(parsed.suffix)
   })
   if (!inVocabulary) return null
+  const lastChord = previous.lastChord && !darkened ? previous.lastChord : loop[loop.length - 1]
   return {
     loop,
     sameKey: previous.key.tonic === key.tonic && previous.key.mode === key.mode,
-    lastRoot: rootKey(previous.lastChord ?? loop[loop.length - 1]),
+    ...(darkened ? { darkened } : {}),
+    lastRoot: rootKey(lastChord),
   }
 }
 
@@ -485,7 +497,9 @@ function adaptToSection(
       break
 
     case "breakdownChorus":
-      // 落ちサビ: サビの和声感を保ちながら密度と終止感を抑える
+      // 落ちサビ: サビの和声感を保ちながら密度と終止感を抑える。同主短調へ暗転しているなら、
+      // 前の長調のループを同主短調の借用和音にして使う
+      if (previous?.darkened && chance(DARKENED_REUSE_PROBABILITY)) result = [...previous.loop]
       if (result.length > 3) result = result.slice(0, 3)
       if (chance(0.65)) {
         result[last()] = unresolveToken(result[last()], style, mode)
