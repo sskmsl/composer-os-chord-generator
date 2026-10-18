@@ -179,7 +179,7 @@ function generateOne(params: GenerateParams): GeneratedProgression {
   const isPeriod = length === PERIOD_CHORD_COUNT
   const reuse = isPeriod ? null : reusablePrevious(params)
   let tokens = isPeriod
-    ? buildPeriod(style, key.mode, mood, section)
+    ? buildPeriod(style, key.mode, mood, section, params.approachRelativeMajor === true)
     : adaptToSection(generateChain(style, key.mode, mood, length), section, key, style, reuse, returningHome(params), params.approachRelativeMajor === true)
   // 8小節フレーズは「同じ出だし」自体が構造なので、代理和音で崩さない
   if (!isPeriod && chance(SUBSTITUTION_PROBABILITY)) tokens = substituteOneChord(tokens, style, key.mode)
@@ -274,7 +274,13 @@ function pickAvoiding(candidates: string[], ...avoid: string[]): string {
  * 次のセクションへつなぐ場面(Bメロ・Cメロ等)では、後半も前半と別の緊張の和音で止める。
  * 和音はすべてそのスタイルのテンプレートと遷移表から選ぶ。
  */
-function buildPeriod(style: StyleId, mode: MusicKey["mode"], mood: MoodId, section: SectionId): string[] {
+function buildPeriod(
+  style: StyleId,
+  mode: MusicKey["mode"],
+  mood: MoodId,
+  section: SectionId,
+  approachRelativeMajor: boolean,
+): string[] {
   const antecedent = generateChain(style, mode, mood, 4).slice(0, 4)
   while (antecedent.length < 4) antecedent.push(pick(tensionTokens(style, mode)))
   // 後半は前半の出だしで始まるので、出だし2和音が同じ根音なら、前半の終わりもそれと変えて3連続を防ぐ
@@ -296,7 +302,14 @@ function buildPeriod(style: StyleId, mode: MusicKey["mode"], mood: MoodId, secti
     ? tensionTokens(style, mode).filter((t) => rootKey(t) !== rootKey(antecedent[3]))
     : tonicTokens(style, mode)
   const last = pickAvoiding(endings.length > 0 ? endings : tensionTokens(style, mode), third)
-  return [...antecedent, antecedent[0], antecedent[1], third, last]
+  // 相対長調のサビへ向かうBメロなら、後半の最後を相対長調のV7(短調のbVII7)にする候補を出す。
+  // 前半の出だしを繰り返す構造はそのままで、末尾の1和音だけを替える
+  const dominant =
+    approachRelativeMajor && sectionRule(section) === "preChorus" && chance(RELATIVE_APPROACH_PROBABILITY)
+      ? relativeMajorDominant(style, mode)
+      : null
+  const closing = dominant && rootKey(third) !== rootKey(dominant) ? dominant : last
+  return [...antecedent, antecedent[0], antecedent[1], third, closing]
 }
 
 /** 生成した進行の1か所を代理和音へ差し替える確率 */

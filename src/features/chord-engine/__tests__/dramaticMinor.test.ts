@@ -733,3 +733,56 @@ describe("I-bVII-I-ii major template", () => {
     }
   })
 })
+
+describe("pre-chorus ending toward the relative major, in the 8-bar phrase", () => {
+  const ALL = STYLE_OPTIONS.map((s) => s.value)
+  const withDominant = ALL.filter((style) => relativeMajorDominant(style, "minor") !== null)
+  const endsOnBVII7 = (tokens: string[]) => tokens[tokens.length - 1] === "bVII7"
+  const phrase = (style: StyleId, approach: boolean | undefined, section: SectionId = "pre-chorus", key: MusicKey = A_MINOR) =>
+    Array.from({ length: 40 }, () =>
+      generateProgressions({ key, style, section, mood: "melancholic", count: 5, length: 8, approachRelativeMajor: approach }),
+    ).flat()
+  const share = (list: { romanNumerals: string[] }[]) => list.filter((p) => endsOnBVII7(p.romanNumerals)).length / list.length
+
+  it.each(SEEDS)("ends the 8-bar pre-chorus on bVII7 when heading to the relative major (seed %i)", (seed) => {
+    const surviving = withDominant.filter((style) => {
+      const control = withSeed(seed, () => phrase(style, undefined))
+      const approach = withSeed(seed, () => phrase(style, true))
+      expect(share(approach), style).toBeGreaterThanOrEqual(share(control))
+      return share(approach) > share(control)
+    })
+    expect(surviving.length).toBeGreaterThanOrEqual(3)
+    expect(surviving).toContain("finale")
+  })
+
+  it.each(SEEDS)("keeps the question-and-answer opening and the 8 chords (seed %i)", (seed) => {
+    withSeed(seed, () => {
+      for (const style of withDominant) {
+        for (const p of phrase(style, true)) {
+          const roots = p.romanNumerals.map(rootKey)
+          expect(p.romanNumerals, style).toHaveLength(8)
+          expect([roots[4], roots[5]], `${style}: ${p.romanNumerals.join(" ")}`).toEqual([roots[0], roots[1]])
+          expect(p.beats).toEqual([4, 4, 4, 4, 4, 4, 4, 4])
+        }
+      }
+    })
+  })
+
+  it("changes nothing when the approach is not chosen, for other sections, or for styles without bVII7", () => {
+    for (const style of ["finale", "romanticDark", "cinematic", "ethereal"] as const) {
+      const none = withSeed(SEEDS[0], () => phrase(style, undefined).map((p) => p.chords))
+      const off = withSeed(SEEDS[0], () => phrase(style, false).map((p) => p.chords))
+      expect(off, style).toEqual(none)
+      for (const section of ["verse", "chorus", "bridge"] as const) {
+        const a = withSeed(SEEDS[1], () => phrase(style, undefined, section).map((p) => p.chords))
+        const b = withSeed(SEEDS[1], () => phrase(style, true, section).map((p) => p.chords))
+        expect(b, `${style} ${section}`).toEqual(a)
+      }
+    }
+    withSeed(SEEDS[2], () => {
+      for (const style of ALL.filter((s) => !withDominant.includes(s))) {
+        for (const p of phrase(style, true)) expect(endsOnBVII7(p.romanNumerals), style).toBe(false)
+      }
+    })
+  })
+})
