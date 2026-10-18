@@ -18,97 +18,135 @@
     "ethereal": {
       "offered": false,
       "control": 0,
-      "approach": 0
+      "approach": 0,
+      "control8": 0,
+      "approach8": 0
     },
     "romanticDark": {
       "offered": true,
       "control": 0,
-      "approach": 0.335
+      "approach": 0.335,
+      "control8": 0,
+      "approach8": 0.417
     },
     "cinematic": {
       "offered": false,
       "control": 0,
-      "approach": 0
+      "approach": 0,
+      "control8": 0,
+      "approach8": 0
     },
     "newWave": {
       "offered": false,
       "control": 0,
-      "approach": 0
+      "approach": 0,
+      "control8": 0,
+      "approach8": 0
     },
     "sadcorePop": {
       "offered": false,
       "control": 0,
-      "approach": 0
+      "approach": 0,
+      "control8": 0,
+      "approach8": 0
     },
     "ritual": {
       "offered": false,
       "control": 0,
-      "approach": 0
+      "approach": 0,
+      "control8": 0,
+      "approach8": 0
     },
     "finale": {
       "offered": true,
       "control": 0,
-      "approach": 0.35
+      "approach": 0.35,
+      "control8": 0,
+      "approach8": 0.418
     },
     "cool": {
       "offered": true,
       "control": 0.241,
-      "approach": 0.394
+      "approach": 0.394,
+      "control8": 0.216,
+      "approach8": 0.336
     },
     "tripHop": {
       "offered": true,
       "control": 0.244,
-      "approach": 0.535
+      "approach": 0.535,
+      "control8": 0.323,
+      "approach8": 0.53
     },
     "neoclassical": {
       "offered": true,
       "control": 0,
-      "approach": 0.273
+      "approach": 0.273,
+      "control8": 0,
+      "approach8": 0.348
     },
     "minimalism": {
       "offered": false,
       "control": 0,
-      "approach": 0
+      "approach": 0,
+      "control8": 0,
+      "approach8": 0
     },
     "jChanson": {
       "offered": true,
       "control": 0,
-      "approach": 0.328
+      "approach": 0.328,
+      "control8": 0,
+      "approach8": 0.462
     },
     "hiNRG": {
       "offered": true,
       "control": 0.032,
-      "approach": 0.286
+      "approach": 0.286,
+      "control8": 0.037,
+      "approach8": 0.313
     },
     "dorian": {
       "offered": false,
       "control": 0,
-      "approach": 0
+      "approach": 0,
+      "control8": 0,
+      "approach8": 0
     },
     "electronica": {
       "offered": true,
       "control": 0,
-      "approach": 0.481
+      "approach": 0.481,
+      "control8": 0,
+      "approach8": 0.553
     },
     "slowcore": {
       "offered": false,
       "control": 0,
-      "approach": 0
+      "approach": 0,
+      "control8": 0,
+      "approach8": 0
     },
     "frenchPop": {
       "offered": true,
       "control": 0,
-      "approach": 0.356
+      "approach": 0.356,
+      "control8": 0,
+      "approach8": 0.452
     },
     "kayokyoku": {
       "offered": true,
       "control": 0,
-      "approach": 0.387
+      "approach": 0.387,
+      "control8": 0,
+      "approach8": 0.493
     },
     "romanceNostalgia": {
       "offered": true,
       "control": 0,
-      "approach": 0.279
+      "approach": 0.279,
+      "control8": 0,
+      "approach8": 0.313
     }
   },
   "susContrast": {

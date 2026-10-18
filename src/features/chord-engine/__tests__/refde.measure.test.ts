@@ -18,13 +18,13 @@ const C_MAJOR: MusicKey = { tonic: "C", mode: "major" }
 const ROUNDS = 40
 const originalRandom = Math.random
 
-function collect(style: StyleId, section: SectionId, key: MusicKey, extra: { approachRelativeMajor?: boolean } = {}) {
+function collect(style: StyleId, section: SectionId, key: MusicKey, extra: { approachRelativeMajor?: boolean; length?: number } = {}) {
   const rows: string[][] = []
   for (const seed of SEEDS) {
     Math.random = seededRandom(seed)
     clearSessionSkeletonHistory()
     for (let i = 0; i < ROUNDS; i++) {
-      for (const p of generateProgressions({ key, style, section, mood: "melancholic", count: 5, length: 4, ...extra })) rows.push(p.romanNumerals)
+      for (const p of generateProgressions({ key, style, section, mood: "melancholic", count: 5, length: (extra.length ?? 4) as 4, approachRelativeMajor: extra.approachRelativeMajor })) rows.push(p.romanNumerals)
     }
     Math.random = originalRandom
   }
@@ -41,7 +41,15 @@ it.skipIf(!process.env.CHORD_REFDE_PATH)("measures how the reference D and E rul
     output.preChorusApproach = Object.fromEntries(styles.map((style) => {
       const control = collect(style, "pre-chorus", A_MINOR)
       const approach = collect(style, "pre-chorus", A_MINOR, { approachRelativeMajor: true })
-      return [style, { offered: relativeMajorDominant(style, "minor") !== null, control: rate(control, endsOnBVII7), approach: rate(approach, endsOnBVII7) }]
+      const control8 = collect(style, "pre-chorus", A_MINOR, { length: 8 })
+      const approach8 = collect(style, "pre-chorus", A_MINOR, { approachRelativeMajor: true, length: 8 })
+      return [style, {
+        offered: relativeMajorDominant(style, "minor") !== null,
+        control: rate(control, endsOnBVII7),
+        approach: rate(approach, endsOnBVII7),
+        control8: rate(control8, endsOnBVII7),
+        approach8: rate(approach8, endsOnBVII7),
+      }]
     }))
 
     const isSus = (t: string) => ["sus2", "sus4"].includes(parseToken(t).suffix)
