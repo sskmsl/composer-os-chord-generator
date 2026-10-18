@@ -1,5 +1,9 @@
 import { beforeEach, describe, it, expect, vi } from "vitest"
 
+vi.mock("@/features/chord-engine/generateProgressions", async (importOriginal) => {
+  const original = await importOriginal<typeof import("@/features/chord-engine/generateProgressions")>()
+  return { ...original, generateProgressions: vi.fn(original.generateProgressions) }
+})
 vi.mock("@/features/exchange/composerSongExchange", () => ({
   downloadComposerSongExchange: vi.fn(),
 }))
@@ -40,6 +44,7 @@ vi.mock("@/features/storage/deletionRepository", () => ({
 }))
 
 const { useAppStore } = await import("../useAppStore")
+const { generateProgressions } = await import("@/features/chord-engine/generateProgressions")
 const { downloadBackup, parseBackup } = await import("@/features/storage/backup")
 const { folderRepository, progressionRepository } = await import(
   "@/features/storage/progressionRepository"
@@ -248,5 +253,65 @@ describe("useAppStore: generator history", () => {
     useAppStore.getState().restorePrevious()
     expect(useAppStore.getState().results).toBe(original)
     expect(useAppStore.getState().previousResults).toBe(afterGenerate)
+  })
+})
+
+describe("useAppStore: continuing into the next section", () => {
+  const loopResult = {
+    ...fakeGenerated("loop"),
+    style: "cinematic" as const,
+    section: "chorus" as const,
+    romanNumerals: ["bVII", "i", "bIII", "bVI"],
+    chords: ["G", "Am", "C", "F"],
+  }
+  const lastCall = () => vi.mocked(generateProgressions).mock.lastCall![0]
+
+  function startFromChorus() {
+    useAppStore.setState({
+      params: { ...useAppStore.getState().params, style: "cinematic", section: "chorus", length: 4 },
+      results: [loopResult],
+      previousResults: null,
+    })
+  }
+
+  it("passes the first candidate as the previous section and remembers the original key", () => {
+    startFromChorus()
+    useAppStore.getState().continueToSection("bridge", { tonic: "F#", mode: "minor" })
+    const params = lastCall()
+    expect(useAppStore.getState().params).toMatchObject({ section: "bridge", key: { tonic: "F#", mode: "minor" } })
+    expect(params.section).toBe("bridge")
+    expect(params.key).toEqual({ tonic: "F#", mode: "minor" })
+    expect(params.previous).toEqual({
+      key: { tonic: "A", mode: "minor" },
+      loop: ["bVII", "i", "bIII", "bVI"],
+      lastChord: "bVI",
+    })
+    expect(params.originalKey).toEqual({ tonic: "A", mode: "minor" })
+  })
+
+  it("keeps the first key as the original across several steps, so a later step can return to it", () => {
+    startFromChorus()
+    useAppStore.getState().continueToSection("bridge", { tonic: "F#", mode: "minor" })
+    useAppStore.getState().continueToSection("chorus", { tonic: "A", mode: "minor" })
+    expect(lastCall().originalKey).toEqual({ tonic: "A", mode: "minor" })
+    expect(lastCall().previous?.key).toEqual({ tonic: "F#", mode: "minor" })
+  })
+
+  it("re-rolling the same section keeps the context, but changing a setting discards it", () => {
+    startFromChorus()
+    useAppStore.getState().continueToSection("bridge")
+    useAppStore.getState().generate()
+    expect(lastCall().previous?.loop).toEqual(["bVII", "i", "bIII", "bVI"])
+    useAppStore.getState().setParams({ mood: "dramatic" })
+    useAppStore.getState().generate()
+    expect(useAppStore.getState().songContext).toBeNull()
+    expect(lastCall().previous).toBeUndefined()
+    expect(lastCall().originalKey).toBeUndefined()
+  })
+
+  it("works with no earlier result, like a plain generate", () => {
+    useAppStore.getState().continueToSection("verse")
+    expect(lastCall().previous).toBeUndefined()
+    expect(useAppStore.getState().results.length).toBeGreaterThan(0)
   })
 })
