@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest"
-import { clearSessionSkeletonHistory, generateProgressions, limitDefiniteDominants, reusablePrevious, rotatedChorusLoop, rootSkeletonOf, type GenerateParams, type PreviousSection } from "../generateProgressions"
+import { clearSessionSkeletonHistory, generateProgressions, limitDefiniteDominants, returningHome, reusablePrevious, rotatedChorusLoop, rootSkeletonOf, withHomeReturnTail, type GenerateParams, type PreviousSection } from "../generateProgressions"
 import { SEEDS, withSeed } from "./seeded"
 import { chordName, parseToken } from "../degrees"
 import { resolveKeyMove, rotateLoop, toParallelMinor } from "../songFlow"
@@ -365,5 +365,82 @@ describe("temporary darkening to the parallel minor", () => {
       expect(darkened?.darkened).toBe(true)
       expect(darkened?.loop).toEqual(darkLoop)
     })
+  })
+})
+
+describe("return to the original key", () => {
+  const tailRoots = (tokens: string[], mode: MusicKey["mode"]) => tokens.slice(-3).map(rootKey).join("-") === `bVI-bVII-${mode === "minor" ? "i" : "I"}`
+  const returning = (original: MusicKey) => ({
+    key: original,
+    previous: {
+      key: resolveKeyMove(original, "relative"),
+      loop: original.mode === "minor" ? ["bVII", "i", "bIII", "bVI"] : ["vi", "IV", "I", "V"],
+    },
+  })
+  const generateReturn = (original: MusicKey, section: SectionId, withOriginal: boolean) =>
+    generateProgressions({
+      style: "cinematic",
+      section,
+      mood: "dramatic",
+      count: 5,
+      length: 4,
+      ...returning(original),
+      originalKey: withOriginal ? original : undefined,
+    })
+  const tailShare = (original: MusicKey, section: SectionId, withOriginal: boolean) => {
+    const rows = Array.from({ length: 40 }, () => generateReturn(original, section, withOriginal)).flat()
+    return rows.filter((p) => tailRoots(p.romanNumerals, original.mode)).length / rows.length
+  }
+
+  it("is a return only when the key is the original and the previous section was elsewhere", () => {
+    const a: MusicKey = { tonic: "A", mode: "minor" }
+    const c: MusicKey = { tonic: "C", mode: "major" }
+    expect(returningHome({ ...baseParams, key: a, originalKey: a, previous: { key: c, loop: ["I", "V"] } })).toBe(true)
+    expect(returningHome({ ...baseParams, key: a, originalKey: a, previous: { key: a, loop: ["i", "bVI"] } })).toBe(false)
+    expect(returningHome({ ...baseParams, key: c, originalKey: a, previous: { key: a, loop: ["i", "bVI"] } })).toBe(false)
+    expect(returningHome({ ...baseParams, key: a, previous: { key: c, loop: ["I", "V"] } })).toBe(false)
+    expect(returningHome({ ...baseParams, key: a, originalKey: a })).toBe(false)
+  })
+
+  it("ends on bVI, bVII and the tonic when the style has all three, keeping the length", () => {
+    withSeed(SEEDS[0], () => {
+      for (const style of ["cinematic", "finale", "newWave", "romanticDark"] as const) {
+        const tokens = withHomeReturnTail(["i", "bIII", "iv", "V"], style, "minor")
+        expect(tokens, style).toHaveLength(4)
+        expect(tokens.slice(-3).map(rootKey), style).toEqual(["bVI", "bVII", "i"])
+        expect(tokens[0]).toBe("i")
+      }
+      // 直前がすでに bVI なら、bVII と主和音だけにして同じ根音を重ねない
+      expect(withHomeReturnTail(["bVI", "bIII", "bVI", "iv"], "cinematic", "minor").map(rootKey)).toEqual(["bVI", "bIII", "bVII", "i"])
+      expect(withHomeReturnTail(["bVII", "i"], "cinematic", "minor").map(rootKey)).toEqual(["bVII", "i"])
+      // bVI または bVII が語彙に無いスタイルは変えない(語彙の外の和音は使わない)
+      const dorian = ["i", "IV", "bVII", "i"]
+      expect(withHomeReturnTail(dorian, "dorian", "minor")).toEqual(dorian)
+    })
+  })
+
+  it.each(SEEDS)("raises the share of bVI-bVII-tonic endings for the way home in all 12 minor keys (seed %i)", (seed) => {
+    for (const k of MINOR_KEYS) {
+      for (const section of ["chorus", "grand-chorus", "outro"] as const) {
+        const withOriginal = withSeed(seed, () => tailShare(k, section, true))
+        const control = withSeed(seed, () => tailShare(k, section, false))
+        expect(withOriginal, `${keyLabel(k)} ${section}`).toBeGreaterThan(control)
+      }
+    }
+  })
+
+  it("works in major too, with the borrowed bVI and bVII", () => {
+    for (const k of MAJOR_KEYS) {
+      const withOriginal = withSeed(SEEDS[1], () => tailShare(k, "chorus", true))
+      const control = withSeed(SEEDS[1], () => tailShare(k, "chorus", false))
+      expect(withOriginal, keyLabel(k)).toBeGreaterThan(control)
+    }
+  })
+
+  it("does not change sections that are not the way home", () => {
+    const a: MusicKey = { tonic: "A", mode: "minor" }
+    const verses = (withOriginal: boolean) =>
+      withSeed(SEEDS[2], () => Array.from({ length: 40 }, () => generateReturn(a, "verse", withOriginal)).flat().map((p) => p.chords))
+    expect(verses(true)).toEqual(verses(false))
   })
 })

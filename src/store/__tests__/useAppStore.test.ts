@@ -44,7 +44,7 @@ vi.mock("@/features/storage/deletionRepository", () => ({
 }))
 
 const { useAppStore } = await import("../useAppStore")
-const { generateProgressions } = await import("@/features/chord-engine/generateProgressions")
+const { generateProgressions, returningHome } = await import("@/features/chord-engine/generateProgressions")
 const { downloadBackup, parseBackup } = await import("@/features/storage/backup")
 const { folderRepository, progressionRepository } = await import(
   "@/features/storage/progressionRepository"
@@ -295,6 +295,14 @@ describe("useAppStore: continuing into the next section", () => {
     useAppStore.getState().continueToSection("chorus", { tonic: "A", mode: "minor" })
     expect(lastCall().originalKey).toEqual({ tonic: "A", mode: "minor" })
     expect(lastCall().previous?.key).toEqual({ tonic: "F#", mode: "minor" })
+  })
+
+  it("treats the step back to the original key as a return, so the generator can end on bVI, bVII and the tonic", () => {
+    startFromChorus()
+    useAppStore.getState().continueToSection("bridge", { tonic: "F#", mode: "minor" })
+    expect(returningHome(lastCall())).toBe(false)
+    useAppStore.getState().continueToSection("chorus", { tonic: "A", mode: "minor" })
+    expect(returningHome(lastCall())).toBe(true)
   })
 
   it("re-rolling the same section keeps the context, but changing a setting discards it", () => {

@@ -175,7 +175,7 @@ function generateOne(params: GenerateParams): GeneratedProgression {
   const reuse = isPeriod ? null : reusablePrevious(params)
   let tokens = isPeriod
     ? buildPeriod(style, key.mode, mood, section)
-    : adaptToSection(generateChain(style, key.mode, mood, length), section, key, style, reuse)
+    : adaptToSection(generateChain(style, key.mode, mood, length), section, key, style, reuse, returningHome(params))
   // 8小節フレーズは「同じ出だし」自体が構造なので、代理和音で崩さない
   if (!isPeriod && chance(SUBSTITUTION_PROBABILITY)) tokens = substituteOneChord(tokens, style, key.mode)
   const decorated = limitDefiniteDominants(decorateProgression(tokens.map(parseToken), style, mood, key.mode), style, key.mode)
@@ -434,6 +434,38 @@ function recoloredLoop(previous: ReusableLoop, style: StyleId, mode: MusicKey["m
   return loop
 }
 
+/** 原調へ戻る終盤で、bVI → bVII → 主和音の着地を選ぶ確率 */
+const HOME_RETURN_PROBABILITY = 0.7
+
+/** 原調への帰還を和声で示すセクション(サビ・大サビ・アウトロ) */
+const HOME_RETURN_SECTIONS: RuleSection[] = ["chorus", "grandChorus", "outro"]
+
+const sameKey = (a: MusicKey, b: MusicKey) => NOTE_TO_PC[a.tonic] === NOTE_TO_PC[b.tonic] && a.mode === b.mode
+
+/** 今の調が原調で、直前のセクションは別の調だった(転調からの帰還)か */
+export function returningHome(params: GenerateParams): boolean {
+  const { key, previous, originalKey } = params
+  return Boolean(originalKey && previous && sameKey(key, originalKey) && !sameKey(previous.key, originalKey))
+}
+
+/**
+ * 終わりを bVI → bVII → 主和音にする(長さは変えない)。3つともそのスタイルのテンプレートにある
+ * 和音から選び、どれかが無ければ(スタイルの語彙に無い和音は使わない)進行は変えない。
+ * 進行が2和音のときや、直前がすでに bVI のときは、bVII → 主和音だけにして同じ根音の重複を避ける。
+ */
+export function withHomeReturnTail(tokens: string[], style: StyleId, mode: MusicKey["mode"]): string[] {
+  const pool = allStyleTokens(style, mode)
+  const pickRoot = (root: string) => pool.filter((t) => rootKey(t) === root)
+  const tonic = tonicTokens(style, mode)
+  const bVI = pickRoot("bVI")
+  const bVII = pickRoot("bVII")
+  if (tonic.length === 0 || bVI.length === 0 || bVII.length === 0) return tokens
+  const n = tokens.length
+  const precededByBVI = n >= 4 && rootKey(tokens[n - 4]) === "bVI"
+  const tail = n < 3 || precededByBVI ? [pick(bVII), pick(tonic)] : [pick(bVI), pick(bVII), pick(tonic)]
+  return [...tokens.slice(0, n - tail.length), ...tail]
+}
+
 /** CHORD_ENGINE_SPEC §6 のセクションルールでテンプレートを変形する */
 function adaptToSection(
   tokens: string[],
@@ -441,6 +473,7 @@ function adaptToSection(
   key: MusicKey,
   style: StyleId,
   previous: ReusableLoop | null,
+  homeReturn: boolean,
 ): string[] {
   const mode = key.mode
   let result = [...tokens]
@@ -547,6 +580,10 @@ function adaptToSection(
         result[last()] = unresolveToken(result[last()], style, mode)
       }
       break
+  }
+  // 転調から原調へ戻ってきた終盤は、bVI → bVII → 主和音で原調に着地する
+  if (homeReturn && HOME_RETURN_SECTIONS.includes(rule) && chance(HOME_RETURN_PROBABILITY)) {
+    result = withHomeReturnTail(result, style, mode)
   }
   return result
 }
