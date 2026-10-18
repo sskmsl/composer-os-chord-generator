@@ -1,10 +1,10 @@
 import { afterEach, describe, expect, it, vi } from "vitest"
-import { clearSessionSkeletonHistory, generateProgressions, rootSkeletonOf } from "../generateProgressions"
+import { clearSessionSkeletonHistory, generateProgressions, limitDefiniteDominants, rootSkeletonOf } from "../generateProgressions"
 import { SEEDS, withSeed } from "./seeded"
 import { parseToken } from "../degrees"
-import { matchesStyleSignature } from "../styleGrammar"
+import { isDefiniteMajorV, matchesStyleSignature, rootKey, styleVocabulary } from "../styleGrammar"
 import { STYLE_OPTIONS, STYLE_TEMPLATES } from "../templates"
-import type { MusicKey, StyleId } from "@/types/music"
+import type { MusicKey, SectionId, StyleId } from "@/types/music"
 
 afterEach(() => {
   vi.restoreAllMocks()
@@ -57,6 +57,72 @@ describe("i-bVI-bVII-bIII templates", () => {
           }
         }
         expect(loops / total, style).toBeLessThan(0.3)
+      }
+    })
+  })
+})
+
+describe("definite major V cap in minor", () => {
+  const SECTIONS: SectionId[] = [
+    "intro", "verse", "pre-chorus", "chorus", "breakdown-chorus", "grand-chorus", "c-melody", "bridge", "instrumental", "outro",
+  ]
+  const MODAL: StyleId[] = ["dorian", "ritual", "electronica", "slowcore", "tripHop", "minimalism"]
+  const ALL_STYLES = STYLE_OPTIONS.map((s) => s.value)
+  const definiteCount = (tokens: string[]) => tokens.map(parseToken).filter(isDefiniteMajorV).length
+
+  it("does not count sus chords, which have no major third", () => {
+    expect(["V", "V7", "V11", "Vaug"].map((t) => isDefiniteMajorV(parseToken(t)))).toEqual([true, true, true, true])
+    expect(["Vsus4", "V7sus4", "Vsus2", "v", "bVII", "bV", "IV"].map((t) => isDefiniteMajorV(parseToken(t)))).toEqual(
+      [false, false, false, false, false, false, false],
+    )
+  })
+
+  it("keeps only the last definite V and softens the earlier ones", () => {
+    const chords = ["i", "V7", "bVI", "V", "i", "V7sus4"].map(parseToken)
+    const limited = limitDefiniteDominants(chords, "romanticDark", "minor")
+    expect(limited.filter(isDefiniteMajorV)).toHaveLength(1)
+    expect(limited[3].token).toBe("V")
+    expect(limited[1].roman).toBe("V")
+    expect(limited[5].token).toBe("V7sus4")
+  })
+
+  it("leaves a progression with one definite V, or in major, as it is", () => {
+    const one = ["i", "bVI", "V7", "i"].map(parseToken)
+    expect(limitDefiniteDominants(one, "finale", "minor")).toEqual(one)
+    const major = ["I", "V", "vi", "V7"].map(parseToken)
+    expect(limitDefiniteDominants(major, "finale", "major")).toEqual(major)
+  })
+
+  it("replaces an extra V with a chord from the style vocabulary, never with a new V", () => {
+    const chords = ["i", "V7", "bVI", "V7"].map(parseToken)
+    const limited = limitDefiniteDominants(chords, "hiNRG", "minor")
+    const vocab = styleVocabulary("hiNRG", "minor")
+    for (const c of limited) expect(vocab.roots.has(rootKey(c.token))).toBe(true)
+    expect(limited.filter(isDefiniteMajorV)).toHaveLength(1)
+  })
+
+  it.each(SEEDS)("holds the cap for every style, section and 4/8-chord length (seed %i)", (seed) => {
+    withSeed(seed, () => {
+      for (const style of ALL_STYLES) {
+        for (const section of SECTIONS) {
+          for (const length of [4, 8] as const) {
+            for (const p of generateProgressions({ key: A_MINOR, style, section, mood: "dramatic", count: 5, length })) {
+              expect(definiteCount(p.romanNumerals), `${style} ${section} ${length}: ${p.romanNumerals.join(" ")}`).toBeLessThanOrEqual(1)
+            }
+          }
+        }
+      }
+    })
+  })
+
+  it.each(SEEDS)("injects no V into modal styles (seed %i)", (seed) => {
+    withSeed(seed, () => {
+      for (const style of MODAL) {
+        for (const section of SECTIONS) {
+          for (const p of generateProgressions({ key: A_MINOR, style, section, mood: "dramatic", count: 5, length: 4 })) {
+            expect(p.romanNumerals.map(rootKey), `${style} ${section}`).not.toContain("V")
+          }
+        }
       }
     })
   })

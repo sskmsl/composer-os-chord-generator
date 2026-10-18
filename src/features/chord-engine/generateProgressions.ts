@@ -8,9 +8,12 @@ import { buildDescription } from "./descriptions"
 import { chance, pick } from "./random"
 import { computeScores, extractFeatures, type CadenceType } from "./scoring"
 import {
+  allStyleTokens,
   cadentialTokens,
   commonToneSubstitutes,
+  isDefiniteMajorV,
   matchesStyleSignature,
+  minorDominantAlternatives,
   openColors,
   rootKey,
   spiceTokens,
@@ -159,7 +162,7 @@ function generateOne(params: GenerateParams): GeneratedProgression {
     : adaptToSection(generateChain(style, key.mode, mood, length), section, key, style)
   // 8小節フレーズは「同じ出だし」自体が構造なので、代理和音で崩さない
   if (!isPeriod && chance(SUBSTITUTION_PROBABILITY)) tokens = substituteOneChord(tokens, style, key.mode)
-  const decorated = decorateProgression(tokens.map(parseToken), style, mood, key.mode)
+  const decorated = limitDefiniteDominants(decorateProgression(tokens.map(parseToken), style, mood, key.mode), style, key.mode)
   const { chords: parsed, invertedIndices } = applyVoiceLeadingBass(decorated, style)
 
   const chords = parsed.map((c) => chordName(c, key))
@@ -429,6 +432,51 @@ function unresolveToken(token: string, style: StyleId, mode: MusicKey["mode"]): 
     parsed.suffix = pick(colors)
   }
   return buildToken(parsed)
+}
+
+/** 短調の1進行に置く決定的なメジャーV(導音を持つV)の上限 */
+const MAX_DEFINITE_DOMINANTS = 1
+
+/** 8小節フレーズで、後半の出だし2和音(4・5番目)が対応する前半の和音(0・1番目)。それ以外は null */
+function openingMirror(index: number, length: number): number | null {
+  if (length !== PERIOD_CHORD_COUNT) return null
+  if (index < 2) return index + 4
+  return index >= 4 && index < 6 ? index - 4 : null
+}
+
+/**
+ * 短調の進行で、決定的なメジャーVを1か所までに抑える(装飾・代理・8小節フレーズの後に呼ぶ)。
+ * 残すのはトニックへ向かう最後の1か所で、それ以外はそのスタイルの未解決形(sus)へ、
+ * susを持たないスタイルなら語彙にある v / bVII へ、それも無ければ前後と別根音の語彙内の和音へ
+ * 置き換える。Vを新しく足すことはしないので、旋法系のスタイルにVは入らない。
+ * 8小節フレーズは後半が前半と同じ出だしで始まる構造なので、根音ごと置き換えるときは対応する位置も同じ和音にする。
+ */
+export function limitDefiniteDominants(chords: ParsedChord[], style: StyleId, mode: MusicKey["mode"]): ParsedChord[] {
+  if (mode !== "minor") return chords
+  const dominantIndices = (list: ParsedChord[]) => list.flatMap((c, i) => (isDefiniteMajorV(c) ? [i] : []))
+  if (dominantIndices(chords).length <= MAX_DEFINITE_DOMINANTS) return chords
+
+  const result = [...chords]
+  const extras = dominantIndices(result).slice(0, -MAX_DEFINITE_DOMINANTS)
+  for (const index of extras) {
+    if (!isDefiniteMajorV(result[index])) continue
+    const softened = parseToken(unresolveToken(result[index].token, style, mode))
+    if (!isDefiniteMajorV(softened)) {
+      result[index] = softened
+      continue
+    }
+    const neighbours = new Set([result[index - 1], result[index + 1]].filter(Boolean).map((c) => rootKey(c.token)))
+    const usable = (candidates: string[]) => candidates.filter((t) => !neighbours.has(rootKey(t)) && !isDefiniteMajorV(parseToken(t)))
+    const alternatives = usable(minorDominantAlternatives(style, mode))
+    const fallback = usable(allStyleTokens(style, mode).filter((t) => rootKey(t) !== "i"))
+    const pool = alternatives.length > 0 ? alternatives : fallback
+    // 置き換え先がどこにも無いときだけトニックにする(Vは足さない)
+    const replacement = parseToken(pool.length > 0 ? pick(pool) : "i")
+    result[index] = replacement
+    const mirror = openingMirror(index, result.length)
+    if (mirror !== null && rootKey(result[mirror].token) === "V") result[mirror] = replacement
+  }
+  return result
 }
 
 /** ベースの動きを音名列+輪郭ラベルで表現する */

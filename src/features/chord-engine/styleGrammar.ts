@@ -42,6 +42,11 @@ function allTokens(style: StyleId, mode: Mode): string[] {
   return STYLE_TEMPLATES[style][mode].flat()
 }
 
+/** そのスタイル・調のテンプレートに出てくる和音(重複あり) */
+export function allStyleTokens(style: StyleId, mode: Mode): string[] {
+  return allTokens(style, mode)
+}
+
 /** このスタイル・調で出現してよいルートと装飾(テンプレート+装飾設定) */
 export function styleVocabulary(style: StyleId, mode: Mode): StyleVocabulary {
   return memoized(`vocab-${style}-${mode}`, () => {
@@ -134,6 +139,27 @@ export function commonToneSubstitutes(style: StyleId, mode: Mode, token: string)
       const shared = triadPitchClasses(candidate).filter((pc) => tones.includes(pc)).length
       return shared >= 2
     }),
+  )
+}
+
+/** 長3度を持たない(長調のVに聞こえない)和音の装飾。susはVの引力を弱める形として区別する */
+const THIRDLESS = new Set(["sus2", "sus4", "7sus4"])
+
+/**
+ * 決定的なメジャーV。長三和音のVで、長3度(導音)を持つもの(V / V7 / V11 / Vaug 等)。
+ * sus系は3度が無いのでここに含めない。
+ */
+export function isDefiniteMajorV(c: ParsedChord): boolean {
+  return !c.lower && c.acc === 0 && c.roman === "V" && !THIRDLESS.has(c.suffix)
+}
+
+/**
+ * 短調で決定的なVの代わりに置ける和音。そのスタイルのテンプレートにある、導音を持たない
+ * 属音側の和音(v / bVII)。スタイルがこれらを持たなければ空で、Vを足すことはしない。
+ */
+export function minorDominantAlternatives(style: StyleId, mode: Mode): string[] {
+  return memoized(`dom-alt-${style}-${mode}`, () =>
+    mode === "minor" ? allTokens(style, mode).filter((t) => ["v", "bVII"].includes(rootKey(t))) : [],
   )
 }
 
