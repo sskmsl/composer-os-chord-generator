@@ -1,0 +1,6964 @@
+{
+  "conditions": {
+    "seeds": [
+      17,
+      97,
+      301,
+      1009,
+      8191
+    ],
+    "callsPerSeed": 40,
+    "count": 5,
+    "length": 4,
+    "tonic": "A",
+    "section": "chorus",
+    "mood": "melancholic",
+    "history": "cleared per seed, retained between calls"
+  },
+  "continuationEvidence": {
+    "i": [
+      "bVImaj7",
+      "#ivdim",
+      "bVII",
+      "ivm9",
+      "bIImaj7",
+      "bVI"
+    ],
+    "iv": [
+      "V7sus4",
+      "bVImaj7",
+      "bIIImaj7",
+      "bIImaj7",
+      "V7sus4"
+    ],
+    "bVI": [
+      "ivm9",
+      "V",
+      "V7",
+      "V7sus4",
+      "V7",
+      "ivm9"
+    ],
+    "bVII": [
+      "bVI"
+    ]
+  },
+  "output": [
+    {
+      "style": "ethereal",
+      "mode": "minor",
+      "raw": {
+        "count": 1000,
+        "uniqueSkeletons": 90,
+        "meanScore": 5.013,
+        "patterns": {
+          "i-bVI-bVII-bIII": {
+            "orderedRate": 0,
+            "cyclicRate": 0.003
+          },
+          "i-iv-bVII-bIII": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          },
+          "i-iv-V-i": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          },
+          "i-bVI-iv-V": {
+            "orderedRate": 0.012,
+            "cyclicRate": 0.012
+          }
+        }
+      },
+      "selected": {
+        "count": 1000,
+        "uniqueSkeletons": 165,
+        "meanScore": 6.118,
+        "patterns": {
+          "i-bVI-bVII-bIII": {
+            "orderedRate": 0.012,
+            "cyclicRate": 0.015
+          },
+          "i-iv-bVII-bIII": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          },
+          "i-iv-V-i": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          },
+          "i-bVI-iv-V": {
+            "orderedRate": 0.009,
+            "cyclicRate": 0.009
+          }
+        }
+      },
+      "perSeed": [
+        {
+          "seed": 17,
+          "selected": {
+            "count": 200,
+            "uniqueSkeletons": 96,
+            "meanScore": 6.085,
+            "patterns": {
+              "i-bVI-bVII-bIII": {
+                "orderedRate": 0.015,
+                "cyclicRate": 0.015
+              },
+              "i-iv-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-V-i": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-bVI-iv-V": {
+                "orderedRate": 0.005,
+                "cyclicRate": 0.005
+              }
+            }
+          }
+        },
+        {
+          "seed": 97,
+          "selected": {
+            "count": 200,
+            "uniqueSkeletons": 98,
+            "meanScore": 6.025,
+            "patterns": {
+              "i-bVI-bVII-bIII": {
+                "orderedRate": 0.01,
+                "cyclicRate": 0.015
+              },
+              "i-iv-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-V-i": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-bVI-iv-V": {
+                "orderedRate": 0.015,
+                "cyclicRate": 0.015
+              }
+            }
+          }
+        },
+        {
+          "seed": 301,
+          "selected": {
+            "count": 200,
+            "uniqueSkeletons": 96,
+            "meanScore": 6.22,
+            "patterns": {
+              "i-bVI-bVII-bIII": {
+                "orderedRate": 0.01,
+                "cyclicRate": 0.015
+              },
+              "i-iv-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-V-i": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-bVI-iv-V": {
+                "orderedRate": 0.01,
+                "cyclicRate": 0.01
+              }
+            }
+          }
+        },
+        {
+          "seed": 1009,
+          "selected": {
+            "count": 200,
+            "uniqueSkeletons": 100,
+            "meanScore": 6.12,
+            "patterns": {
+              "i-bVI-bVII-bIII": {
+                "orderedRate": 0.015,
+                "cyclicRate": 0.015
+              },
+              "i-iv-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-V-i": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-bVI-iv-V": {
+                "orderedRate": 0.01,
+                "cyclicRate": 0.01
+              }
+            }
+          }
+        },
+        {
+          "seed": 8191,
+          "selected": {
+            "count": 200,
+            "uniqueSkeletons": 99,
+            "meanScore": 6.14,
+            "patterns": {
+              "i-bVI-bVII-bIII": {
+                "orderedRate": 0.01,
+                "cyclicRate": 0.015
+              },
+              "i-iv-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-V-i": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-bVI-iv-V": {
+                "orderedRate": 0.005,
+                "cyclicRate": 0.005
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "style": "ethereal",
+      "mode": "major",
+      "raw": {
+        "count": 1000,
+        "uniqueSkeletons": 85,
+        "meanScore": 4.213,
+        "patterns": {
+          "i-bVI-bVII-bIII": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          },
+          "i-iv-bVII-bIII": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          },
+          "i-iv-V-i": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          },
+          "i-bVI-iv-V": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          }
+        }
+      },
+      "selected": {
+        "count": 1000,
+        "uniqueSkeletons": 138,
+        "meanScore": 5.144,
+        "patterns": {
+          "i-bVI-bVII-bIII": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          },
+          "i-iv-bVII-bIII": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          },
+          "i-iv-V-i": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          },
+          "i-bVI-iv-V": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          }
+        }
+      },
+      "perSeed": [
+        {
+          "seed": 17,
+          "selected": {
+            "count": 200,
+            "uniqueSkeletons": 103,
+            "meanScore": 5.1,
+            "patterns": {
+              "i-bVI-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-V-i": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-bVI-iv-V": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              }
+            }
+          }
+        },
+        {
+          "seed": 97,
+          "selected": {
+            "count": 200,
+            "uniqueSkeletons": 89,
+            "meanScore": 5.17,
+            "patterns": {
+              "i-bVI-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-V-i": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-bVI-iv-V": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              }
+            }
+          }
+        },
+        {
+          "seed": 301,
+          "selected": {
+            "count": 200,
+            "uniqueSkeletons": 97,
+            "meanScore": 5.18,
+            "patterns": {
+              "i-bVI-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-V-i": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-bVI-iv-V": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              }
+            }
+          }
+        },
+        {
+          "seed": 1009,
+          "selected": {
+            "count": 200,
+            "uniqueSkeletons": 95,
+            "meanScore": 5.12,
+            "patterns": {
+              "i-bVI-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-V-i": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-bVI-iv-V": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              }
+            }
+          }
+        },
+        {
+          "seed": 8191,
+          "selected": {
+            "count": 200,
+            "uniqueSkeletons": 93,
+            "meanScore": 5.15,
+            "patterns": {
+              "i-bVI-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-V-i": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-bVI-iv-V": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "style": "romanticDark",
+      "mode": "minor",
+      "raw": {
+        "count": 1000,
+        "uniqueSkeletons": 44,
+        "meanScore": 6.097,
+        "patterns": {
+          "i-bVI-bVII-bIII": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          },
+          "i-iv-bVII-bIII": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          },
+          "i-iv-V-i": {
+            "orderedRate": 0.039,
+            "cyclicRate": 0.039
+          },
+          "i-bVI-iv-V": {
+            "orderedRate": 0.032,
+            "cyclicRate": 0.039
+          }
+        }
+      },
+      "selected": {
+        "count": 1000,
+        "uniqueSkeletons": 68,
+        "meanScore": 7.94,
+        "patterns": {
+          "i-bVI-bVII-bIII": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          },
+          "i-iv-bVII-bIII": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          },
+          "i-iv-V-i": {
+            "orderedRate": 0.115,
+            "cyclicRate": 0.115
+          },
+          "i-bVI-iv-V": {
+            "orderedRate": 0.081,
+            "cyclicRate": 0.102
+          }
+        }
+      },
+      "perSeed": [
+        {
+          "seed": 17,
+          "selected": {
+            "count": 200,
+            "uniqueSkeletons": 54,
+            "meanScore": 7.96,
+            "patterns": {
+              "i-bVI-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-V-i": {
+                "orderedRate": 0.075,
+                "cyclicRate": 0.075
+              },
+              "i-bVI-iv-V": {
+                "orderedRate": 0.1,
+                "cyclicRate": 0.12
+              }
+            }
+          }
+        },
+        {
+          "seed": 97,
+          "selected": {
+            "count": 200,
+            "uniqueSkeletons": 52,
+            "meanScore": 7.995,
+            "patterns": {
+              "i-bVI-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-V-i": {
+                "orderedRate": 0.135,
+                "cyclicRate": 0.135
+              },
+              "i-bVI-iv-V": {
+                "orderedRate": 0.07,
+                "cyclicRate": 0.1
+              }
+            }
+          }
+        },
+        {
+          "seed": 301,
+          "selected": {
+            "count": 200,
+            "uniqueSkeletons": 56,
+            "meanScore": 7.9,
+            "patterns": {
+              "i-bVI-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-V-i": {
+                "orderedRate": 0.11,
+                "cyclicRate": 0.11
+              },
+              "i-bVI-iv-V": {
+                "orderedRate": 0.07,
+                "cyclicRate": 0.095
+              }
+            }
+          }
+        },
+        {
+          "seed": 1009,
+          "selected": {
+            "count": 200,
+            "uniqueSkeletons": 51,
+            "meanScore": 7.89,
+            "patterns": {
+              "i-bVI-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-V-i": {
+                "orderedRate": 0.13,
+                "cyclicRate": 0.13
+              },
+              "i-bVI-iv-V": {
+                "orderedRate": 0.09,
+                "cyclicRate": 0.105
+              }
+            }
+          }
+        },
+        {
+          "seed": 8191,
+          "selected": {
+            "count": 200,
+            "uniqueSkeletons": 50,
+            "meanScore": 7.955,
+            "patterns": {
+              "i-bVI-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-V-i": {
+                "orderedRate": 0.125,
+                "cyclicRate": 0.125
+              },
+              "i-bVI-iv-V": {
+                "orderedRate": 0.075,
+                "cyclicRate": 0.09
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "style": "romanticDark",
+      "mode": "major",
+      "raw": {
+        "count": 1000,
+        "uniqueSkeletons": 47,
+        "meanScore": 5.729,
+        "patterns": {
+          "i-bVI-bVII-bIII": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          },
+          "i-iv-bVII-bIII": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          },
+          "i-iv-V-i": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          },
+          "i-bVI-iv-V": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          }
+        }
+      },
+      "selected": {
+        "count": 1000,
+        "uniqueSkeletons": 100,
+        "meanScore": 7.099,
+        "patterns": {
+          "i-bVI-bVII-bIII": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          },
+          "i-iv-bVII-bIII": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          },
+          "i-iv-V-i": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          },
+          "i-bVI-iv-V": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          }
+        }
+      },
+      "perSeed": [
+        {
+          "seed": 17,
+          "selected": {
+            "count": 200,
+            "uniqueSkeletons": 75,
+            "meanScore": 7.08,
+            "patterns": {
+              "i-bVI-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-V-i": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-bVI-iv-V": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              }
+            }
+          }
+        },
+        {
+          "seed": 97,
+          "selected": {
+            "count": 200,
+            "uniqueSkeletons": 79,
+            "meanScore": 7.025,
+            "patterns": {
+              "i-bVI-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-V-i": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-bVI-iv-V": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              }
+            }
+          }
+        },
+        {
+          "seed": 301,
+          "selected": {
+            "count": 200,
+            "uniqueSkeletons": 67,
+            "meanScore": 7.12,
+            "patterns": {
+              "i-bVI-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-V-i": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-bVI-iv-V": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              }
+            }
+          }
+        },
+        {
+          "seed": 1009,
+          "selected": {
+            "count": 200,
+            "uniqueSkeletons": 72,
+            "meanScore": 7.075,
+            "patterns": {
+              "i-bVI-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-V-i": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-bVI-iv-V": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              }
+            }
+          }
+        },
+        {
+          "seed": 8191,
+          "selected": {
+            "count": 200,
+            "uniqueSkeletons": 66,
+            "meanScore": 7.195,
+            "patterns": {
+              "i-bVI-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-V-i": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-bVI-iv-V": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "style": "cinematic",
+      "mode": "minor",
+      "raw": {
+        "count": 1000,
+        "uniqueSkeletons": 90,
+        "meanScore": 4.34,
+        "patterns": {
+          "i-bVI-bVII-bIII": {
+            "orderedRate": 0.009,
+            "cyclicRate": 0.013
+          },
+          "i-iv-bVII-bIII": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          },
+          "i-iv-V-i": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          },
+          "i-bVI-iv-V": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          }
+        }
+      },
+      "selected": {
+        "count": 1000,
+        "uniqueSkeletons": 160,
+        "meanScore": 6.595,
+        "patterns": {
+          "i-bVI-bVII-bIII": {
+            "orderedRate": 0.008,
+            "cyclicRate": 0.014
+          },
+          "i-iv-bVII-bIII": {
+            "orderedRate": 0.001,
+            "cyclicRate": 0.001
+          },
+          "i-iv-V-i": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          },
+          "i-bVI-iv-V": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          }
+        }
+      },
+      "perSeed": [
+        {
+          "seed": 17,
+          "selected": {
+            "count": 200,
+            "uniqueSkeletons": 96,
+            "meanScore": 6.61,
+            "patterns": {
+              "i-bVI-bVII-bIII": {
+                "orderedRate": 0.01,
+                "cyclicRate": 0.02
+              },
+              "i-iv-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-V-i": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-bVI-iv-V": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              }
+            }
+          }
+        },
+        {
+          "seed": 97,
+          "selected": {
+            "count": 200,
+            "uniqueSkeletons": 93,
+            "meanScore": 6.505,
+            "patterns": {
+              "i-bVI-bVII-bIII": {
+                "orderedRate": 0.01,
+                "cyclicRate": 0.015
+              },
+              "i-iv-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-V-i": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-bVI-iv-V": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              }
+            }
+          }
+        },
+        {
+          "seed": 301,
+          "selected": {
+            "count": 200,
+            "uniqueSkeletons": 97,
+            "meanScore": 6.69,
+            "patterns": {
+              "i-bVI-bVII-bIII": {
+                "orderedRate": 0.015,
+                "cyclicRate": 0.015
+              },
+              "i-iv-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-V-i": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-bVI-iv-V": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              }
+            }
+          }
+        },
+        {
+          "seed": 1009,
+          "selected": {
+            "count": 200,
+            "uniqueSkeletons": 101,
+            "meanScore": 6.57,
+            "patterns": {
+              "i-bVI-bVII-bIII": {
+                "orderedRate": 0.005,
+                "cyclicRate": 0.005
+              },
+              "i-iv-bVII-bIII": {
+                "orderedRate": 0.005,
+                "cyclicRate": 0.005
+              },
+              "i-iv-V-i": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-bVI-iv-V": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              }
+            }
+          }
+        },
+        {
+          "seed": 8191,
+          "selected": {
+            "count": 200,
+            "uniqueSkeletons": 95,
+            "meanScore": 6.6,
+            "patterns": {
+              "i-bVI-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0.015
+              },
+              "i-iv-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-V-i": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-bVI-iv-V": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "style": "cinematic",
+      "mode": "major",
+      "raw": {
+        "count": 1000,
+        "uniqueSkeletons": 61,
+        "meanScore": 3.663,
+        "patterns": {
+          "i-bVI-bVII-bIII": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          },
+          "i-iv-bVII-bIII": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          },
+          "i-iv-V-i": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          },
+          "i-bVI-iv-V": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          }
+        }
+      },
+      "selected": {
+        "count": 1000,
+        "uniqueSkeletons": 121,
+        "meanScore": 4.94,
+        "patterns": {
+          "i-bVI-bVII-bIII": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          },
+          "i-iv-bVII-bIII": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          },
+          "i-iv-V-i": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          },
+          "i-bVI-iv-V": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          }
+        }
+      },
+      "perSeed": [
+        {
+          "seed": 17,
+          "selected": {
+            "count": 200,
+            "uniqueSkeletons": 74,
+            "meanScore": 5.025,
+            "patterns": {
+              "i-bVI-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-V-i": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-bVI-iv-V": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              }
+            }
+          }
+        },
+        {
+          "seed": 97,
+          "selected": {
+            "count": 200,
+            "uniqueSkeletons": 85,
+            "meanScore": 4.935,
+            "patterns": {
+              "i-bVI-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-V-i": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-bVI-iv-V": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              }
+            }
+          }
+        },
+        {
+          "seed": 301,
+          "selected": {
+            "count": 200,
+            "uniqueSkeletons": 80,
+            "meanScore": 4.815,
+            "patterns": {
+              "i-bVI-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-V-i": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-bVI-iv-V": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              }
+            }
+          }
+        },
+        {
+          "seed": 1009,
+          "selected": {
+            "count": 200,
+            "uniqueSkeletons": 77,
+            "meanScore": 5.05,
+            "patterns": {
+              "i-bVI-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-V-i": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-bVI-iv-V": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              }
+            }
+          }
+        },
+        {
+          "seed": 8191,
+          "selected": {
+            "count": 200,
+            "uniqueSkeletons": 79,
+            "meanScore": 4.875,
+            "patterns": {
+              "i-bVI-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-V-i": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-bVI-iv-V": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "style": "newWave",
+      "mode": "minor",
+      "raw": {
+        "count": 1000,
+        "uniqueSkeletons": 23,
+        "meanScore": 1.549,
+        "patterns": {
+          "i-bVI-bVII-bIII": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          },
+          "i-iv-bVII-bIII": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          },
+          "i-iv-V-i": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          },
+          "i-bVI-iv-V": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          }
+        }
+      },
+      "selected": {
+        "count": 1000,
+        "uniqueSkeletons": 56,
+        "meanScore": 5.284,
+        "patterns": {
+          "i-bVI-bVII-bIII": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          },
+          "i-iv-bVII-bIII": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          },
+          "i-iv-V-i": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          },
+          "i-bVI-iv-V": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          }
+        }
+      },
+      "perSeed": [
+        {
+          "seed": 17,
+          "selected": {
+            "count": 200,
+            "uniqueSkeletons": 51,
+            "meanScore": 5.33,
+            "patterns": {
+              "i-bVI-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-V-i": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-bVI-iv-V": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              }
+            }
+          }
+        },
+        {
+          "seed": 97,
+          "selected": {
+            "count": 200,
+            "uniqueSkeletons": 50,
+            "meanScore": 5.315,
+            "patterns": {
+              "i-bVI-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-V-i": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-bVI-iv-V": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              }
+            }
+          }
+        },
+        {
+          "seed": 301,
+          "selected": {
+            "count": 200,
+            "uniqueSkeletons": 52,
+            "meanScore": 5.32,
+            "patterns": {
+              "i-bVI-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-V-i": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-bVI-iv-V": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              }
+            }
+          }
+        },
+        {
+          "seed": 1009,
+          "selected": {
+            "count": 200,
+            "uniqueSkeletons": 52,
+            "meanScore": 5.22,
+            "patterns": {
+              "i-bVI-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-V-i": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-bVI-iv-V": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              }
+            }
+          }
+        },
+        {
+          "seed": 8191,
+          "selected": {
+            "count": 200,
+            "uniqueSkeletons": 52,
+            "meanScore": 5.235,
+            "patterns": {
+              "i-bVI-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-V-i": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-bVI-iv-V": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "style": "newWave",
+      "mode": "major",
+      "raw": {
+        "count": 1000,
+        "uniqueSkeletons": 43,
+        "meanScore": 1.067,
+        "patterns": {
+          "i-bVI-bVII-bIII": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          },
+          "i-iv-bVII-bIII": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          },
+          "i-iv-V-i": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          },
+          "i-bVI-iv-V": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          }
+        }
+      },
+      "selected": {
+        "count": 1000,
+        "uniqueSkeletons": 84,
+        "meanScore": 4.364,
+        "patterns": {
+          "i-bVI-bVII-bIII": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          },
+          "i-iv-bVII-bIII": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          },
+          "i-iv-V-i": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          },
+          "i-bVI-iv-V": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          }
+        }
+      },
+      "perSeed": [
+        {
+          "seed": 17,
+          "selected": {
+            "count": 200,
+            "uniqueSkeletons": 68,
+            "meanScore": 4.37,
+            "patterns": {
+              "i-bVI-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-V-i": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-bVI-iv-V": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              }
+            }
+          }
+        },
+        {
+          "seed": 97,
+          "selected": {
+            "count": 200,
+            "uniqueSkeletons": 66,
+            "meanScore": 4.385,
+            "patterns": {
+              "i-bVI-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-V-i": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-bVI-iv-V": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              }
+            }
+          }
+        },
+        {
+          "seed": 301,
+          "selected": {
+            "count": 200,
+            "uniqueSkeletons": 72,
+            "meanScore": 4.345,
+            "patterns": {
+              "i-bVI-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-V-i": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-bVI-iv-V": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              }
+            }
+          }
+        },
+        {
+          "seed": 1009,
+          "selected": {
+            "count": 200,
+            "uniqueSkeletons": 68,
+            "meanScore": 4.32,
+            "patterns": {
+              "i-bVI-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-V-i": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-bVI-iv-V": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              }
+            }
+          }
+        },
+        {
+          "seed": 8191,
+          "selected": {
+            "count": 200,
+            "uniqueSkeletons": 67,
+            "meanScore": 4.4,
+            "patterns": {
+              "i-bVI-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-V-i": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-bVI-iv-V": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "style": "sadcorePop",
+      "mode": "minor",
+      "raw": {
+        "count": 1000,
+        "uniqueSkeletons": 66,
+        "meanScore": 4.551,
+        "patterns": {
+          "i-bVI-bVII-bIII": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          },
+          "i-iv-bVII-bIII": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          },
+          "i-iv-V-i": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          },
+          "i-bVI-iv-V": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          }
+        }
+      },
+      "selected": {
+        "count": 1000,
+        "uniqueSkeletons": 73,
+        "meanScore": 5.863,
+        "patterns": {
+          "i-bVI-bVII-bIII": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          },
+          "i-iv-bVII-bIII": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          },
+          "i-iv-V-i": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          },
+          "i-bVI-iv-V": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          }
+        }
+      },
+      "perSeed": [
+        {
+          "seed": 17,
+          "selected": {
+            "count": 200,
+            "uniqueSkeletons": 58,
+            "meanScore": 5.865,
+            "patterns": {
+              "i-bVI-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-V-i": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-bVI-iv-V": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              }
+            }
+          }
+        },
+        {
+          "seed": 97,
+          "selected": {
+            "count": 200,
+            "uniqueSkeletons": 63,
+            "meanScore": 5.855,
+            "patterns": {
+              "i-bVI-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-V-i": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-bVI-iv-V": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              }
+            }
+          }
+        },
+        {
+          "seed": 301,
+          "selected": {
+            "count": 200,
+            "uniqueSkeletons": 57,
+            "meanScore": 5.89,
+            "patterns": {
+              "i-bVI-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-V-i": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-bVI-iv-V": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              }
+            }
+          }
+        },
+        {
+          "seed": 1009,
+          "selected": {
+            "count": 200,
+            "uniqueSkeletons": 62,
+            "meanScore": 5.84,
+            "patterns": {
+              "i-bVI-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-V-i": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-bVI-iv-V": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              }
+            }
+          }
+        },
+        {
+          "seed": 8191,
+          "selected": {
+            "count": 200,
+            "uniqueSkeletons": 64,
+            "meanScore": 5.865,
+            "patterns": {
+              "i-bVI-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-V-i": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-bVI-iv-V": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "style": "sadcorePop",
+      "mode": "major",
+      "raw": {
+        "count": 1000,
+        "uniqueSkeletons": 46,
+        "meanScore": 5.973,
+        "patterns": {
+          "i-bVI-bVII-bIII": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          },
+          "i-iv-bVII-bIII": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          },
+          "i-iv-V-i": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          },
+          "i-bVI-iv-V": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          }
+        }
+      },
+      "selected": {
+        "count": 1000,
+        "uniqueSkeletons": 76,
+        "meanScore": 7.84,
+        "patterns": {
+          "i-bVI-bVII-bIII": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          },
+          "i-iv-bVII-bIII": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          },
+          "i-iv-V-i": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          },
+          "i-bVI-iv-V": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          }
+        }
+      },
+      "perSeed": [
+        {
+          "seed": 17,
+          "selected": {
+            "count": 200,
+            "uniqueSkeletons": 52,
+            "meanScore": 7.86,
+            "patterns": {
+              "i-bVI-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-V-i": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-bVI-iv-V": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              }
+            }
+          }
+        },
+        {
+          "seed": 97,
+          "selected": {
+            "count": 200,
+            "uniqueSkeletons": 60,
+            "meanScore": 7.695,
+            "patterns": {
+              "i-bVI-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-V-i": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-bVI-iv-V": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              }
+            }
+          }
+        },
+        {
+          "seed": 301,
+          "selected": {
+            "count": 200,
+            "uniqueSkeletons": 61,
+            "meanScore": 7.77,
+            "patterns": {
+              "i-bVI-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-V-i": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-bVI-iv-V": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              }
+            }
+          }
+        },
+        {
+          "seed": 1009,
+          "selected": {
+            "count": 200,
+            "uniqueSkeletons": 60,
+            "meanScore": 7.895,
+            "patterns": {
+              "i-bVI-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-V-i": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-bVI-iv-V": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              }
+            }
+          }
+        },
+        {
+          "seed": 8191,
+          "selected": {
+            "count": 200,
+            "uniqueSkeletons": 61,
+            "meanScore": 7.98,
+            "patterns": {
+              "i-bVI-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-V-i": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-bVI-iv-V": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "style": "ritual",
+      "mode": "minor",
+      "raw": {
+        "count": 1000,
+        "uniqueSkeletons": 33,
+        "meanScore": 4.111,
+        "patterns": {
+          "i-bVI-bVII-bIII": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          },
+          "i-iv-bVII-bIII": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          },
+          "i-iv-V-i": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          },
+          "i-bVI-iv-V": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          }
+        }
+      },
+      "selected": {
+        "count": 1000,
+        "uniqueSkeletons": 42,
+        "meanScore": 6.296,
+        "patterns": {
+          "i-bVI-bVII-bIII": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          },
+          "i-iv-bVII-bIII": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          },
+          "i-iv-V-i": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          },
+          "i-bVI-iv-V": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          }
+        }
+      },
+      "perSeed": [
+        {
+          "seed": 17,
+          "selected": {
+            "count": 200,
+            "uniqueSkeletons": 32,
+            "meanScore": 6.295,
+            "patterns": {
+              "i-bVI-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-V-i": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-bVI-iv-V": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              }
+            }
+          }
+        },
+        {
+          "seed": 97,
+          "selected": {
+            "count": 200,
+            "uniqueSkeletons": 32,
+            "meanScore": 6.315,
+            "patterns": {
+              "i-bVI-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-V-i": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-bVI-iv-V": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              }
+            }
+          }
+        },
+        {
+          "seed": 301,
+          "selected": {
+            "count": 200,
+            "uniqueSkeletons": 33,
+            "meanScore": 6.32,
+            "patterns": {
+              "i-bVI-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-V-i": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-bVI-iv-V": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              }
+            }
+          }
+        },
+        {
+          "seed": 1009,
+          "selected": {
+            "count": 200,
+            "uniqueSkeletons": 34,
+            "meanScore": 6.295,
+            "patterns": {
+              "i-bVI-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-V-i": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-bVI-iv-V": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              }
+            }
+          }
+        },
+        {
+          "seed": 8191,
+          "selected": {
+            "count": 200,
+            "uniqueSkeletons": 25,
+            "meanScore": 6.255,
+            "patterns": {
+              "i-bVI-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-V-i": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-bVI-iv-V": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "style": "ritual",
+      "mode": "major",
+      "raw": {
+        "count": 1000,
+        "uniqueSkeletons": 21,
+        "meanScore": 2.531,
+        "patterns": {
+          "i-bVI-bVII-bIII": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          },
+          "i-iv-bVII-bIII": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          },
+          "i-iv-V-i": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          },
+          "i-bVI-iv-V": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          }
+        }
+      },
+      "selected": {
+        "count": 1000,
+        "uniqueSkeletons": 28,
+        "meanScore": 5.934,
+        "patterns": {
+          "i-bVI-bVII-bIII": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          },
+          "i-iv-bVII-bIII": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          },
+          "i-iv-V-i": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          },
+          "i-bVI-iv-V": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          }
+        }
+      },
+      "perSeed": [
+        {
+          "seed": 17,
+          "selected": {
+            "count": 200,
+            "uniqueSkeletons": 26,
+            "meanScore": 5.84,
+            "patterns": {
+              "i-bVI-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-V-i": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-bVI-iv-V": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              }
+            }
+          }
+        },
+        {
+          "seed": 97,
+          "selected": {
+            "count": 200,
+            "uniqueSkeletons": 26,
+            "meanScore": 5.95,
+            "patterns": {
+              "i-bVI-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-V-i": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-bVI-iv-V": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              }
+            }
+          }
+        },
+        {
+          "seed": 301,
+          "selected": {
+            "count": 200,
+            "uniqueSkeletons": 25,
+            "meanScore": 6.06,
+            "patterns": {
+              "i-bVI-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-V-i": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-bVI-iv-V": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              }
+            }
+          }
+        },
+        {
+          "seed": 1009,
+          "selected": {
+            "count": 200,
+            "uniqueSkeletons": 26,
+            "meanScore": 5.85,
+            "patterns": {
+              "i-bVI-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-V-i": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-bVI-iv-V": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              }
+            }
+          }
+        },
+        {
+          "seed": 8191,
+          "selected": {
+            "count": 200,
+            "uniqueSkeletons": 24,
+            "meanScore": 5.97,
+            "patterns": {
+              "i-bVI-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-V-i": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-bVI-iv-V": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "style": "finale",
+      "mode": "minor",
+      "raw": {
+        "count": 1000,
+        "uniqueSkeletons": 33,
+        "meanScore": 5.269,
+        "patterns": {
+          "i-bVI-bVII-bIII": {
+            "orderedRate": 0.02,
+            "cyclicRate": 0.02
+          },
+          "i-iv-bVII-bIII": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          },
+          "i-iv-V-i": {
+            "orderedRate": 0.019,
+            "cyclicRate": 0.035
+          },
+          "i-bVI-iv-V": {
+            "orderedRate": 0,
+            "cyclicRate": 0.05
+          }
+        }
+      },
+      "selected": {
+        "count": 1000,
+        "uniqueSkeletons": 48,
+        "meanScore": 7.72,
+        "patterns": {
+          "i-bVI-bVII-bIII": {
+            "orderedRate": 0.021,
+            "cyclicRate": 0.021
+          },
+          "i-iv-bVII-bIII": {
+            "orderedRate": 0.004,
+            "cyclicRate": 0.004
+          },
+          "i-iv-V-i": {
+            "orderedRate": 0.046,
+            "cyclicRate": 0.086
+          },
+          "i-bVI-iv-V": {
+            "orderedRate": 0.001,
+            "cyclicRate": 0.096
+          }
+        }
+      },
+      "perSeed": [
+        {
+          "seed": 17,
+          "selected": {
+            "count": 200,
+            "uniqueSkeletons": 39,
+            "meanScore": 7.64,
+            "patterns": {
+              "i-bVI-bVII-bIII": {
+                "orderedRate": 0.02,
+                "cyclicRate": 0.02
+              },
+              "i-iv-bVII-bIII": {
+                "orderedRate": 0.005,
+                "cyclicRate": 0.005
+              },
+              "i-iv-V-i": {
+                "orderedRate": 0.05,
+                "cyclicRate": 0.07
+              },
+              "i-bVI-iv-V": {
+                "orderedRate": 0,
+                "cyclicRate": 0.065
+              }
+            }
+          }
+        },
+        {
+          "seed": 97,
+          "selected": {
+            "count": 200,
+            "uniqueSkeletons": 40,
+            "meanScore": 7.725,
+            "patterns": {
+              "i-bVI-bVII-bIII": {
+                "orderedRate": 0.015,
+                "cyclicRate": 0.015
+              },
+              "i-iv-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-V-i": {
+                "orderedRate": 0.065,
+                "cyclicRate": 0.12
+              },
+              "i-bVI-iv-V": {
+                "orderedRate": 0,
+                "cyclicRate": 0.11
+              }
+            }
+          }
+        },
+        {
+          "seed": 301,
+          "selected": {
+            "count": 200,
+            "uniqueSkeletons": 42,
+            "meanScore": 7.75,
+            "patterns": {
+              "i-bVI-bVII-bIII": {
+                "orderedRate": 0.025,
+                "cyclicRate": 0.025
+              },
+              "i-iv-bVII-bIII": {
+                "orderedRate": 0.01,
+                "cyclicRate": 0.01
+              },
+              "i-iv-V-i": {
+                "orderedRate": 0.04,
+                "cyclicRate": 0.08
+              },
+              "i-bVI-iv-V": {
+                "orderedRate": 0,
+                "cyclicRate": 0.07
+              }
+            }
+          }
+        },
+        {
+          "seed": 1009,
+          "selected": {
+            "count": 200,
+            "uniqueSkeletons": 42,
+            "meanScore": 7.74,
+            "patterns": {
+              "i-bVI-bVII-bIII": {
+                "orderedRate": 0.02,
+                "cyclicRate": 0.02
+              },
+              "i-iv-bVII-bIII": {
+                "orderedRate": 0.005,
+                "cyclicRate": 0.005
+              },
+              "i-iv-V-i": {
+                "orderedRate": 0.035,
+                "cyclicRate": 0.07
+              },
+              "i-bVI-iv-V": {
+                "orderedRate": 0,
+                "cyclicRate": 0.11
+              }
+            }
+          }
+        },
+        {
+          "seed": 8191,
+          "selected": {
+            "count": 200,
+            "uniqueSkeletons": 40,
+            "meanScore": 7.745,
+            "patterns": {
+              "i-bVI-bVII-bIII": {
+                "orderedRate": 0.025,
+                "cyclicRate": 0.025
+              },
+              "i-iv-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-V-i": {
+                "orderedRate": 0.04,
+                "cyclicRate": 0.09
+              },
+              "i-bVI-iv-V": {
+                "orderedRate": 0.005,
+                "cyclicRate": 0.125
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "style": "finale",
+      "mode": "major",
+      "raw": {
+        "count": 1000,
+        "uniqueSkeletons": 102,
+        "meanScore": 2.947,
+        "patterns": {
+          "i-bVI-bVII-bIII": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          },
+          "i-iv-bVII-bIII": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          },
+          "i-iv-V-i": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          },
+          "i-bVI-iv-V": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          }
+        }
+      },
+      "selected": {
+        "count": 1000,
+        "uniqueSkeletons": 138,
+        "meanScore": 5.395,
+        "patterns": {
+          "i-bVI-bVII-bIII": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          },
+          "i-iv-bVII-bIII": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          },
+          "i-iv-V-i": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          },
+          "i-bVI-iv-V": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          }
+        }
+      },
+      "perSeed": [
+        {
+          "seed": 17,
+          "selected": {
+            "count": 200,
+            "uniqueSkeletons": 89,
+            "meanScore": 5.345,
+            "patterns": {
+              "i-bVI-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-V-i": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-bVI-iv-V": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              }
+            }
+          }
+        },
+        {
+          "seed": 97,
+          "selected": {
+            "count": 200,
+            "uniqueSkeletons": 84,
+            "meanScore": 5.36,
+            "patterns": {
+              "i-bVI-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-V-i": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-bVI-iv-V": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              }
+            }
+          }
+        },
+        {
+          "seed": 301,
+          "selected": {
+            "count": 200,
+            "uniqueSkeletons": 80,
+            "meanScore": 5.54,
+            "patterns": {
+              "i-bVI-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-V-i": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-bVI-iv-V": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              }
+            }
+          }
+        },
+        {
+          "seed": 1009,
+          "selected": {
+            "count": 200,
+            "uniqueSkeletons": 91,
+            "meanScore": 5.32,
+            "patterns": {
+              "i-bVI-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-V-i": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-bVI-iv-V": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              }
+            }
+          }
+        },
+        {
+          "seed": 8191,
+          "selected": {
+            "count": 200,
+            "uniqueSkeletons": 83,
+            "meanScore": 5.41,
+            "patterns": {
+              "i-bVI-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-V-i": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-bVI-iv-V": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "style": "cool",
+      "mode": "minor",
+      "raw": {
+        "count": 1000,
+        "uniqueSkeletons": 33,
+        "meanScore": 3.74,
+        "patterns": {
+          "i-bVI-bVII-bIII": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          },
+          "i-iv-bVII-bIII": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          },
+          "i-iv-V-i": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          },
+          "i-bVI-iv-V": {
+            "orderedRate": 0.014,
+            "cyclicRate": 0.014
+          }
+        }
+      },
+      "selected": {
+        "count": 1000,
+        "uniqueSkeletons": 53,
+        "meanScore": 6.363,
+        "patterns": {
+          "i-bVI-bVII-bIII": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          },
+          "i-iv-bVII-bIII": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          },
+          "i-iv-V-i": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          },
+          "i-bVI-iv-V": {
+            "orderedRate": 0.041,
+            "cyclicRate": 0.041
+          }
+        }
+      },
+      "perSeed": [
+        {
+          "seed": 17,
+          "selected": {
+            "count": 200,
+            "uniqueSkeletons": 50,
+            "meanScore": 6.325,
+            "patterns": {
+              "i-bVI-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-V-i": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-bVI-iv-V": {
+                "orderedRate": 0.05,
+                "cyclicRate": 0.05
+              }
+            }
+          }
+        },
+        {
+          "seed": 97,
+          "selected": {
+            "count": 200,
+            "uniqueSkeletons": 50,
+            "meanScore": 6.45,
+            "patterns": {
+              "i-bVI-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-V-i": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-bVI-iv-V": {
+                "orderedRate": 0.04,
+                "cyclicRate": 0.04
+              }
+            }
+          }
+        },
+        {
+          "seed": 301,
+          "selected": {
+            "count": 200,
+            "uniqueSkeletons": 50,
+            "meanScore": 6.29,
+            "patterns": {
+              "i-bVI-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-V-i": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-bVI-iv-V": {
+                "orderedRate": 0.025,
+                "cyclicRate": 0.025
+              }
+            }
+          }
+        },
+        {
+          "seed": 1009,
+          "selected": {
+            "count": 200,
+            "uniqueSkeletons": 49,
+            "meanScore": 6.45,
+            "patterns": {
+              "i-bVI-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-V-i": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-bVI-iv-V": {
+                "orderedRate": 0.045,
+                "cyclicRate": 0.045
+              }
+            }
+          }
+        },
+        {
+          "seed": 8191,
+          "selected": {
+            "count": 200,
+            "uniqueSkeletons": 48,
+            "meanScore": 6.3,
+            "patterns": {
+              "i-bVI-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-V-i": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-bVI-iv-V": {
+                "orderedRate": 0.045,
+                "cyclicRate": 0.045
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "style": "cool",
+      "mode": "major",
+      "raw": {
+        "count": 1000,
+        "uniqueSkeletons": 71,
+        "meanScore": 3.753,
+        "patterns": {
+          "i-bVI-bVII-bIII": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          },
+          "i-iv-bVII-bIII": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          },
+          "i-iv-V-i": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          },
+          "i-bVI-iv-V": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          }
+        }
+      },
+      "selected": {
+        "count": 1000,
+        "uniqueSkeletons": 190,
+        "meanScore": 5.162,
+        "patterns": {
+          "i-bVI-bVII-bIII": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          },
+          "i-iv-bVII-bIII": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          },
+          "i-iv-V-i": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          },
+          "i-bVI-iv-V": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          }
+        }
+      },
+      "perSeed": [
+        {
+          "seed": 17,
+          "selected": {
+            "count": 200,
+            "uniqueSkeletons": 121,
+            "meanScore": 5.095,
+            "patterns": {
+              "i-bVI-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-V-i": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-bVI-iv-V": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              }
+            }
+          }
+        },
+        {
+          "seed": 97,
+          "selected": {
+            "count": 200,
+            "uniqueSkeletons": 123,
+            "meanScore": 5.21,
+            "patterns": {
+              "i-bVI-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-V-i": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-bVI-iv-V": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              }
+            }
+          }
+        },
+        {
+          "seed": 301,
+          "selected": {
+            "count": 200,
+            "uniqueSkeletons": 113,
+            "meanScore": 5.185,
+            "patterns": {
+              "i-bVI-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-V-i": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-bVI-iv-V": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              }
+            }
+          }
+        },
+        {
+          "seed": 1009,
+          "selected": {
+            "count": 200,
+            "uniqueSkeletons": 120,
+            "meanScore": 5.155,
+            "patterns": {
+              "i-bVI-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-V-i": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-bVI-iv-V": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              }
+            }
+          }
+        },
+        {
+          "seed": 8191,
+          "selected": {
+            "count": 200,
+            "uniqueSkeletons": 111,
+            "meanScore": 5.165,
+            "patterns": {
+              "i-bVI-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-V-i": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-bVI-iv-V": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "style": "tripHop",
+      "mode": "minor",
+      "raw": {
+        "count": 1000,
+        "uniqueSkeletons": 24,
+        "meanScore": 3.417,
+        "patterns": {
+          "i-bVI-bVII-bIII": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          },
+          "i-iv-bVII-bIII": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          },
+          "i-iv-V-i": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          },
+          "i-bVI-iv-V": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          }
+        }
+      },
+      "selected": {
+        "count": 1000,
+        "uniqueSkeletons": 27,
+        "meanScore": 6.34,
+        "patterns": {
+          "i-bVI-bVII-bIII": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          },
+          "i-iv-bVII-bIII": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          },
+          "i-iv-V-i": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          },
+          "i-bVI-iv-V": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          }
+        }
+      },
+      "perSeed": [
+        {
+          "seed": 17,
+          "selected": {
+            "count": 200,
+            "uniqueSkeletons": 26,
+            "meanScore": 6.405,
+            "patterns": {
+              "i-bVI-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-V-i": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-bVI-iv-V": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              }
+            }
+          }
+        },
+        {
+          "seed": 97,
+          "selected": {
+            "count": 200,
+            "uniqueSkeletons": 26,
+            "meanScore": 6.43,
+            "patterns": {
+              "i-bVI-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-V-i": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-bVI-iv-V": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              }
+            }
+          }
+        },
+        {
+          "seed": 301,
+          "selected": {
+            "count": 200,
+            "uniqueSkeletons": 27,
+            "meanScore": 6.26,
+            "patterns": {
+              "i-bVI-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-V-i": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-bVI-iv-V": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              }
+            }
+          }
+        },
+        {
+          "seed": 1009,
+          "selected": {
+            "count": 200,
+            "uniqueSkeletons": 26,
+            "meanScore": 6.28,
+            "patterns": {
+              "i-bVI-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-V-i": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-bVI-iv-V": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              }
+            }
+          }
+        },
+        {
+          "seed": 8191,
+          "selected": {
+            "count": 200,
+            "uniqueSkeletons": 26,
+            "meanScore": 6.325,
+            "patterns": {
+              "i-bVI-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-V-i": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-bVI-iv-V": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "style": "tripHop",
+      "mode": "major",
+      "raw": {
+        "count": 1000,
+        "uniqueSkeletons": 80,
+        "meanScore": 3.514,
+        "patterns": {
+          "i-bVI-bVII-bIII": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          },
+          "i-iv-bVII-bIII": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          },
+          "i-iv-V-i": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          },
+          "i-bVI-iv-V": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          }
+        }
+      },
+      "selected": {
+        "count": 1000,
+        "uniqueSkeletons": 63,
+        "meanScore": 5.326,
+        "patterns": {
+          "i-bVI-bVII-bIII": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          },
+          "i-iv-bVII-bIII": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          },
+          "i-iv-V-i": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          },
+          "i-bVI-iv-V": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          }
+        }
+      },
+      "perSeed": [
+        {
+          "seed": 17,
+          "selected": {
+            "count": 200,
+            "uniqueSkeletons": 50,
+            "meanScore": 5.325,
+            "patterns": {
+              "i-bVI-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-V-i": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-bVI-iv-V": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              }
+            }
+          }
+        },
+        {
+          "seed": 97,
+          "selected": {
+            "count": 200,
+            "uniqueSkeletons": 57,
+            "meanScore": 5.35,
+            "patterns": {
+              "i-bVI-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-V-i": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-bVI-iv-V": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              }
+            }
+          }
+        },
+        {
+          "seed": 301,
+          "selected": {
+            "count": 200,
+            "uniqueSkeletons": 52,
+            "meanScore": 5.34,
+            "patterns": {
+              "i-bVI-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-V-i": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-bVI-iv-V": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              }
+            }
+          }
+        },
+        {
+          "seed": 1009,
+          "selected": {
+            "count": 200,
+            "uniqueSkeletons": 54,
+            "meanScore": 5.305,
+            "patterns": {
+              "i-bVI-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-V-i": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-bVI-iv-V": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              }
+            }
+          }
+        },
+        {
+          "seed": 8191,
+          "selected": {
+            "count": 200,
+            "uniqueSkeletons": 53,
+            "meanScore": 5.31,
+            "patterns": {
+              "i-bVI-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-V-i": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-bVI-iv-V": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "style": "neoclassical",
+      "mode": "minor",
+      "raw": {
+        "count": 1000,
+        "uniqueSkeletons": 24,
+        "meanScore": 6.848,
+        "patterns": {
+          "i-bVI-bVII-bIII": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          },
+          "i-iv-bVII-bIII": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          },
+          "i-iv-V-i": {
+            "orderedRate": 0.108,
+            "cyclicRate": 0.108
+          },
+          "i-bVI-iv-V": {
+            "orderedRate": 0,
+            "cyclicRate": 0.015
+          }
+        }
+      },
+      "selected": {
+        "count": 1000,
+        "uniqueSkeletons": 49,
+        "meanScore": 8.454,
+        "patterns": {
+          "i-bVI-bVII-bIII": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          },
+          "i-iv-bVII-bIII": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          },
+          "i-iv-V-i": {
+            "orderedRate": 0.061,
+            "cyclicRate": 0.061
+          },
+          "i-bVI-iv-V": {
+            "orderedRate": 0.01,
+            "cyclicRate": 0.031
+          }
+        }
+      },
+      "perSeed": [
+        {
+          "seed": 17,
+          "selected": {
+            "count": 200,
+            "uniqueSkeletons": 41,
+            "meanScore": 8.42,
+            "patterns": {
+              "i-bVI-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-V-i": {
+                "orderedRate": 0.05,
+                "cyclicRate": 0.05
+              },
+              "i-bVI-iv-V": {
+                "orderedRate": 0.02,
+                "cyclicRate": 0.035
+              }
+            }
+          }
+        },
+        {
+          "seed": 97,
+          "selected": {
+            "count": 200,
+            "uniqueSkeletons": 41,
+            "meanScore": 8.495,
+            "patterns": {
+              "i-bVI-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-V-i": {
+                "orderedRate": 0.06,
+                "cyclicRate": 0.06
+              },
+              "i-bVI-iv-V": {
+                "orderedRate": 0.005,
+                "cyclicRate": 0.015
+              }
+            }
+          }
+        },
+        {
+          "seed": 301,
+          "selected": {
+            "count": 200,
+            "uniqueSkeletons": 41,
+            "meanScore": 8.4,
+            "patterns": {
+              "i-bVI-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-V-i": {
+                "orderedRate": 0.08,
+                "cyclicRate": 0.08
+              },
+              "i-bVI-iv-V": {
+                "orderedRate": 0.01,
+                "cyclicRate": 0.045
+              }
+            }
+          }
+        },
+        {
+          "seed": 1009,
+          "selected": {
+            "count": 200,
+            "uniqueSkeletons": 40,
+            "meanScore": 8.53,
+            "patterns": {
+              "i-bVI-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-V-i": {
+                "orderedRate": 0.06,
+                "cyclicRate": 0.06
+              },
+              "i-bVI-iv-V": {
+                "orderedRate": 0.005,
+                "cyclicRate": 0.025
+              }
+            }
+          }
+        },
+        {
+          "seed": 8191,
+          "selected": {
+            "count": 200,
+            "uniqueSkeletons": 39,
+            "meanScore": 8.425,
+            "patterns": {
+              "i-bVI-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-V-i": {
+                "orderedRate": 0.055,
+                "cyclicRate": 0.055
+              },
+              "i-bVI-iv-V": {
+                "orderedRate": 0.01,
+                "cyclicRate": 0.035
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "style": "neoclassical",
+      "mode": "major",
+      "raw": {
+        "count": 1000,
+        "uniqueSkeletons": 22,
+        "meanScore": 5.348,
+        "patterns": {
+          "i-bVI-bVII-bIII": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          },
+          "i-iv-bVII-bIII": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          },
+          "i-iv-V-i": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          },
+          "i-bVI-iv-V": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          }
+        }
+      },
+      "selected": {
+        "count": 1000,
+        "uniqueSkeletons": 55,
+        "meanScore": 7.148,
+        "patterns": {
+          "i-bVI-bVII-bIII": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          },
+          "i-iv-bVII-bIII": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          },
+          "i-iv-V-i": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          },
+          "i-bVI-iv-V": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          }
+        }
+      },
+      "perSeed": [
+        {
+          "seed": 17,
+          "selected": {
+            "count": 200,
+            "uniqueSkeletons": 41,
+            "meanScore": 7.145,
+            "patterns": {
+              "i-bVI-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-V-i": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-bVI-iv-V": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              }
+            }
+          }
+        },
+        {
+          "seed": 97,
+          "selected": {
+            "count": 200,
+            "uniqueSkeletons": 40,
+            "meanScore": 7.095,
+            "patterns": {
+              "i-bVI-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-V-i": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-bVI-iv-V": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              }
+            }
+          }
+        },
+        {
+          "seed": 301,
+          "selected": {
+            "count": 200,
+            "uniqueSkeletons": 41,
+            "meanScore": 7.16,
+            "patterns": {
+              "i-bVI-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-V-i": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-bVI-iv-V": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              }
+            }
+          }
+        },
+        {
+          "seed": 1009,
+          "selected": {
+            "count": 200,
+            "uniqueSkeletons": 44,
+            "meanScore": 7.155,
+            "patterns": {
+              "i-bVI-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-V-i": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-bVI-iv-V": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              }
+            }
+          }
+        },
+        {
+          "seed": 8191,
+          "selected": {
+            "count": 200,
+            "uniqueSkeletons": 45,
+            "meanScore": 7.185,
+            "patterns": {
+              "i-bVI-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-V-i": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-bVI-iv-V": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "style": "minimalism",
+      "mode": "minor",
+      "raw": {
+        "count": 1000,
+        "uniqueSkeletons": 36,
+        "meanScore": 1.241,
+        "patterns": {
+          "i-bVI-bVII-bIII": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          },
+          "i-iv-bVII-bIII": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          },
+          "i-iv-V-i": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          },
+          "i-bVI-iv-V": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          }
+        }
+      },
+      "selected": {
+        "count": 1000,
+        "uniqueSkeletons": 58,
+        "meanScore": 5.745,
+        "patterns": {
+          "i-bVI-bVII-bIII": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          },
+          "i-iv-bVII-bIII": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          },
+          "i-iv-V-i": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          },
+          "i-bVI-iv-V": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          }
+        }
+      },
+      "perSeed": [
+        {
+          "seed": 17,
+          "selected": {
+            "count": 200,
+            "uniqueSkeletons": 41,
+            "meanScore": 5.685,
+            "patterns": {
+              "i-bVI-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-V-i": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-bVI-iv-V": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              }
+            }
+          }
+        },
+        {
+          "seed": 97,
+          "selected": {
+            "count": 200,
+            "uniqueSkeletons": 45,
+            "meanScore": 5.805,
+            "patterns": {
+              "i-bVI-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-V-i": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-bVI-iv-V": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              }
+            }
+          }
+        },
+        {
+          "seed": 301,
+          "selected": {
+            "count": 200,
+            "uniqueSkeletons": 43,
+            "meanScore": 5.675,
+            "patterns": {
+              "i-bVI-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-V-i": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-bVI-iv-V": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              }
+            }
+          }
+        },
+        {
+          "seed": 1009,
+          "selected": {
+            "count": 200,
+            "uniqueSkeletons": 44,
+            "meanScore": 5.75,
+            "patterns": {
+              "i-bVI-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-V-i": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-bVI-iv-V": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              }
+            }
+          }
+        },
+        {
+          "seed": 8191,
+          "selected": {
+            "count": 200,
+            "uniqueSkeletons": 39,
+            "meanScore": 5.81,
+            "patterns": {
+              "i-bVI-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-V-i": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-bVI-iv-V": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "style": "minimalism",
+      "mode": "major",
+      "raw": {
+        "count": 1000,
+        "uniqueSkeletons": 40,
+        "meanScore": 1.028,
+        "patterns": {
+          "i-bVI-bVII-bIII": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          },
+          "i-iv-bVII-bIII": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          },
+          "i-iv-V-i": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          },
+          "i-bVI-iv-V": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          }
+        }
+      },
+      "selected": {
+        "count": 1000,
+        "uniqueSkeletons": 70,
+        "meanScore": 4.947,
+        "patterns": {
+          "i-bVI-bVII-bIII": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          },
+          "i-iv-bVII-bIII": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          },
+          "i-iv-V-i": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          },
+          "i-bVI-iv-V": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          }
+        }
+      },
+      "perSeed": [
+        {
+          "seed": 17,
+          "selected": {
+            "count": 200,
+            "uniqueSkeletons": 48,
+            "meanScore": 4.97,
+            "patterns": {
+              "i-bVI-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-V-i": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-bVI-iv-V": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              }
+            }
+          }
+        },
+        {
+          "seed": 97,
+          "selected": {
+            "count": 200,
+            "uniqueSkeletons": 51,
+            "meanScore": 4.92,
+            "patterns": {
+              "i-bVI-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-V-i": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-bVI-iv-V": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              }
+            }
+          }
+        },
+        {
+          "seed": 301,
+          "selected": {
+            "count": 200,
+            "uniqueSkeletons": 50,
+            "meanScore": 4.945,
+            "patterns": {
+              "i-bVI-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-V-i": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-bVI-iv-V": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              }
+            }
+          }
+        },
+        {
+          "seed": 1009,
+          "selected": {
+            "count": 200,
+            "uniqueSkeletons": 54,
+            "meanScore": 5.01,
+            "patterns": {
+              "i-bVI-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-V-i": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-bVI-iv-V": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              }
+            }
+          }
+        },
+        {
+          "seed": 8191,
+          "selected": {
+            "count": 200,
+            "uniqueSkeletons": 52,
+            "meanScore": 4.89,
+            "patterns": {
+              "i-bVI-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-V-i": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-bVI-iv-V": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "style": "jChanson",
+      "mode": "minor",
+      "raw": {
+        "count": 1000,
+        "uniqueSkeletons": 25,
+        "meanScore": 6.875,
+        "patterns": {
+          "i-bVI-bVII-bIII": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          },
+          "i-iv-bVII-bIII": {
+            "orderedRate": 0.057,
+            "cyclicRate": 0.057
+          },
+          "i-iv-V-i": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          },
+          "i-bVI-iv-V": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          }
+        }
+      },
+      "selected": {
+        "count": 1000,
+        "uniqueSkeletons": 73,
+        "meanScore": 7.974,
+        "patterns": {
+          "i-bVI-bVII-bIII": {
+            "orderedRate": 0.006,
+            "cyclicRate": 0.006
+          },
+          "i-iv-bVII-bIII": {
+            "orderedRate": 0.027,
+            "cyclicRate": 0.027
+          },
+          "i-iv-V-i": {
+            "orderedRate": 0.04,
+            "cyclicRate": 0.04
+          },
+          "i-bVI-iv-V": {
+            "orderedRate": 0.014,
+            "cyclicRate": 0.014
+          }
+        }
+      },
+      "perSeed": [
+        {
+          "seed": 17,
+          "selected": {
+            "count": 200,
+            "uniqueSkeletons": 55,
+            "meanScore": 7.935,
+            "patterns": {
+              "i-bVI-bVII-bIII": {
+                "orderedRate": 0.005,
+                "cyclicRate": 0.005
+              },
+              "i-iv-bVII-bIII": {
+                "orderedRate": 0.035,
+                "cyclicRate": 0.035
+              },
+              "i-iv-V-i": {
+                "orderedRate": 0.03,
+                "cyclicRate": 0.03
+              },
+              "i-bVI-iv-V": {
+                "orderedRate": 0.015,
+                "cyclicRate": 0.015
+              }
+            }
+          }
+        },
+        {
+          "seed": 97,
+          "selected": {
+            "count": 200,
+            "uniqueSkeletons": 52,
+            "meanScore": 7.87,
+            "patterns": {
+              "i-bVI-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-bVII-bIII": {
+                "orderedRate": 0.02,
+                "cyclicRate": 0.02
+              },
+              "i-iv-V-i": {
+                "orderedRate": 0.05,
+                "cyclicRate": 0.05
+              },
+              "i-bVI-iv-V": {
+                "orderedRate": 0.015,
+                "cyclicRate": 0.015
+              }
+            }
+          }
+        },
+        {
+          "seed": 301,
+          "selected": {
+            "count": 200,
+            "uniqueSkeletons": 47,
+            "meanScore": 7.915,
+            "patterns": {
+              "i-bVI-bVII-bIII": {
+                "orderedRate": 0.01,
+                "cyclicRate": 0.01
+              },
+              "i-iv-bVII-bIII": {
+                "orderedRate": 0.03,
+                "cyclicRate": 0.03
+              },
+              "i-iv-V-i": {
+                "orderedRate": 0.04,
+                "cyclicRate": 0.04
+              },
+              "i-bVI-iv-V": {
+                "orderedRate": 0.015,
+                "cyclicRate": 0.015
+              }
+            }
+          }
+        },
+        {
+          "seed": 1009,
+          "selected": {
+            "count": 200,
+            "uniqueSkeletons": 51,
+            "meanScore": 8.055,
+            "patterns": {
+              "i-bVI-bVII-bIII": {
+                "orderedRate": 0.015,
+                "cyclicRate": 0.015
+              },
+              "i-iv-bVII-bIII": {
+                "orderedRate": 0.02,
+                "cyclicRate": 0.02
+              },
+              "i-iv-V-i": {
+                "orderedRate": 0.035,
+                "cyclicRate": 0.035
+              },
+              "i-bVI-iv-V": {
+                "orderedRate": 0.01,
+                "cyclicRate": 0.01
+              }
+            }
+          }
+        },
+        {
+          "seed": 8191,
+          "selected": {
+            "count": 200,
+            "uniqueSkeletons": 47,
+            "meanScore": 8.095,
+            "patterns": {
+              "i-bVI-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-bVII-bIII": {
+                "orderedRate": 0.03,
+                "cyclicRate": 0.03
+              },
+              "i-iv-V-i": {
+                "orderedRate": 0.045,
+                "cyclicRate": 0.045
+              },
+              "i-bVI-iv-V": {
+                "orderedRate": 0.015,
+                "cyclicRate": 0.015
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "style": "jChanson",
+      "mode": "major",
+      "raw": {
+        "count": 1000,
+        "uniqueSkeletons": 9,
+        "meanScore": 4.11,
+        "patterns": {
+          "i-bVI-bVII-bIII": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          },
+          "i-iv-bVII-bIII": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          },
+          "i-iv-V-i": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          },
+          "i-bVI-iv-V": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          }
+        }
+      },
+      "selected": {
+        "count": 1000,
+        "uniqueSkeletons": 17,
+        "meanScore": 5.927,
+        "patterns": {
+          "i-bVI-bVII-bIII": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          },
+          "i-iv-bVII-bIII": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          },
+          "i-iv-V-i": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          },
+          "i-bVI-iv-V": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          }
+        }
+      },
+      "perSeed": [
+        {
+          "seed": 17,
+          "selected": {
+            "count": 200,
+            "uniqueSkeletons": 17,
+            "meanScore": 5.915,
+            "patterns": {
+              "i-bVI-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-V-i": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-bVI-iv-V": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              }
+            }
+          }
+        },
+        {
+          "seed": 97,
+          "selected": {
+            "count": 200,
+            "uniqueSkeletons": 16,
+            "meanScore": 5.925,
+            "patterns": {
+              "i-bVI-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-V-i": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-bVI-iv-V": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              }
+            }
+          }
+        },
+        {
+          "seed": 301,
+          "selected": {
+            "count": 200,
+            "uniqueSkeletons": 16,
+            "meanScore": 5.91,
+            "patterns": {
+              "i-bVI-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-V-i": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-bVI-iv-V": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              }
+            }
+          }
+        },
+        {
+          "seed": 1009,
+          "selected": {
+            "count": 200,
+            "uniqueSkeletons": 17,
+            "meanScore": 6.06,
+            "patterns": {
+              "i-bVI-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-V-i": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-bVI-iv-V": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              }
+            }
+          }
+        },
+        {
+          "seed": 8191,
+          "selected": {
+            "count": 200,
+            "uniqueSkeletons": 16,
+            "meanScore": 5.825,
+            "patterns": {
+              "i-bVI-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-V-i": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-bVI-iv-V": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "style": "hiNRG",
+      "mode": "minor",
+      "raw": {
+        "count": 1000,
+        "uniqueSkeletons": 19,
+        "meanScore": 5.881,
+        "patterns": {
+          "i-bVI-bVII-bIII": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          },
+          "i-iv-bVII-bIII": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          },
+          "i-iv-V-i": {
+            "orderedRate": 0.06,
+            "cyclicRate": 0.06
+          },
+          "i-bVI-iv-V": {
+            "orderedRate": 0.041,
+            "cyclicRate": 0.041
+          }
+        }
+      },
+      "selected": {
+        "count": 1000,
+        "uniqueSkeletons": 42,
+        "meanScore": 7.877,
+        "patterns": {
+          "i-bVI-bVII-bIII": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          },
+          "i-iv-bVII-bIII": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          },
+          "i-iv-V-i": {
+            "orderedRate": 0.03,
+            "cyclicRate": 0.03
+          },
+          "i-bVI-iv-V": {
+            "orderedRate": 0.049,
+            "cyclicRate": 0.049
+          }
+        }
+      },
+      "perSeed": [
+        {
+          "seed": 17,
+          "selected": {
+            "count": 200,
+            "uniqueSkeletons": 35,
+            "meanScore": 7.975,
+            "patterns": {
+              "i-bVI-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-V-i": {
+                "orderedRate": 0.04,
+                "cyclicRate": 0.04
+              },
+              "i-bVI-iv-V": {
+                "orderedRate": 0.05,
+                "cyclicRate": 0.05
+              }
+            }
+          }
+        },
+        {
+          "seed": 97,
+          "selected": {
+            "count": 200,
+            "uniqueSkeletons": 32,
+            "meanScore": 7.9,
+            "patterns": {
+              "i-bVI-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-V-i": {
+                "orderedRate": 0.02,
+                "cyclicRate": 0.02
+              },
+              "i-bVI-iv-V": {
+                "orderedRate": 0.045,
+                "cyclicRate": 0.045
+              }
+            }
+          }
+        },
+        {
+          "seed": 301,
+          "selected": {
+            "count": 200,
+            "uniqueSkeletons": 34,
+            "meanScore": 7.845,
+            "patterns": {
+              "i-bVI-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-V-i": {
+                "orderedRate": 0.03,
+                "cyclicRate": 0.03
+              },
+              "i-bVI-iv-V": {
+                "orderedRate": 0.065,
+                "cyclicRate": 0.065
+              }
+            }
+          }
+        },
+        {
+          "seed": 1009,
+          "selected": {
+            "count": 200,
+            "uniqueSkeletons": 35,
+            "meanScore": 7.82,
+            "patterns": {
+              "i-bVI-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-V-i": {
+                "orderedRate": 0.035,
+                "cyclicRate": 0.035
+              },
+              "i-bVI-iv-V": {
+                "orderedRate": 0.04,
+                "cyclicRate": 0.04
+              }
+            }
+          }
+        },
+        {
+          "seed": 8191,
+          "selected": {
+            "count": 200,
+            "uniqueSkeletons": 37,
+            "meanScore": 7.845,
+            "patterns": {
+              "i-bVI-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-V-i": {
+                "orderedRate": 0.025,
+                "cyclicRate": 0.025
+              },
+              "i-bVI-iv-V": {
+                "orderedRate": 0.045,
+                "cyclicRate": 0.045
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "style": "hiNRG",
+      "mode": "major",
+      "raw": {
+        "count": 1000,
+        "uniqueSkeletons": 39,
+        "meanScore": 2.102,
+        "patterns": {
+          "i-bVI-bVII-bIII": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          },
+          "i-iv-bVII-bIII": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          },
+          "i-iv-V-i": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          },
+          "i-bVI-iv-V": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          }
+        }
+      },
+      "selected": {
+        "count": 1000,
+        "uniqueSkeletons": 47,
+        "meanScore": 5.576,
+        "patterns": {
+          "i-bVI-bVII-bIII": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          },
+          "i-iv-bVII-bIII": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          },
+          "i-iv-V-i": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          },
+          "i-bVI-iv-V": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          }
+        }
+      },
+      "perSeed": [
+        {
+          "seed": 17,
+          "selected": {
+            "count": 200,
+            "uniqueSkeletons": 38,
+            "meanScore": 5.51,
+            "patterns": {
+              "i-bVI-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-V-i": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-bVI-iv-V": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              }
+            }
+          }
+        },
+        {
+          "seed": 97,
+          "selected": {
+            "count": 200,
+            "uniqueSkeletons": 38,
+            "meanScore": 5.67,
+            "patterns": {
+              "i-bVI-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-V-i": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-bVI-iv-V": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              }
+            }
+          }
+        },
+        {
+          "seed": 301,
+          "selected": {
+            "count": 200,
+            "uniqueSkeletons": 39,
+            "meanScore": 5.52,
+            "patterns": {
+              "i-bVI-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-V-i": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-bVI-iv-V": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              }
+            }
+          }
+        },
+        {
+          "seed": 1009,
+          "selected": {
+            "count": 200,
+            "uniqueSkeletons": 38,
+            "meanScore": 5.65,
+            "patterns": {
+              "i-bVI-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-V-i": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-bVI-iv-V": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              }
+            }
+          }
+        },
+        {
+          "seed": 8191,
+          "selected": {
+            "count": 200,
+            "uniqueSkeletons": 36,
+            "meanScore": 5.53,
+            "patterns": {
+              "i-bVI-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-V-i": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-bVI-iv-V": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "style": "dorian",
+      "mode": "minor",
+      "raw": {
+        "count": 1000,
+        "uniqueSkeletons": 22,
+        "meanScore": 1.609,
+        "patterns": {
+          "i-bVI-bVII-bIII": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          },
+          "i-iv-bVII-bIII": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          },
+          "i-iv-V-i": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          },
+          "i-bVI-iv-V": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          }
+        }
+      },
+      "selected": {
+        "count": 1000,
+        "uniqueSkeletons": 21,
+        "meanScore": 5.293,
+        "patterns": {
+          "i-bVI-bVII-bIII": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          },
+          "i-iv-bVII-bIII": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          },
+          "i-iv-V-i": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          },
+          "i-bVI-iv-V": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          }
+        }
+      },
+      "perSeed": [
+        {
+          "seed": 17,
+          "selected": {
+            "count": 200,
+            "uniqueSkeletons": 21,
+            "meanScore": 5.23,
+            "patterns": {
+              "i-bVI-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-V-i": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-bVI-iv-V": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              }
+            }
+          }
+        },
+        {
+          "seed": 97,
+          "selected": {
+            "count": 200,
+            "uniqueSkeletons": 21,
+            "meanScore": 5.4,
+            "patterns": {
+              "i-bVI-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-V-i": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-bVI-iv-V": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              }
+            }
+          }
+        },
+        {
+          "seed": 301,
+          "selected": {
+            "count": 200,
+            "uniqueSkeletons": 21,
+            "meanScore": 5.24,
+            "patterns": {
+              "i-bVI-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-V-i": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-bVI-iv-V": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              }
+            }
+          }
+        },
+        {
+          "seed": 1009,
+          "selected": {
+            "count": 200,
+            "uniqueSkeletons": 21,
+            "meanScore": 5.33,
+            "patterns": {
+              "i-bVI-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-V-i": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-bVI-iv-V": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              }
+            }
+          }
+        },
+        {
+          "seed": 8191,
+          "selected": {
+            "count": 200,
+            "uniqueSkeletons": 21,
+            "meanScore": 5.265,
+            "patterns": {
+              "i-bVI-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-V-i": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-bVI-iv-V": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "style": "dorian",
+      "mode": "major",
+      "raw": {
+        "count": 1000,
+        "uniqueSkeletons": 52,
+        "meanScore": 1,
+        "patterns": {
+          "i-bVI-bVII-bIII": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          },
+          "i-iv-bVII-bIII": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          },
+          "i-iv-V-i": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          },
+          "i-bVI-iv-V": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          }
+        }
+      },
+      "selected": {
+        "count": 1000,
+        "uniqueSkeletons": 85,
+        "meanScore": 4.752,
+        "patterns": {
+          "i-bVI-bVII-bIII": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          },
+          "i-iv-bVII-bIII": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          },
+          "i-iv-V-i": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          },
+          "i-bVI-iv-V": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          }
+        }
+      },
+      "perSeed": [
+        {
+          "seed": 17,
+          "selected": {
+            "count": 200,
+            "uniqueSkeletons": 73,
+            "meanScore": 4.67,
+            "patterns": {
+              "i-bVI-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-V-i": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-bVI-iv-V": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              }
+            }
+          }
+        },
+        {
+          "seed": 97,
+          "selected": {
+            "count": 200,
+            "uniqueSkeletons": 71,
+            "meanScore": 4.9,
+            "patterns": {
+              "i-bVI-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-V-i": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-bVI-iv-V": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              }
+            }
+          }
+        },
+        {
+          "seed": 301,
+          "selected": {
+            "count": 200,
+            "uniqueSkeletons": 72,
+            "meanScore": 4.835,
+            "patterns": {
+              "i-bVI-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-V-i": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-bVI-iv-V": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              }
+            }
+          }
+        },
+        {
+          "seed": 1009,
+          "selected": {
+            "count": 200,
+            "uniqueSkeletons": 73,
+            "meanScore": 4.655,
+            "patterns": {
+              "i-bVI-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-V-i": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-bVI-iv-V": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              }
+            }
+          }
+        },
+        {
+          "seed": 8191,
+          "selected": {
+            "count": 200,
+            "uniqueSkeletons": 72,
+            "meanScore": 4.7,
+            "patterns": {
+              "i-bVI-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-V-i": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-bVI-iv-V": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "style": "electronica",
+      "mode": "minor",
+      "raw": {
+        "count": 1000,
+        "uniqueSkeletons": 92,
+        "meanScore": 5.378,
+        "patterns": {
+          "i-bVI-bVII-bIII": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          },
+          "i-iv-bVII-bIII": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          },
+          "i-iv-V-i": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          },
+          "i-bVI-iv-V": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          }
+        }
+      },
+      "selected": {
+        "count": 1000,
+        "uniqueSkeletons": 94,
+        "meanScore": 6.516,
+        "patterns": {
+          "i-bVI-bVII-bIII": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          },
+          "i-iv-bVII-bIII": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          },
+          "i-iv-V-i": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          },
+          "i-bVI-iv-V": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          }
+        }
+      },
+      "perSeed": [
+        {
+          "seed": 17,
+          "selected": {
+            "count": 200,
+            "uniqueSkeletons": 50,
+            "meanScore": 6.53,
+            "patterns": {
+              "i-bVI-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-V-i": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-bVI-iv-V": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              }
+            }
+          }
+        },
+        {
+          "seed": 97,
+          "selected": {
+            "count": 200,
+            "uniqueSkeletons": 48,
+            "meanScore": 6.48,
+            "patterns": {
+              "i-bVI-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-V-i": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-bVI-iv-V": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              }
+            }
+          }
+        },
+        {
+          "seed": 301,
+          "selected": {
+            "count": 200,
+            "uniqueSkeletons": 45,
+            "meanScore": 6.5,
+            "patterns": {
+              "i-bVI-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-V-i": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-bVI-iv-V": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              }
+            }
+          }
+        },
+        {
+          "seed": 1009,
+          "selected": {
+            "count": 200,
+            "uniqueSkeletons": 51,
+            "meanScore": 6.56,
+            "patterns": {
+              "i-bVI-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-V-i": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-bVI-iv-V": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              }
+            }
+          }
+        },
+        {
+          "seed": 8191,
+          "selected": {
+            "count": 200,
+            "uniqueSkeletons": 53,
+            "meanScore": 6.51,
+            "patterns": {
+              "i-bVI-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-V-i": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-bVI-iv-V": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "style": "electronica",
+      "mode": "major",
+      "raw": {
+        "count": 1000,
+        "uniqueSkeletons": 79,
+        "meanScore": 4.115,
+        "patterns": {
+          "i-bVI-bVII-bIII": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          },
+          "i-iv-bVII-bIII": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          },
+          "i-iv-V-i": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          },
+          "i-bVI-iv-V": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          }
+        }
+      },
+      "selected": {
+        "count": 1000,
+        "uniqueSkeletons": 134,
+        "meanScore": 5.031,
+        "patterns": {
+          "i-bVI-bVII-bIII": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          },
+          "i-iv-bVII-bIII": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          },
+          "i-iv-V-i": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          },
+          "i-bVI-iv-V": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          }
+        }
+      },
+      "perSeed": [
+        {
+          "seed": 17,
+          "selected": {
+            "count": 200,
+            "uniqueSkeletons": 82,
+            "meanScore": 4.99,
+            "patterns": {
+              "i-bVI-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-V-i": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-bVI-iv-V": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              }
+            }
+          }
+        },
+        {
+          "seed": 97,
+          "selected": {
+            "count": 200,
+            "uniqueSkeletons": 85,
+            "meanScore": 5.02,
+            "patterns": {
+              "i-bVI-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-V-i": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-bVI-iv-V": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              }
+            }
+          }
+        },
+        {
+          "seed": 301,
+          "selected": {
+            "count": 200,
+            "uniqueSkeletons": 83,
+            "meanScore": 5.085,
+            "patterns": {
+              "i-bVI-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-V-i": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-bVI-iv-V": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              }
+            }
+          }
+        },
+        {
+          "seed": 1009,
+          "selected": {
+            "count": 200,
+            "uniqueSkeletons": 77,
+            "meanScore": 5.03,
+            "patterns": {
+              "i-bVI-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-V-i": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-bVI-iv-V": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              }
+            }
+          }
+        },
+        {
+          "seed": 8191,
+          "selected": {
+            "count": 200,
+            "uniqueSkeletons": 88,
+            "meanScore": 5.03,
+            "patterns": {
+              "i-bVI-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-V-i": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-bVI-iv-V": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "style": "slowcore",
+      "mode": "minor",
+      "raw": {
+        "count": 1000,
+        "uniqueSkeletons": 82,
+        "meanScore": 2.01,
+        "patterns": {
+          "i-bVI-bVII-bIII": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          },
+          "i-iv-bVII-bIII": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          },
+          "i-iv-V-i": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          },
+          "i-bVI-iv-V": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          }
+        }
+      },
+      "selected": {
+        "count": 1000,
+        "uniqueSkeletons": 136,
+        "meanScore": 5.669,
+        "patterns": {
+          "i-bVI-bVII-bIII": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          },
+          "i-iv-bVII-bIII": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          },
+          "i-iv-V-i": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          },
+          "i-bVI-iv-V": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          }
+        }
+      },
+      "perSeed": [
+        {
+          "seed": 17,
+          "selected": {
+            "count": 200,
+            "uniqueSkeletons": 85,
+            "meanScore": 5.58,
+            "patterns": {
+              "i-bVI-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-V-i": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-bVI-iv-V": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              }
+            }
+          }
+        },
+        {
+          "seed": 97,
+          "selected": {
+            "count": 200,
+            "uniqueSkeletons": 74,
+            "meanScore": 5.605,
+            "patterns": {
+              "i-bVI-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-V-i": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-bVI-iv-V": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              }
+            }
+          }
+        },
+        {
+          "seed": 301,
+          "selected": {
+            "count": 200,
+            "uniqueSkeletons": 78,
+            "meanScore": 5.73,
+            "patterns": {
+              "i-bVI-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-V-i": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-bVI-iv-V": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              }
+            }
+          }
+        },
+        {
+          "seed": 1009,
+          "selected": {
+            "count": 200,
+            "uniqueSkeletons": 78,
+            "meanScore": 5.745,
+            "patterns": {
+              "i-bVI-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-V-i": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-bVI-iv-V": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              }
+            }
+          }
+        },
+        {
+          "seed": 8191,
+          "selected": {
+            "count": 200,
+            "uniqueSkeletons": 70,
+            "meanScore": 5.685,
+            "patterns": {
+              "i-bVI-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-V-i": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-bVI-iv-V": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "style": "slowcore",
+      "mode": "major",
+      "raw": {
+        "count": 1000,
+        "uniqueSkeletons": 47,
+        "meanScore": 1.614,
+        "patterns": {
+          "i-bVI-bVII-bIII": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          },
+          "i-iv-bVII-bIII": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          },
+          "i-iv-V-i": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          },
+          "i-bVI-iv-V": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          }
+        }
+      },
+      "selected": {
+        "count": 1000,
+        "uniqueSkeletons": 75,
+        "meanScore": 5.064,
+        "patterns": {
+          "i-bVI-bVII-bIII": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          },
+          "i-iv-bVII-bIII": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          },
+          "i-iv-V-i": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          },
+          "i-bVI-iv-V": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          }
+        }
+      },
+      "perSeed": [
+        {
+          "seed": 17,
+          "selected": {
+            "count": 200,
+            "uniqueSkeletons": 56,
+            "meanScore": 5.07,
+            "patterns": {
+              "i-bVI-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-V-i": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-bVI-iv-V": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              }
+            }
+          }
+        },
+        {
+          "seed": 97,
+          "selected": {
+            "count": 200,
+            "uniqueSkeletons": 59,
+            "meanScore": 4.975,
+            "patterns": {
+              "i-bVI-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-V-i": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-bVI-iv-V": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              }
+            }
+          }
+        },
+        {
+          "seed": 301,
+          "selected": {
+            "count": 200,
+            "uniqueSkeletons": 56,
+            "meanScore": 5.11,
+            "patterns": {
+              "i-bVI-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-V-i": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-bVI-iv-V": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              }
+            }
+          }
+        },
+        {
+          "seed": 1009,
+          "selected": {
+            "count": 200,
+            "uniqueSkeletons": 57,
+            "meanScore": 5.06,
+            "patterns": {
+              "i-bVI-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-V-i": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-bVI-iv-V": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              }
+            }
+          }
+        },
+        {
+          "seed": 8191,
+          "selected": {
+            "count": 200,
+            "uniqueSkeletons": 54,
+            "meanScore": 5.105,
+            "patterns": {
+              "i-bVI-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-V-i": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-bVI-iv-V": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "style": "frenchPop",
+      "mode": "minor",
+      "raw": {
+        "count": 1000,
+        "uniqueSkeletons": 55,
+        "meanScore": 6.529,
+        "patterns": {
+          "i-bVI-bVII-bIII": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          },
+          "i-iv-bVII-bIII": {
+            "orderedRate": 0.06,
+            "cyclicRate": 0.06
+          },
+          "i-iv-V-i": {
+            "orderedRate": 0.009,
+            "cyclicRate": 0.009
+          },
+          "i-bVI-iv-V": {
+            "orderedRate": 0,
+            "cyclicRate": 0.008
+          }
+        }
+      },
+      "selected": {
+        "count": 1000,
+        "uniqueSkeletons": 111,
+        "meanScore": 7.726,
+        "patterns": {
+          "i-bVI-bVII-bIII": {
+            "orderedRate": 0.005,
+            "cyclicRate": 0.005
+          },
+          "i-iv-bVII-bIII": {
+            "orderedRate": 0.015,
+            "cyclicRate": 0.019
+          },
+          "i-iv-V-i": {
+            "orderedRate": 0.007,
+            "cyclicRate": 0.007
+          },
+          "i-bVI-iv-V": {
+            "orderedRate": 0,
+            "cyclicRate": 0.009
+          }
+        }
+      },
+      "perSeed": [
+        {
+          "seed": 17,
+          "selected": {
+            "count": 200,
+            "uniqueSkeletons": 80,
+            "meanScore": 7.725,
+            "patterns": {
+              "i-bVI-bVII-bIII": {
+                "orderedRate": 0.01,
+                "cyclicRate": 0.01
+              },
+              "i-iv-bVII-bIII": {
+                "orderedRate": 0.015,
+                "cyclicRate": 0.02
+              },
+              "i-iv-V-i": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-bVI-iv-V": {
+                "orderedRate": 0,
+                "cyclicRate": 0.015
+              }
+            }
+          }
+        },
+        {
+          "seed": 97,
+          "selected": {
+            "count": 200,
+            "uniqueSkeletons": 73,
+            "meanScore": 7.665,
+            "patterns": {
+              "i-bVI-bVII-bIII": {
+                "orderedRate": 0.005,
+                "cyclicRate": 0.005
+              },
+              "i-iv-bVII-bIII": {
+                "orderedRate": 0.01,
+                "cyclicRate": 0.015
+              },
+              "i-iv-V-i": {
+                "orderedRate": 0.01,
+                "cyclicRate": 0.01
+              },
+              "i-bVI-iv-V": {
+                "orderedRate": 0,
+                "cyclicRate": 0.01
+              }
+            }
+          }
+        },
+        {
+          "seed": 301,
+          "selected": {
+            "count": 200,
+            "uniqueSkeletons": 78,
+            "meanScore": 7.74,
+            "patterns": {
+              "i-bVI-bVII-bIII": {
+                "orderedRate": 0.005,
+                "cyclicRate": 0.005
+              },
+              "i-iv-bVII-bIII": {
+                "orderedRate": 0.015,
+                "cyclicRate": 0.02
+              },
+              "i-iv-V-i": {
+                "orderedRate": 0.015,
+                "cyclicRate": 0.015
+              },
+              "i-bVI-iv-V": {
+                "orderedRate": 0,
+                "cyclicRate": 0.005
+              }
+            }
+          }
+        },
+        {
+          "seed": 1009,
+          "selected": {
+            "count": 200,
+            "uniqueSkeletons": 79,
+            "meanScore": 7.765,
+            "patterns": {
+              "i-bVI-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-bVII-bIII": {
+                "orderedRate": 0.02,
+                "cyclicRate": 0.02
+              },
+              "i-iv-V-i": {
+                "orderedRate": 0.005,
+                "cyclicRate": 0.005
+              },
+              "i-bVI-iv-V": {
+                "orderedRate": 0,
+                "cyclicRate": 0.01
+              }
+            }
+          }
+        },
+        {
+          "seed": 8191,
+          "selected": {
+            "count": 200,
+            "uniqueSkeletons": 84,
+            "meanScore": 7.735,
+            "patterns": {
+              "i-bVI-bVII-bIII": {
+                "orderedRate": 0.005,
+                "cyclicRate": 0.005
+              },
+              "i-iv-bVII-bIII": {
+                "orderedRate": 0.015,
+                "cyclicRate": 0.02
+              },
+              "i-iv-V-i": {
+                "orderedRate": 0.005,
+                "cyclicRate": 0.005
+              },
+              "i-bVI-iv-V": {
+                "orderedRate": 0,
+                "cyclicRate": 0.005
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "style": "frenchPop",
+      "mode": "major",
+      "raw": {
+        "count": 1000,
+        "uniqueSkeletons": 28,
+        "meanScore": 4.072,
+        "patterns": {
+          "i-bVI-bVII-bIII": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          },
+          "i-iv-bVII-bIII": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          },
+          "i-iv-V-i": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          },
+          "i-bVI-iv-V": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          }
+        }
+      },
+      "selected": {
+        "count": 1000,
+        "uniqueSkeletons": 91,
+        "meanScore": 5.025,
+        "patterns": {
+          "i-bVI-bVII-bIII": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          },
+          "i-iv-bVII-bIII": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          },
+          "i-iv-V-i": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          },
+          "i-bVI-iv-V": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          }
+        }
+      },
+      "perSeed": [
+        {
+          "seed": 17,
+          "selected": {
+            "count": 200,
+            "uniqueSkeletons": 72,
+            "meanScore": 4.99,
+            "patterns": {
+              "i-bVI-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-V-i": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-bVI-iv-V": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              }
+            }
+          }
+        },
+        {
+          "seed": 97,
+          "selected": {
+            "count": 200,
+            "uniqueSkeletons": 75,
+            "meanScore": 5.04,
+            "patterns": {
+              "i-bVI-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-V-i": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-bVI-iv-V": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              }
+            }
+          }
+        },
+        {
+          "seed": 301,
+          "selected": {
+            "count": 200,
+            "uniqueSkeletons": 68,
+            "meanScore": 5.065,
+            "patterns": {
+              "i-bVI-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-V-i": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-bVI-iv-V": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              }
+            }
+          }
+        },
+        {
+          "seed": 1009,
+          "selected": {
+            "count": 200,
+            "uniqueSkeletons": 70,
+            "meanScore": 5.02,
+            "patterns": {
+              "i-bVI-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-V-i": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-bVI-iv-V": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              }
+            }
+          }
+        },
+        {
+          "seed": 8191,
+          "selected": {
+            "count": 200,
+            "uniqueSkeletons": 73,
+            "meanScore": 5.01,
+            "patterns": {
+              "i-bVI-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-V-i": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-bVI-iv-V": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "style": "kayokyoku",
+      "mode": "minor",
+      "raw": {
+        "count": 1000,
+        "uniqueSkeletons": 38,
+        "meanScore": 5.401,
+        "patterns": {
+          "i-bVI-bVII-bIII": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          },
+          "i-iv-bVII-bIII": {
+            "orderedRate": 0.074,
+            "cyclicRate": 0.074
+          },
+          "i-iv-V-i": {
+            "orderedRate": 0.159,
+            "cyclicRate": 0.159
+          },
+          "i-bVI-iv-V": {
+            "orderedRate": 0.023,
+            "cyclicRate": 0.055
+          }
+        }
+      },
+      "selected": {
+        "count": 1000,
+        "uniqueSkeletons": 81,
+        "meanScore": 7.589,
+        "patterns": {
+          "i-bVI-bVII-bIII": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          },
+          "i-iv-bVII-bIII": {
+            "orderedRate": 0.018,
+            "cyclicRate": 0.02
+          },
+          "i-iv-V-i": {
+            "orderedRate": 0.032,
+            "cyclicRate": 0.032
+          },
+          "i-bVI-iv-V": {
+            "orderedRate": 0.048,
+            "cyclicRate": 0.09
+          }
+        }
+      },
+      "perSeed": [
+        {
+          "seed": 17,
+          "selected": {
+            "count": 200,
+            "uniqueSkeletons": 62,
+            "meanScore": 7.56,
+            "patterns": {
+              "i-bVI-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-bVII-bIII": {
+                "orderedRate": 0.025,
+                "cyclicRate": 0.025
+              },
+              "i-iv-V-i": {
+                "orderedRate": 0.05,
+                "cyclicRate": 0.05
+              },
+              "i-bVI-iv-V": {
+                "orderedRate": 0.07,
+                "cyclicRate": 0.12
+              }
+            }
+          }
+        },
+        {
+          "seed": 97,
+          "selected": {
+            "count": 200,
+            "uniqueSkeletons": 64,
+            "meanScore": 7.54,
+            "patterns": {
+              "i-bVI-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-bVII-bIII": {
+                "orderedRate": 0.015,
+                "cyclicRate": 0.015
+              },
+              "i-iv-V-i": {
+                "orderedRate": 0.035,
+                "cyclicRate": 0.035
+              },
+              "i-bVI-iv-V": {
+                "orderedRate": 0.04,
+                "cyclicRate": 0.09
+              }
+            }
+          }
+        },
+        {
+          "seed": 301,
+          "selected": {
+            "count": 200,
+            "uniqueSkeletons": 62,
+            "meanScore": 7.595,
+            "patterns": {
+              "i-bVI-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-bVII-bIII": {
+                "orderedRate": 0.015,
+                "cyclicRate": 0.02
+              },
+              "i-iv-V-i": {
+                "orderedRate": 0.025,
+                "cyclicRate": 0.025
+              },
+              "i-bVI-iv-V": {
+                "orderedRate": 0.045,
+                "cyclicRate": 0.085
+              }
+            }
+          }
+        },
+        {
+          "seed": 1009,
+          "selected": {
+            "count": 200,
+            "uniqueSkeletons": 63,
+            "meanScore": 7.635,
+            "patterns": {
+              "i-bVI-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-bVII-bIII": {
+                "orderedRate": 0.015,
+                "cyclicRate": 0.02
+              },
+              "i-iv-V-i": {
+                "orderedRate": 0.02,
+                "cyclicRate": 0.02
+              },
+              "i-bVI-iv-V": {
+                "orderedRate": 0.045,
+                "cyclicRate": 0.08
+              }
+            }
+          }
+        },
+        {
+          "seed": 8191,
+          "selected": {
+            "count": 200,
+            "uniqueSkeletons": 66,
+            "meanScore": 7.615,
+            "patterns": {
+              "i-bVI-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-bVII-bIII": {
+                "orderedRate": 0.02,
+                "cyclicRate": 0.02
+              },
+              "i-iv-V-i": {
+                "orderedRate": 0.03,
+                "cyclicRate": 0.03
+              },
+              "i-bVI-iv-V": {
+                "orderedRate": 0.04,
+                "cyclicRate": 0.075
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "style": "kayokyoku",
+      "mode": "major",
+      "raw": {
+        "count": 1000,
+        "uniqueSkeletons": 46,
+        "meanScore": 3.015,
+        "patterns": {
+          "i-bVI-bVII-bIII": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          },
+          "i-iv-bVII-bIII": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          },
+          "i-iv-V-i": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          },
+          "i-bVI-iv-V": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          }
+        }
+      },
+      "selected": {
+        "count": 1000,
+        "uniqueSkeletons": 116,
+        "meanScore": 5.158,
+        "patterns": {
+          "i-bVI-bVII-bIII": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          },
+          "i-iv-bVII-bIII": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          },
+          "i-iv-V-i": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          },
+          "i-bVI-iv-V": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          }
+        }
+      },
+      "perSeed": [
+        {
+          "seed": 17,
+          "selected": {
+            "count": 200,
+            "uniqueSkeletons": 82,
+            "meanScore": 5.155,
+            "patterns": {
+              "i-bVI-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-V-i": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-bVI-iv-V": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              }
+            }
+          }
+        },
+        {
+          "seed": 97,
+          "selected": {
+            "count": 200,
+            "uniqueSkeletons": 86,
+            "meanScore": 5.1,
+            "patterns": {
+              "i-bVI-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-V-i": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-bVI-iv-V": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              }
+            }
+          }
+        },
+        {
+          "seed": 301,
+          "selected": {
+            "count": 200,
+            "uniqueSkeletons": 82,
+            "meanScore": 5.1,
+            "patterns": {
+              "i-bVI-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-V-i": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-bVI-iv-V": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              }
+            }
+          }
+        },
+        {
+          "seed": 1009,
+          "selected": {
+            "count": 200,
+            "uniqueSkeletons": 79,
+            "meanScore": 5.28,
+            "patterns": {
+              "i-bVI-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-V-i": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-bVI-iv-V": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              }
+            }
+          }
+        },
+        {
+          "seed": 8191,
+          "selected": {
+            "count": 200,
+            "uniqueSkeletons": 81,
+            "meanScore": 5.155,
+            "patterns": {
+              "i-bVI-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-V-i": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-bVI-iv-V": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "style": "romanceNostalgia",
+      "mode": "minor",
+      "raw": {
+        "count": 1000,
+        "uniqueSkeletons": 57,
+        "meanScore": 6.04,
+        "patterns": {
+          "i-bVI-bVII-bIII": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          },
+          "i-iv-bVII-bIII": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          },
+          "i-iv-V-i": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          },
+          "i-bVI-iv-V": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          }
+        }
+      },
+      "selected": {
+        "count": 1000,
+        "uniqueSkeletons": 107,
+        "meanScore": 7.911,
+        "patterns": {
+          "i-bVI-bVII-bIII": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          },
+          "i-iv-bVII-bIII": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          },
+          "i-iv-V-i": {
+            "orderedRate": 0.016,
+            "cyclicRate": 0.017
+          },
+          "i-bVI-iv-V": {
+            "orderedRate": 0.007,
+            "cyclicRate": 0.011
+          }
+        }
+      },
+      "perSeed": [
+        {
+          "seed": 17,
+          "selected": {
+            "count": 200,
+            "uniqueSkeletons": 77,
+            "meanScore": 7.91,
+            "patterns": {
+              "i-bVI-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-V-i": {
+                "orderedRate": 0.01,
+                "cyclicRate": 0.015
+              },
+              "i-bVI-iv-V": {
+                "orderedRate": 0.005,
+                "cyclicRate": 0.01
+              }
+            }
+          }
+        },
+        {
+          "seed": 97,
+          "selected": {
+            "count": 200,
+            "uniqueSkeletons": 84,
+            "meanScore": 7.87,
+            "patterns": {
+              "i-bVI-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-V-i": {
+                "orderedRate": 0.02,
+                "cyclicRate": 0.02
+              },
+              "i-bVI-iv-V": {
+                "orderedRate": 0.01,
+                "cyclicRate": 0.015
+              }
+            }
+          }
+        },
+        {
+          "seed": 301,
+          "selected": {
+            "count": 200,
+            "uniqueSkeletons": 73,
+            "meanScore": 7.985,
+            "patterns": {
+              "i-bVI-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-V-i": {
+                "orderedRate": 0.02,
+                "cyclicRate": 0.02
+              },
+              "i-bVI-iv-V": {
+                "orderedRate": 0.005,
+                "cyclicRate": 0.01
+              }
+            }
+          }
+        },
+        {
+          "seed": 1009,
+          "selected": {
+            "count": 200,
+            "uniqueSkeletons": 69,
+            "meanScore": 7.705,
+            "patterns": {
+              "i-bVI-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-V-i": {
+                "orderedRate": 0.015,
+                "cyclicRate": 0.015
+              },
+              "i-bVI-iv-V": {
+                "orderedRate": 0.01,
+                "cyclicRate": 0.01
+              }
+            }
+          }
+        },
+        {
+          "seed": 8191,
+          "selected": {
+            "count": 200,
+            "uniqueSkeletons": 72,
+            "meanScore": 8.085,
+            "patterns": {
+              "i-bVI-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-V-i": {
+                "orderedRate": 0.015,
+                "cyclicRate": 0.015
+              },
+              "i-bVI-iv-V": {
+                "orderedRate": 0.005,
+                "cyclicRate": 0.01
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "style": "romanceNostalgia",
+      "mode": "major",
+      "raw": {
+        "count": 1000,
+        "uniqueSkeletons": 128,
+        "meanScore": 4.663,
+        "patterns": {
+          "i-bVI-bVII-bIII": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          },
+          "i-iv-bVII-bIII": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          },
+          "i-iv-V-i": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          },
+          "i-bVI-iv-V": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          }
+        }
+      },
+      "selected": {
+        "count": 1000,
+        "uniqueSkeletons": 251,
+        "meanScore": 6.251,
+        "patterns": {
+          "i-bVI-bVII-bIII": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          },
+          "i-iv-bVII-bIII": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          },
+          "i-iv-V-i": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          },
+          "i-bVI-iv-V": {
+            "orderedRate": 0,
+            "cyclicRate": 0
+          }
+        }
+      },
+      "perSeed": [
+        {
+          "seed": 17,
+          "selected": {
+            "count": 200,
+            "uniqueSkeletons": 129,
+            "meanScore": 6.285,
+            "patterns": {
+              "i-bVI-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-V-i": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-bVI-iv-V": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              }
+            }
+          }
+        },
+        {
+          "seed": 97,
+          "selected": {
+            "count": 200,
+            "uniqueSkeletons": 127,
+            "meanScore": 6.17,
+            "patterns": {
+              "i-bVI-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-V-i": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-bVI-iv-V": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              }
+            }
+          }
+        },
+        {
+          "seed": 301,
+          "selected": {
+            "count": 200,
+            "uniqueSkeletons": 118,
+            "meanScore": 6.195,
+            "patterns": {
+              "i-bVI-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-V-i": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-bVI-iv-V": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              }
+            }
+          }
+        },
+        {
+          "seed": 1009,
+          "selected": {
+            "count": 200,
+            "uniqueSkeletons": 126,
+            "meanScore": 6.32,
+            "patterns": {
+              "i-bVI-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-V-i": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-bVI-iv-V": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              }
+            }
+          }
+        },
+        {
+          "seed": 8191,
+          "selected": {
+            "count": 200,
+            "uniqueSkeletons": 123,
+            "meanScore": 6.285,
+            "patterns": {
+              "i-bVI-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-bVII-bIII": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-iv-V-i": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              },
+              "i-bVI-iv-V": {
+                "orderedRate": 0,
+                "cyclicRate": 0
+              }
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

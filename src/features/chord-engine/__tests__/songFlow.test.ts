@@ -1,7 +1,9 @@
 import { describe, expect, it } from "vitest"
-import { MAJOR_KEYS, MINOR_KEYS, keyLabel, type MusicKey } from "@/types/music"
+import { MAJOR_KEYS, MINOR_KEYS, keyLabel, type MusicKey, type StyleId } from "@/types/music"
 import { chordName, NOTE_TO_PC, parseToken, rootPc } from "../degrees"
-import { KEY_DOWN_SEMITONES, NEXT_SECTIONS, resolveKeyMove, rotateLoop, toParallelMinor } from "../songFlow"
+import { relativeMajorDominant } from "../styleGrammar"
+import { STYLE_OPTIONS } from "../templates"
+import { KEY_DOWN_SEMITONES, NEXT_SECTIONS, resolveKeyMove, rotateLoop, suggestionsFor, toParallelMinor } from "../songFlow"
 
 const key = (tonic: string, mode: MusicKey["mode"]): MusicKey => ({ tonic, mode })
 
@@ -172,5 +174,65 @@ describe("temporary darkening to the parallel minor", () => {
   it("is wired into the suggestions: the soft chorus goes dark, and the way back is home", () => {
     expect(NEXT_SECTIONS.chorus.find((s) => s.section === "breakdown-chorus")?.keyMove?.type).toBe("parallel")
     expect(NEXT_SECTIONS["breakdown-chorus"].find((s) => s.section === "chorus")?.keyMove?.type).toBe("home")
+  })
+})
+
+describe("relative-major chorus suggestions for minor songs", () => {
+  const relativeChorus = (section: "verse" | "pre-chorus", k: MusicKey) =>
+    suggestionsFor(section, k, "finale").find((s) => s.section === "chorus" && s.keyMove?.type === "relative")
+
+  it("offers a chorus in the relative major from the verse and the pre-chorus, for minor songs only", () => {
+    for (const k of MINOR_KEYS) {
+      for (const section of ["verse", "pre-chorus"] as const) {
+        expect(relativeChorus(section, k), `${keyLabel(k)} ${section}`).toBeTruthy()
+      }
+    }
+    for (const k of MAJOR_KEYS) {
+      for (const section of ["verse", "pre-chorus"] as const) expect(relativeChorus(section, k)).toBeUndefined()
+    }
+  })
+
+  it("keeps the existing suggestions, and adds no new key move type", () => {
+    const minor = key("A", "minor")
+    expect(suggestionsFor("verse", minor, "finale").map((s) => s.section)).toEqual(["pre-chorus", "pre-chorus", "chorus", "chorus"])
+    expect(suggestionsFor("verse", key("C", "major"), "finale").map((s) => s.section)).toEqual(["pre-chorus", "chorus"])
+    expect(suggestionsFor("pre-chorus", key("C", "major"), "finale")).toHaveLength(1)
+    expect(suggestionsFor("chorus", minor, "cinematic")).toEqual(NEXT_SECTIONS.chorus)
+  })
+
+  it("moves each of the 12 minor keys to the relative major, 3 semitones up", () => {
+    expect(new Set(MINOR_KEYS.map((k) => NOTE_TO_PC[k.tonic])).size).toBe(12)
+    for (const k of MINOR_KEYS) {
+      const target = resolveKeyMove(k, relativeChorus("verse", k)!.keyMove!.type)
+      expect(target.mode, keyLabel(k)).toBe("major")
+      expect((NOTE_TO_PC[target.tonic] - NOTE_TO_PC[k.tonic] + 12) % 12, keyLabel(k)).toBe(3)
+    }
+    expect(resolveKeyMove(key("B", "minor"), "relative")).toEqual(key("D", "major"))
+    expect(resolveKeyMove(key("A", "minor"), "relative")).toEqual(key("C", "major"))
+  })
+})
+
+describe("the pre-chorus approach is offered only to styles that can end on bVII7", () => {
+  const minor = key("A", "minor")
+  const approach = (style: StyleId) => suggestionsFor("verse", minor, style).filter((s) => s.approach === "relative")
+
+  it("shows it for the supported styles and hides it for the others, without touching the other suggestions", () => {
+    const supported = STYLE_OPTIONS.map((s) => s.value).filter((style) => relativeMajorDominant(style, "minor") !== null)
+    const unsupported = STYLE_OPTIONS.map((s) => s.value).filter((style) => relativeMajorDominant(style, "minor") === null)
+    expect(supported).toContain("finale")
+    expect(unsupported).toEqual(expect.arrayContaining(["cinematic", "ethereal", "newWave", "slowcore"]))
+    for (const style of supported) expect(approach(style), style).toHaveLength(1)
+    for (const style of unsupported) {
+      expect(approach(style), style).toHaveLength(0)
+      // 相対長調へ転調するサビの提案は、スタイルに関係なく残る
+      expect(suggestionsFor("verse", minor, style).filter((s) => s.keyMove?.type === "relative")).toHaveLength(1)
+      expect(suggestionsFor("verse", minor, style).map((s) => s.section)).toEqual(["pre-chorus", "chorus", "chorus"])
+    }
+  })
+
+  it("is never offered in a major song, whatever the style", () => {
+    for (const { value: style } of STYLE_OPTIONS) {
+      expect(suggestionsFor("verse", key("C", "major"), style).some((s) => s.approach === "relative")).toBe(false)
+    }
   })
 })

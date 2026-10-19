@@ -1,9 +1,9 @@
 import { afterEach, describe, expect, it, vi } from "vitest"
-import { clearSessionSkeletonHistory, generateProgressions, limitDefiniteDominants, returningHome, reusablePrevious, rotatedChorusLoop, rootSkeletonOf, withHomeReturnTail, type GenerateParams, type PreviousSection } from "../generateProgressions"
+import { clearSessionSkeletonHistory, contrastWithSus, generateProgressions, limitDefiniteDominants, returningHome, reusablePrevious, rotatedChorusLoop, rootSkeletonOf, withHomeReturnTail, type GenerateParams, type PreviousSection } from "../generateProgressions"
 import { SEEDS, withSeed } from "./seeded"
-import { chordName, parseToken } from "../degrees"
+import { chordName, NOTE_TO_PC, parseToken, rootPc } from "../degrees"
 import { resolveKeyMove, rotateLoop, toParallelMinor } from "../songFlow"
-import { isDefiniteMajorV, matchesStyleSignature, rootKey, spiceTokens, styleVocabulary } from "../styleGrammar"
+import { isDefiniteMajorV, matchesStyleSignature, relativeMajorDominant, rootKey, spiceTokens, styleVocabulary } from "../styleGrammar"
 import { STYLE_OPTIONS, STYLE_TEMPLATES } from "../templates"
 import { keyLabel, MAJOR_KEYS, MINOR_KEYS, type MusicKey, type SectionId, type StyleId } from "@/types/music"
 
@@ -496,5 +496,293 @@ describe("one loop keeps several decorations, inversions and basses", () => {
       expect(rows.some((p) => p.romanNumerals.some(slashBass)), `${style} has inversions or pedals`).toBe(true)
       expect(rows.some((p) => !p.romanNumerals.some(slashBass)), `${style} has root-position versions`).toBe(true)
     }
+  })
+})
+
+describe("chorus in the relative major after a minor verse", () => {
+  const ALL = STYLE_OPTIONS.map((s) => s.value)
+
+  it.each(SEEDS)("stays inside the major vocabulary of every style, in all 12 minor keys (seed %i)", (seed) => {
+    withSeed(seed, () => {
+      for (const minorKey of MINOR_KEYS) {
+        const target = resolveKeyMove(minorKey, "relative")
+        for (const style of ALL) {
+          const vocab = styleVocabulary(style, "major")
+          for (const p of generateProgressions({
+            key: target,
+            style,
+            section: "chorus",
+            mood: "melancholic",
+            count: 2,
+            length: 4,
+            previous: { key: minorKey, loop: ["i", "bVII", "bVI", "V"] },
+            originalKey: minorKey,
+          })) {
+            expect(p.mode).toBe("major")
+            expect(p.key).toBe(keyLabel(target))
+            for (const token of p.romanNumerals) {
+              expect(vocab.roots.has(rootKey(token)), `${style} ${keyLabel(target)}: ${token}`).toBe(true)
+              expect(vocab.suffixes.has(parseToken(token).suffix), `${style}: ${token}`).toBe(true)
+            }
+          }
+        }
+      }
+    })
+  })
+})
+
+describe("pre-chorus ending toward the relative major", () => {
+  const ALL = STYLE_OPTIONS.map((s) => s.value)
+  const withDominant = ALL.filter((style) => relativeMajorDominant(style, "minor") !== null)
+  const withoutDominant = ALL.filter((style) => relativeMajorDominant(style, "minor") === null)
+  const endsOnBVII7 = (tokens: string[]) => tokens[tokens.length - 1] === "bVII7"
+  const preChorus = (style: StyleId, approach: boolean | undefined, key: MusicKey = A_MINOR, section: SectionId = "pre-chorus") =>
+    generateProgressions({ key, style, section, mood: "melancholic", count: 5, length: 4, approachRelativeMajor: approach })
+  const rows = (style: StyleId, approach: boolean | undefined, key?: MusicKey, section?: SectionId) =>
+    Array.from({ length: 40 }, () => preChorus(style, approach, key, section)).flat()
+
+  it("offers bVII7 only to styles that have both the bVII root and the 7 colour", () => {
+    expect(withDominant.length).toBeGreaterThan(5)
+    expect(withDominant).toContain("finale")
+    expect(withoutDominant).toEqual(expect.arrayContaining(["ethereal", "cinematic", "newWave", "slowcore"]))
+    expect(relativeMajorDominant("finale", "major")).toBeNull()
+    for (const style of withDominant) {
+      const vocab = styleVocabulary(style, "minor")
+      expect(vocab.roots.has("bVII") && vocab.suffixes.has("7"), style).toBe(true)
+    }
+  })
+
+  it.each(SEEDS)("ends the pre-chorus on bVII7 far more often when heading to the relative major (seed %i)", (seed) => {
+    for (const style of withDominant) {
+      const control = withSeed(seed, () => rows(style, undefined))
+      const approach = withSeed(seed, () => rows(style, true))
+      const share = (list: typeof control) => list.filter((p) => endsOnBVII7(p.romanNumerals)).length / list.length
+      // 採点と選抜を通ったあとも残る(語彙・シグネチャーに合わない組み合わせは落ちるので、全スタイルで正とは限らない)
+      expect(share(approach), style).toBeGreaterThanOrEqual(share(control))
+    }
+    const surviving = withDominant.filter((style) => {
+      const approach = withSeed(seed, () => rows(style, true))
+      return approach.some((p) => endsOnBVII7(p.romanNumerals))
+    })
+    expect(surviving.length).toBeGreaterThanOrEqual(3)
+  })
+
+  it("leaves the output unchanged when the approach is not chosen, and for other sections", () => {
+    for (const style of ["finale", "romanticDark", "cinematic", "ethereal"] as const) {
+      const none = withSeed(SEEDS[0], () => rows(style, undefined).map((p) => p.chords))
+      const off = withSeed(SEEDS[0], () => rows(style, false).map((p) => p.chords))
+      expect(off, style).toEqual(none)
+      for (const section of ["verse", "chorus", "bridge"] as const) {
+        const a = withSeed(SEEDS[1], () => rows(style, undefined, A_MINOR, section).map((p) => p.chords))
+        const b = withSeed(SEEDS[1], () => rows(style, true, A_MINOR, section).map((p) => p.chords))
+        expect(b, `${style} ${section}`).toEqual(a)
+      }
+    }
+  })
+
+  it("does not put bVII7 into styles without it, and not in major", () => {
+    withSeed(SEEDS[2], () => {
+      for (const style of withoutDominant) {
+        for (const p of rows(style, true)) expect(p.romanNumerals.includes("bVII7"), style).toBe(false)
+      }
+      for (const p of rows("finale", true, { tonic: "C", mode: "major" })) expect(endsOnBVII7(p.romanNumerals)).toBe(false)
+    })
+  })
+
+  it("lands on the dominant of the relative major in all 12 minor keys", () => {
+    for (const k of MINOR_KEYS) {
+      const found = withSeed(SEEDS[0], () => rows("finale", true, k)).filter((p) => endsOnBVII7(p.romanNumerals))
+      expect(found.length, keyLabel(k)).toBeGreaterThan(0)
+      const relative = resolveKeyMove(k, "relative")
+      for (const p of found) {
+        const last = parseToken(p.romanNumerals[p.romanNumerals.length - 1])
+        // bVII7 の根音は、相対長調の属音(V)と同じ高さ
+        expect(rootPc(last, k), keyLabel(k)).toBe((NOTE_TO_PC[relative.tonic] + 7) % 12)
+        expect(p.chords[p.chords.length - 1]).toBe(chordName(last, k))
+      }
+    }
+  })
+})
+
+describe("sus chords against a single decisive V7", () => {
+  const ALL = STYLE_OPTIONS.map((s) => s.value)
+  const SECTIONS: SectionId[] = ["intro", "verse", "pre-chorus", "chorus", "c-melody", "bridge", "outro"]
+  const isSus = (token: string) => ["sus2", "sus4"].includes(parseToken(token).suffix)
+  const decisive = (tokens: string[]) => tokens.map(parseToken).filter(isDefiniteMajorV)
+  /** 決定的なV7が1か所で、V以外の半分以上がsus */
+  const contrasted = (tokens: string[]) => {
+    const v = decisive(tokens)
+    const others = tokens.filter((t) => !isDefiniteMajorV(parseToken(t)))
+    return v.length === 1 && v[0].suffix === "7" && others.length > 0 && others.filter(isSus).length * 2 >= others.length
+  }
+  const withSus = ALL.filter((style) => {
+    const suffixes = styleVocabulary(style, "minor").suffixes
+    return suffixes.has("sus2") || suffixes.has("sus4")
+  })
+
+  it("replaces the plain chords around a V7 with sus, and keeps the V7", () => {
+    withSeed(SEEDS[0], () => {
+      const chords = ["i", "i", "iv", "V7"].map(parseToken)
+      let changed: ReturnType<typeof contrastWithSus> = chords
+      for (let i = 0; i < 40 && changed === chords; i++) changed = contrastWithSus(chords, "finale", "minor")
+      expect(changed).not.toBe(chords)
+      expect(changed[3].token).toBe("V7")
+      expect(changed.slice(0, 3).filter((c) => c.suffix === "sus4").length).toBeGreaterThanOrEqual(2)
+      expect(chords.map((c) => c.suffix)).toEqual(["", "", "", "7"])
+    })
+  })
+
+  it("does nothing without a lone V7, outside minor, or when the style has no sus", () => {
+    withSeed(SEEDS[1], () => {
+      for (let i = 0; i < 40; i++) {
+        const plainV = ["i", "iv", "V", "i"].map(parseToken)
+        const twoV = ["i", "V7", "iv", "V7"].map(parseToken)
+        const noV = ["i", "iv", "bVII", "i"].map(parseToken)
+        const susV = ["i", "iv", "V7sus4", "i"].map(parseToken)
+        for (const list of [plainV, twoV, noV, susV]) expect(contrastWithSus(list, "finale", "minor")).toBe(list)
+        const major = ["I", "IV", "V7", "I"].map(parseToken)
+        expect(contrastWithSus(major, "finale", "major")).toBe(major)
+        const romantic = ["i", "iv", "bVI", "V7"].map(parseToken)
+        expect(contrastWithSus(romantic, "romanticDark", "minor")).toBe(romantic)
+      }
+    })
+  })
+
+  it("leaves chords with a slash bass and non-triad colours alone", () => {
+    withSeed(SEEDS[2], () => {
+      const chords = ["i/bVII", "ivm9", "bVImaj7", "V7"].map(parseToken)
+      for (let i = 0; i < 40; i++) expect(contrastWithSus(chords, "finale", "minor")).toBe(chords)
+    })
+  })
+
+  it("applies only to styles that have sus2 or sus4 together with the 7 colour (finale among the current styles)", () => {
+    const eligible = withSus.filter((style) => styleVocabulary(style, "minor").suffixes.has("7"))
+    expect(eligible).toEqual(["finale"])
+  })
+
+  it.each(SEEDS)("keeps contrasted progressions after selection, one decisive V at most, inside the vocabulary (seed %i)", (seed) => {
+    withSeed(seed, () => {
+      const rows = SECTIONS.flatMap((section) =>
+        Array.from({ length: 40 }, () =>
+          generateProgressions({ key: A_MINOR, style: "finale", section, mood: "melancholic", count: 5, length: 4 }),
+        ).flat(),
+      ).map((p) => p.romanNumerals)
+      expect(rows.filter(contrasted).length, "contrasted progressions survive").toBeGreaterThan(0)
+      const vocab = styleVocabulary("finale", "minor")
+      for (const tokens of rows) {
+        expect(decisive(tokens).length).toBeLessThanOrEqual(1)
+        for (const t of tokens) expect(vocab.suffixes.has(parseToken(t).suffix), t).toBe(true)
+      }
+    })
+  })
+
+  it.each(SEEDS)("never gives sus to a style that does not have it (seed %i)", (seed) => {
+    withSeed(seed, () => {
+      for (const style of ALL.filter((s) => !withSus.includes(s))) {
+        const vocab = styleVocabulary(style, "minor")
+        for (const section of ["verse", "chorus", "bridge"] as const) {
+          for (const p of generateProgressions({ key: A_MINOR, style, section, mood: "melancholic", count: 5, length: 4 })) {
+            for (const t of p.romanNumerals) expect(vocab.suffixes.has(parseToken(t).suffix), `${style}: ${t}`).toBe(true)
+          }
+        }
+      }
+    })
+  })
+})
+
+describe("I-bVII-I-ii major template", () => {
+  const SHAPE = ["I", "bVII", "I", "ii"]
+  const shapeRotations = SHAPE.map((_, i) => rotateLoop(SHAPE, i).join("-"))
+  const isShape = (tokens: string[]) => shapeRotations.includes(rootSkeletonOf(tokens))
+  const holders = STYLE_OPTIONS.map((s) => s.value).filter((style: StyleId) => STYLE_TEMPLATES[style].major.some(isShape))
+  const C_MAJOR: MusicKey = { tonic: "C", mode: "major" }
+
+  it("is registered in one style only, once, with colours from that style's vocabulary", () => {
+    expect(holders).toEqual(["romanceNostalgia"])
+    const added = STYLE_TEMPLATES.romanceNostalgia.major.filter(isShape)
+    expect(added).toHaveLength(1)
+    const vocab = styleVocabulary("romanceNostalgia", "major")
+    for (const token of added[0]) {
+      expect(vocab.roots.has(rootKey(token))).toBe(true)
+      expect(vocab.suffixes.has(parseToken(token).suffix), token).toBe(true)
+    }
+    expect(matchesStyleSignature("romanceNostalgia", added[0].map(parseToken), "major")).toBe(true)
+  })
+
+  it("adds no duplicate skeleton to its style", () => {
+    const others = STYLE_TEMPLATES.romanceNostalgia.major.filter((tpl) => !isShape(tpl)).map(rootSkeletonOf)
+    expect(others).not.toContain(rootSkeletonOf(STYLE_TEMPLATES.romanceNostalgia.major.find(isShape)!))
+  })
+
+  it.each(SEEDS)("produces the shape in the output after selection, as a minority (seed %i)", (seed) => {
+    withSeed(seed, () => {
+      const rows = Array.from({ length: 40 }, () =>
+        generateProgressions({ key: C_MAJOR, style: "romanceNostalgia", section: "chorus", mood: "melancholic", count: 5, length: 4 }),
+      ).flat()
+      const found = rows.filter((p) => isShape(p.romanNumerals))
+      expect(found.length).toBeGreaterThan(0)
+      expect(found.length / rows.length).toBeLessThan(0.3)
+      for (const p of found) expect(p.chords.length).toBe(4)
+    })
+  })
+
+  it("leaves every other style's major templates untouched", () => {
+    for (const { value: style } of STYLE_OPTIONS) {
+      if (style === "romanceNostalgia") continue
+      expect(STYLE_TEMPLATES[style].major.some(isShape), style).toBe(false)
+    }
+  })
+})
+
+describe("pre-chorus ending toward the relative major, in the 8-bar phrase", () => {
+  const ALL = STYLE_OPTIONS.map((s) => s.value)
+  const withDominant = ALL.filter((style) => relativeMajorDominant(style, "minor") !== null)
+  const endsOnBVII7 = (tokens: string[]) => tokens[tokens.length - 1] === "bVII7"
+  const phrase = (style: StyleId, approach: boolean | undefined, section: SectionId = "pre-chorus", key: MusicKey = A_MINOR) =>
+    Array.from({ length: 40 }, () =>
+      generateProgressions({ key, style, section, mood: "melancholic", count: 5, length: 8, approachRelativeMajor: approach }),
+    ).flat()
+  const share = (list: { romanNumerals: string[] }[]) => list.filter((p) => endsOnBVII7(p.romanNumerals)).length / list.length
+
+  it.each(SEEDS)("ends the 8-bar pre-chorus on bVII7 when heading to the relative major (seed %i)", (seed) => {
+    const surviving = withDominant.filter((style) => {
+      const control = withSeed(seed, () => phrase(style, undefined))
+      const approach = withSeed(seed, () => phrase(style, true))
+      expect(share(approach), style).toBeGreaterThanOrEqual(share(control))
+      return share(approach) > share(control)
+    })
+    expect(surviving.length).toBeGreaterThanOrEqual(3)
+    expect(surviving).toContain("finale")
+  })
+
+  it.each(SEEDS)("keeps the question-and-answer opening and the 8 chords (seed %i)", (seed) => {
+    withSeed(seed, () => {
+      for (const style of withDominant) {
+        for (const p of phrase(style, true)) {
+          const roots = p.romanNumerals.map(rootKey)
+          expect(p.romanNumerals, style).toHaveLength(8)
+          expect([roots[4], roots[5]], `${style}: ${p.romanNumerals.join(" ")}`).toEqual([roots[0], roots[1]])
+          expect(p.beats).toEqual([4, 4, 4, 4, 4, 4, 4, 4])
+        }
+      }
+    })
+  })
+
+  it("changes nothing when the approach is not chosen, for other sections, or for styles without bVII7", () => {
+    for (const style of ["finale", "romanticDark", "cinematic", "ethereal"] as const) {
+      const none = withSeed(SEEDS[0], () => phrase(style, undefined).map((p) => p.chords))
+      const off = withSeed(SEEDS[0], () => phrase(style, false).map((p) => p.chords))
+      expect(off, style).toEqual(none)
+      for (const section of ["verse", "chorus", "bridge"] as const) {
+        const a = withSeed(SEEDS[1], () => phrase(style, undefined, section).map((p) => p.chords))
+        const b = withSeed(SEEDS[1], () => phrase(style, true, section).map((p) => p.chords))
+        expect(b, `${style} ${section}`).toEqual(a)
+      }
+    }
+    withSeed(SEEDS[2], () => {
+      for (const style of ALL.filter((s) => !withDominant.includes(s))) {
+        for (const p of phrase(style, true)) expect(endsOnBVII7(p.romanNumerals), style).toBe(false)
+      }
+    })
   })
 })

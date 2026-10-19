@@ -1,5 +1,6 @@
 import { buildToken, isFlatKey, NOTE_TO_PC, parseToken } from "./degrees"
-import { MAJOR_KEYS, MINOR_KEYS, type MusicKey } from "@/types/music"
+import { MAJOR_KEYS, MINOR_KEYS, type MusicKey, type StyleId } from "@/types/music"
+import { relativeMajorDominant } from "./styleGrammar"
 import type { SectionId } from "@/types/music"
 
 /**
@@ -23,6 +24,23 @@ export interface SectionSuggestion {
   reason: string
   /** 展開としてふさわしいKEY変更がある場合のみ指定。なければ現在のKEYを維持 */
   keyMove?: { type: KeyMoveType; reason: string }
+  /** "relative": 次に相対長調のサビへ向かうセクションとして作る(プレコーラスの終わりを相対長調のV7にする) */
+  approach?: "relative"
+  /** 指定したモードの曲でだけ提案する(短調の曲から相対長調へ移す提案など) */
+  onlyIn?: MusicKey["mode"]
+}
+
+/**
+ * 今の調とスタイルで出してよい提案だけに絞る。
+ * 相対長調のV7(短調のbVII7)で終わるBメロの提案(approach)は、そのスタイルがその終止を出せるときだけ。
+ * 出せないスタイルでは、効果の無い提案を約束しないよう出さない。
+ */
+export function suggestionsFor(section: SectionId, key: MusicKey, style: StyleId): SectionSuggestion[] {
+  return NEXT_SECTIONS[section].filter(
+    (s) =>
+      (s.onlyIn === undefined || s.onlyIn === key.mode) &&
+      (s.approach !== "relative" || relativeMajorDominant(style, key.mode) !== null),
+  )
 }
 
 export const NEXT_SECTIONS: Record<SectionId, SectionSuggestion[]> = {
@@ -32,10 +50,28 @@ export const NEXT_SECTIONS: Record<SectionId, SectionSuggestion[]> = {
   ],
   verse: [
     { section: "pre-chorus", reason: "Bメロで緊張を高めてからサビへ" },
+    {
+      section: "pre-chorus",
+      reason: "Bメロの終わりを相対長調のV7(短調のbVII7)にして、相対長調のサビへ入る準備をする",
+      approach: "relative",
+      onlyIn: "minor",
+    },
     { section: "chorus", reason: "Bメロを挟まず直接サビへ(シンプルな構成)" },
+    {
+      section: "chorus",
+      reason: "短調のAメロから、相対長調のサビで明るく開ける",
+      keyMove: { type: "relative", reason: "相対長調へ転調する" },
+      onlyIn: "minor",
+    },
   ],
   "pre-chorus": [
     { section: "chorus", reason: "Bメロの高まりをサビで解放する(鉄板の流れ)" },
+    {
+      section: "chorus",
+      reason: "短調のBメロから、相対長調のサビで明るく開ける",
+      keyMove: { type: "relative", reason: "相対長調へ転調する" },
+      onlyIn: "minor",
+    },
   ],
   chorus: [
     { section: "verse", reason: "次のAメロへ。同じ景色を別の歌詞で描く" },

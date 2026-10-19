@@ -455,6 +455,8 @@ export const STYLE_TEMPLATES: Record<StyleId, Record<Mode, string[][]>> = {
       ["vi(add9)", "IVmaj7", "Imaj7", "III7"],
       ["Imaj7", "V7", "vi7", "iv"],
       ["Imaj7", "bVII", "vi7", "IVmaj7"],
+      // bVII(遠い記憶のような響き)から主和音へ戻り、iiで次へ流れる(I → bVII → I → ii)
+      ["Imaj7", "bVIImaj7", "Iadd9", "ii7"],
     ],
   },
 }

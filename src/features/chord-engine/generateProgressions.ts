@@ -14,6 +14,7 @@ import {
   isDefiniteMajorV,
   matchesStyleSignature,
   minorDominantAlternatives,
+  relativeMajorDominant,
   openColors,
   rootKey,
   spiceTokens,
@@ -55,6 +56,11 @@ export interface GenerateParams {
   previous?: PreviousSection
   /** 曲の原調。転調したあとのセクションで、原調へ戻る判断に使う */
   originalKey?: MusicKey
+  /**
+   * 次に相対長調のサビへ向かうBメロとして作る(短調のプレコーラスのみ)。渡すと末尾を
+   * 相対長調のV7(短調のbVII7)にする候補が出る。渡さなければ従来どおり。
+   */
+  approachRelativeMajor?: boolean
 }
 
 /**
@@ -174,11 +180,15 @@ function generateOne(params: GenerateParams): GeneratedProgression {
   const isPeriod = length === PERIOD_CHORD_COUNT
   const reuse = isPeriod ? null : reusablePrevious(params)
   let tokens = isPeriod
-    ? buildPeriod(style, key.mode, mood, section)
-    : adaptToSection(generateChain(style, key.mode, mood, length), section, key, style, reuse, returningHome(params))
+    ? buildPeriod(style, key.mode, mood, section, params.approachRelativeMajor === true)
+    : adaptToSection(generateChain(style, key.mode, mood, length), section, key, style, reuse, returningHome(params), params.approachRelativeMajor === true)
   // 8小節フレーズは「同じ出だし」自体が構造なので、代理和音で崩さない
   if (!isPeriod && chance(SUBSTITUTION_PROBABILITY)) tokens = substituteOneChord(tokens, style, key.mode)
-  const decorated = limitDefiniteDominants(decorateProgression(tokens.map(parseToken), style, mood, key.mode), style, key.mode)
+  const decorated = contrastWithSus(
+    limitDefiniteDominants(decorateProgression(tokens.map(parseToken), style, mood, key.mode), style, key.mode),
+    style,
+    key.mode,
+  )
   const { chords: parsed, invertedIndices } = applyVoiceLeadingBass(decorated, style)
 
   const chords = parsed.map((c) => chordName(c, key))
@@ -265,7 +275,13 @@ function pickAvoiding(candidates: string[], ...avoid: string[]): string {
  * 次のセクションへつなぐ場面(Bメロ・Cメロ等)では、後半も前半と別の緊張の和音で止める。
  * 和音はすべてそのスタイルのテンプレートと遷移表から選ぶ。
  */
-function buildPeriod(style: StyleId, mode: MusicKey["mode"], mood: MoodId, section: SectionId): string[] {
+function buildPeriod(
+  style: StyleId,
+  mode: MusicKey["mode"],
+  mood: MoodId,
+  section: SectionId,
+  approachRelativeMajor: boolean,
+): string[] {
   const antecedent = generateChain(style, mode, mood, 4).slice(0, 4)
   while (antecedent.length < 4) antecedent.push(pick(tensionTokens(style, mode)))
   // 後半は前半の出だしで始まるので、出だし2和音が同じ根音なら、前半の終わりもそれと変えて3連続を防ぐ
@@ -287,7 +303,14 @@ function buildPeriod(style: StyleId, mode: MusicKey["mode"], mood: MoodId, secti
     ? tensionTokens(style, mode).filter((t) => rootKey(t) !== rootKey(antecedent[3]))
     : tonicTokens(style, mode)
   const last = pickAvoiding(endings.length > 0 ? endings : tensionTokens(style, mode), third)
-  return [...antecedent, antecedent[0], antecedent[1], third, last]
+  // 相対長調のサビへ向かうBメロなら、後半の最後を相対長調のV7(短調のbVII7)にする候補を出す。
+  // 前半の出だしを繰り返す構造はそのままで、末尾の1和音だけを替える
+  const dominant =
+    approachRelativeMajor && sectionRule(section) === "preChorus" && chance(RELATIVE_APPROACH_PROBABILITY)
+      ? relativeMajorDominant(style, mode)
+      : null
+  const closing = dominant && rootKey(third) !== rootKey(dominant) ? dominant : last
+  return [...antecedent, antecedent[0], antecedent[1], third, closing]
 }
 
 /** 生成した進行の1か所を代理和音へ差し替える確率 */
@@ -467,6 +490,9 @@ export function withHomeReturnTail(tokens: string[], style: StyleId, mode: Music
   return [...tokens.slice(0, n - tail.length), ...tail]
 }
 
+/** 相対長調のサビへ向かうBメロが、末尾をbVII7にする確率 */
+const RELATIVE_APPROACH_PROBABILITY = 0.7
+
 /** CHORD_ENGINE_SPEC §6 のセクションルールでテンプレートを変形する */
 function adaptToSection(
   tokens: string[],
@@ -475,6 +501,7 @@ function adaptToSection(
   style: StyleId,
   previous: ReusableLoop | null,
   homeReturn: boolean,
+  approachRelativeMajor: boolean,
 ): string[] {
   const mode = key.mode
   let result = [...tokens]
@@ -520,10 +547,15 @@ function adaptToSection(
       }
       break
 
-    case "preChorus":
-      // 末尾を、そのスタイルが実際に使う「トニック以外の終わり方」にして緊張を作る
-      replaceLast(tensionTokens(style, mode))
+    case "preChorus": {
+      // 相対長調のサビへ向かうなら、末尾を相対長調のV7(短調のbVII7)にする候補を出す。
+      // そうでなければ、そのスタイルが実際に使う「トニック以外の終わり方」にして緊張を作る
+      const dominant = approachRelativeMajor && chance(RELATIVE_APPROACH_PROBABILITY) ? relativeMajorDominant(style, mode) : null
+      const beforeLast = result.length >= 2 ? rootKey(result[result.length - 2]) : null
+      if (dominant && beforeLast !== rootKey(dominant)) result[last()] = dominant
+      else replaceLast(tensionTokens(style, mode))
       break
+    }
 
     case "chorus":
       // 前のセクションのループを、別の和音から始めて使い回す
@@ -613,6 +645,37 @@ function unresolveToken(token: string, style: StyleId, mode: MusicKey["mode"]): 
 
 /** 短調の1進行に置く決定的なメジャーV(導音を持つV)の上限 */
 const MAX_DEFINITE_DOMINANTS = 1
+
+/** 決定的なV7を1か所だけ置き、他の和音をsusで保留して対比させる確率 */
+const SUS_CONTRAST_PROBABILITY = 0.35
+
+/** susに置き換えてよい和音の装飾(素の三和音と add9。dim / aug / 7th / 6th などの性格は崩さない) */
+const SUS_REPLACEABLE_SUFFIXES = new Set(["", "add9"])
+
+/**
+ * 短調で決定的なV7がちょうど1か所あるとき、他の和音の多くをsus2 / sus4にして保留し、
+ * V7を唯一の決定的な和音として対比させる(例: isus2 – isus2 – ivsus2 – V7)。
+ * そのスタイルの語彙にsus2またはsus4があるときだけ行い(スタイル外の響きを足さない)、
+ * 置き換えたあとに、Vを除く和音の半分以上がsusにならなければ元のままにする。
+ * スラッシュベースを持つ和音は転回の意図を崩さないよう触れない。
+ */
+export function contrastWithSus(chords: ParsedChord[], style: StyleId, mode: MusicKey["mode"]): ParsedChord[] {
+  if (mode !== "minor") return chords
+  const dominants = chords.filter(isDefiniteMajorV)
+  if (dominants.length !== 1 || dominants[0].suffix !== "7") return chords
+  const suffixes = styleVocabulary(style, mode).suffixes
+  const sus = suffixes.has("sus2") ? "sus2" : suffixes.has("sus4") ? "sus4" : null
+  if (!sus || !chance(SUS_CONTRAST_PROBABILITY)) return chords
+
+  const others = chords.filter((c) => !isDefiniteMajorV(c))
+  const result = chords.map((c) =>
+    isDefiniteMajorV(c) || c.bass || !SUS_REPLACEABLE_SUFFIXES.has(c.suffix) || !chance(0.85)
+      ? c
+      : { ...c, suffix: sus, token: buildToken({ ...c, suffix: sus }) },
+  )
+  const isSus = (c: ParsedChord) => c.suffix === "sus2" || c.suffix === "sus4"
+  return result.filter((c) => !isDefiniteMajorV(c) && isSus(c)).length * 2 >= others.length ? result : chords
+}
 
 /** 8小節フレーズで、後半の出だし2和音(4・5番目)が対応する前半の和音(0・1番目)。それ以外は null */
 function openingMirror(index: number, length: number): number | null {

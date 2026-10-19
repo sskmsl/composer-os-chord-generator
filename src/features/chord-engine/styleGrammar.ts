@@ -163,6 +163,16 @@ export function minorDominantAlternatives(style: StyleId, mode: Mode): string[] 
   )
 }
 
+/**
+ * 短調から相対長調へ入る直前の和音。相対長調のV7は、短調のbVII7(例: Bm の A7 → D)。
+ * そのスタイルが bVII の根音と 7 の装飾を語彙に持つときだけ返す(スタイル外の響きを足さない)。
+ */
+export function relativeMajorDominant(style: StyleId, mode: Mode): string | null {
+  if (mode !== "minor") return null
+  const vocab = styleVocabulary(style, mode)
+  return vocab.roots.has("bVII") && vocab.suffixes.has("7") ? "bVII7" : null
+}
+
 /** V の和音に使ってよい装飾。テンプレートの V に付いているもの+長三和音用の装飾 */
 export function dominantColors(style: StyleId, mode: Mode): string[] {
   return memoized(`dom-${style}-${mode}`, () => {
