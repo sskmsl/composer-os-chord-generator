@@ -93,8 +93,71 @@ export async function loadGmBuffers(requests: ReadonlyMap<string, ReadonlySet<nu
   return new Map(entries)
 }
 
+/** 先頭の無音とみなす振幅(約 -54dB)。mp3 の符号化で付く頭の遅れを見つけるのに使う */
+const SILENCE_THRESHOLD = 0.002
+/** 先頭の無音として切り詰める長さの上限(秒)。これより長い無音は音の一部とみなして残す */
+const MAX_LEADING_SILENCE = 0.15
+/** 末尾が持続音とみなせる、最大の音量(窓ごとの実効値)に対する比 */
+const SUSTAINED_TAIL_RATIO = 0.3
+/** 末尾を調べる窓(秒)。サンプル終端の手前 0.35〜0.15 秒。終端の淡い消え方を避けるため終端そのものは見ない */
+const TAIL_WINDOW = { from: 0.35, to: 0.15 }
+const RMS_WINDOW = 0.05
+
+export interface SampleShape {
+  /** 再生を始める位置(秒)。先頭の無音を飛ばす */
+  start: number
+  /** 音が持続したままサンプルが終わるとき、繰り返す区間(秒)。減衰して終わるサンプルは null */
+  loop: { start: number; end: number } | null
+}
+
+const shapeCache = new WeakMap<AudioBuffer, SampleShape>()
+
+function rms(data: Float32Array, from: number, to: number): number {
+  const a = Math.max(0, Math.min(data.length, from))
+  const b = Math.max(a, Math.min(data.length, to))
+  if (b === a) return 0
+  let sum = 0
+  for (let index = a; index < b; index += 1) sum += data[index] * data[index]
+  return Math.sqrt(sum / (b - a))
+}
+
+/**
+ * サンプルの形を調べる。
+ *  - 先頭の無音: mp3 で書き出したサンプルは頭に無音が付くことがあり、そのまま鳴らすと
+ *    コードの切り替わりで新しい和音の発音が遅れて、前の和音が減衰したあとに音の谷ができる
+ *  - 持続したまま終わるサンプル: パッドや弦などで、サンプルがコードより短いと途中で音が途切れる。
+ *    終端が最大の音量に近いときだけ持続音とみなし、終端近くを繰り返して音価の終わりまで保つ。
+ *    ピアノのように自然に減衰して終わるサンプルは、そのまま鳴らす
+ */
+export function analyzeSample(buffer: AudioBuffer): SampleShape {
+  const cached = shapeCache.get(buffer)
+  if (cached) return cached
+
+  const data = buffer.getChannelData(0)
+  const rate = buffer.sampleRate
+  const limit = Math.min(data.length, Math.floor(MAX_LEADING_SILENCE * rate))
+  let first = 0
+  while (first < limit && Math.abs(data[first]) < SILENCE_THRESHOLD) first += 1
+  const start = first >= limit ? 0 : first / rate
+
+  let loop: SampleShape["loop"] = null
+  const window = Math.floor(RMS_WINDOW * rate)
+  let peak = 0
+  for (let at = 0; at + window <= data.length; at += window) peak = Math.max(peak, rms(data, at, at + window))
+  const tailFrom = data.length - Math.floor(TAIL_WINDOW.from * rate)
+  const tailTo = data.length - Math.floor(TAIL_WINDOW.to * rate)
+  if (peak > 0 && tailFrom > first && rms(data, tailFrom, tailTo) >= peak * SUSTAINED_TAIL_RATIO) {
+    loop = { start: tailFrom / rate, end: tailTo / rate }
+  }
+
+  const shape = { start, loop }
+  shapeCache.set(buffer, shape)
+  return shape
+}
+
 /**
  * サンプルを1音鳴らす。音価の終わりで短く減衰させる(持続する楽器も、減衰する楽器も同じ扱い)。
+ * 先頭の無音は飛ばし、持続したまま終わるサンプルは音価の終わりまで繰り返す(analyzeSample)。
  * 返り値は音が鳴り終わる時刻。
  */
 export function scheduleGmSample(
@@ -111,6 +174,12 @@ export function scheduleGmSample(
   const source = ctx.createBufferSource()
   source.buffer = buffer
   source.playbackRate.value = playbackRate
+  const shape = analyzeSample(buffer)
+  if (shape.loop) {
+    source.loop = true
+    source.loopStart = shape.loop.start
+    source.loopEnd = shape.loop.end
+  }
   const gain = ctx.createGain()
   const level = 0.9 * Math.pow(Math.max(0.1, Math.min(1, velocity / 127)), 1.4)
   const end = t0 + Math.max(0.05, duration)
@@ -119,7 +188,7 @@ export function scheduleGmSample(
   gain.gain.exponentialRampToValueAtTime(0.0001, end + release)
   source.connect(gain)
   gain.connect(destination)
-  source.start(t0)
+  source.start(t0, shape.start)
   source.stop(end + release + 0.02)
   return end + release
 }
