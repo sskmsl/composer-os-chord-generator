@@ -199,7 +199,7 @@ function chordRoot(c: ParsedChord): string {
 const has = (chords: ParsedChord[], ...roots: string[]) => chords.some((c) => roots.includes(chordRoot(c)))
 const isMajorV = (c: ParsedChord) => chordRoot(c) === "V"
 /** 属七(長三和音+短7度)。V7だけでなく副属七(VI7/III7/II7)やbVII7も含む */
-const isDominantSeventh = (c: ParsedChord) => !c.lower && c.suffix === "7"
+const isDominantSeventh = (c: ParsedChord) => !c.lower && (c.suffix === "7" || c.suffix === "7b9")
 const share = (chords: ParsedChord[], pred: (c: ParsedChord) => boolean) =>
   chords.filter(pred).length / chords.length
 const distinctRoots = (chords: ParsedChord[]) => new Set(chords.map(chordRoot)).size

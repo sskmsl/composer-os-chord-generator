@@ -45,7 +45,7 @@ export interface Features {
  */
 export type CadenceType = "authentic" | "half" | "deceptive" | "plagal" | "modal"
 
-const COLOR_SUFFIXES = ["add9", "maj7", "m9", "m11", "11", "sus2", "sus4", "7sus4", "6", "aug"]
+const COLOR_SUFFIXES = ["add9", "maj7", "m9", "m11", "11", "sus2", "sus4", "7sus4", "6", "aug", "7b9"]
 const SOFT_COLORS = ["add9", "maj7", "m9", "m11", "11"]
 
 function bassSemitone(c: ParsedChord): number {
@@ -117,7 +117,7 @@ export function extractFeatures(chords: ParsedChord[], mode: Mode): Features {
   const hasDim = chords.some((c) => c.suffix === "dim" || c.suffix === "ø")
   const hasBII = chords.some((c) => c.acc === -1 && c.roman === "II")
   const hasV7 = chords.some(
-    (c) => !c.lower && c.roman === "V" && (c.suffix === "7" || c.suffix === "7sus4"),
+    (c) => !c.lower && c.roman === "V" && (c.suffix === "7" || c.suffix === "7b9" || c.suffix === "7sus4"),
   )
   const hasBVI = semis.includes(8)
   const hasBVII = semis.includes(10)
