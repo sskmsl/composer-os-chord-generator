@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest"
 import { normalizeStyleId, type Mode, type SectionId, type StyleId } from "@/types/music"
-import { degreeSemitone, parseToken } from "../degrees"
+import { bassSemitoneOf, chordName, degreeSemitone, parseToken } from "../degrees"
 import { clearSessionSkeletonHistory, generateProgressions, rootSkeletonOf } from "../generateProgressions"
 import { commonToneSubstitutes, matchesStyleSignature, rootKey, styleVocabulary } from "../styleGrammar"
 import { STYLE_OPTIONS, STYLE_TEMPLATES, STYLE_TEMPO } from "../templates"
@@ -286,5 +286,65 @@ describe("Romance • Nostalgia", () => {
       const endings = new Set(generateAll("romanceNostalgia", mode).map((p) => rootKey(p.romanNumerals.at(-1)!)))
       expect(endings.size, `${mode}: ${[...endings].join(",")}`).toBeGreaterThanOrEqual(3)
     }
+  })
+})
+
+describe("Primitive / Medieval Black", () => {
+  const parse = (tokens: string[]) => tokens.map(parseToken)
+  const D_MINOR = { tonic: "D", mode: "minor" } as const
+
+  it("is an available style with a slow tempo", () => {
+    const option = STYLE_OPTIONS.find((o) => o.value === "medievalBlack")
+    expect(option?.label).toBe("Primitive / Medieval Black")
+    expect(normalizeStyleId("medievalBlack")).toBe("medievalBlack")
+    expect(STYLE_TEMPO.medievalBlack).toBeLessThanOrEqual(72)
+  })
+
+  it("spells the drone template as D5 - Eb/D - Gm/D - D5 in D minor", () => {
+    const names = STYLE_TEMPLATES.medievalBlack.minor[0].map((t) => chordName(parseToken(t), D_MINOR))
+    expect(names).toEqual(["D5", "Eb/D", "Gm/D", "D5"])
+  })
+
+  it("uses only plain triads and power chords, with no dominant pull", () => {
+    for (const mode of MODES) {
+      for (const p of generateAll("medievalBlack", mode)) {
+        for (const token of p.romanNumerals) {
+          const c = parseToken(token)
+          expect(["", "5"], `${mode}: ${token}`).toContain(c.suffix)
+          expect(rootKey(token) === "V", `${mode}: ${token}`).toBe(false)
+        }
+      }
+    }
+  })
+
+  it("keeps the tonic drone in the bass, or stacks power chords", () => {
+    // シグネチャーの実装とは別に、テスト側で低音と5度の重なりを数え直す
+    for (const mode of MODES) {
+      for (const p of generateAll("medievalBlack", mode)) {
+        const chords = parse(p.romanNumerals)
+        const droneBass = chords.filter((c) => bassSemitoneOf(c) === 0).length
+        const powerChords = chords.filter((c) => c.suffix === "5").length
+        expect(droneBass >= chords.length - 1 || powerChords * 2 >= chords.length, p.romanNumerals.join(" ")).toBe(true)
+      }
+    }
+  })
+
+  it("never decorates or inverts: the bass stays where the template put it", () => {
+    for (const mode of MODES) {
+      const tokens = new Set(STYLE_TEMPLATES.medievalBlack[mode].flat())
+      for (const p of generateAll("medievalBlack", mode)) {
+        for (const token of p.romanNumerals) expect(tokens.has(token), `${mode}: ${token}`).toBe(true)
+      }
+    }
+  })
+
+  it("rejects sweet colors, dominant pulls and motion without a drone", () => {
+    const sig = (tokens: string[], mode: Mode) => matchesStyleSignature("medievalBlack", parse(tokens), mode)
+    expect(sig(["i5", "bII/i", "iv/i", "i5"], "minor")).toBe(true)
+    expect(sig(["i5", "bVII5", "bVI5", "bVII5"], "minor")).toBe(true)
+    expect(sig(["i(add9)", "bII/i", "iv/i", "i5"], "minor")).toBe(false)
+    expect(sig(["i5", "bII/i", "V7", "i5"], "minor")).toBe(false)
+    expect(sig(["i5", "bVI", "bII", "bVII"], "minor")).toBe(false)
+    expect(sig(["i5", "i5", "i5", "i5"], "minor")).toBe(false)
   })
 })
