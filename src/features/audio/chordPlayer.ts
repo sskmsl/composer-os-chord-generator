@@ -275,6 +275,19 @@ function getVoice(style: StyleId): VoiceProfile {
   return { ...DEFAULT_VOICE, ...STYLE_VOICES[style] }
 }
 
+/**
+ * GM音源で、前のコードを次のコードの頭より後まで保つ長さ(秒)。
+ * パッドや弦のサンプルは立ち上がりがゆっくりで、前のコードを切り替わりの手前で絞ると、
+ * 新しいコードが育つ前に音量の谷(一瞬の無音)ができる。切り替わりのあとも少し保ち、
+ * 減衰(release)しながら次のコードの立ち上がりと重ねて受け渡す。
+ */
+export const GM_CHORD_OVERLAP = 0.2
+
+/** GM音源で1コードのサンプルを鳴らし続ける長さ(秒)。音価に重なり分を足す */
+export function gmNoteLength(dur: number): number {
+  return Math.max(0.05, dur + GM_CHORD_OVERLAP)
+}
+
 /** 先読みして予約しておく長さ(秒)。曲全体を一度に予約すると、長い曲で音源の数が膨らんで重くなる */
 const LOOKAHEAD_SECONDS = 6
 /** 先読みを補充する間隔(ミリ秒) */
@@ -441,8 +454,7 @@ class ChordPlayer {
     const bassBuffer = bufferFor(gm.programs.bass, bass)
     const noteBuffers = notes.map((pitch) => bufferFor(gm.programs.chords, pitch))
     if (!bassBuffer || noteBuffers.some((buffer) => !buffer)) return false
-    // コード末にわずかな隙間を残す(書き出しと同じ)
-    const length = Math.max(0.05, dur - 0.04)
+    const length = gmNoteLength(dur)
     notes.forEach((pitch, index) => scheduleGmSample(ctx, dest, noteBuffers[index]!, pitch, 62, t0, length, 0.35))
     scheduleGmSample(ctx, dest, bassBuffer, bass, 76, t0, length, 0.3)
     return true
