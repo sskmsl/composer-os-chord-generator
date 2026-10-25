@@ -257,6 +257,18 @@ const STYLE_VOICES: Partial<Record<StyleId, Partial<VoiceProfile>>> = {
     chordGain: 0.045,
     bassGain: 0.26,
   },
+  romanticBlack: {
+    // 掻き鳴らすギターのような、明るさを少し抑えた減衰のある音
+    waveform: "sawtooth",
+    detune: 8,
+    filterBase: 900,
+    filterPeak: 2000,
+    attack: 0.02,
+    sustainLevel: 0.55,
+    decay: 0.3,
+    release: 1.1,
+    chordGain: 0.045,
+  },
 }
 
 function getVoice(style: StyleId): VoiceProfile {

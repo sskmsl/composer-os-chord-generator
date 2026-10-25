@@ -313,6 +313,12 @@ const STYLE_SIGNATURES: Record<StyleId, (chords: ParsedChord[], mode: Mode) => b
     !cs.some((c) => isMajorV(c) || isDominantSeventh(c)) &&
     distinctRoots(cs) >= 2 &&
     (tonicBassCount(cs) >= cs.length - 1 || share(cs, (c) => c.suffix === "5") >= 0.5),
+  // 甘い色彩(add9/maj7/m9)が半分以上で、劇的な翳り(借用のbVI・iv・bII・bVII、7(b9)等の属七、iiø)を含む
+  romanticBlack: (cs, mode) =>
+    share(cs, (c) => ["add9", "maj7", "m9"].includes(c.suffix)) >= 0.5 &&
+    (cs.some((c) => isDominantSeventh(c) || c.suffix === "ø") ||
+      has(cs, "bII", "bVI", "bVII") ||
+      (mode === "major" && has(cs, "iv"))),
 }
 
 export function matchesStyleSignature(style: StyleId, chords: ParsedChord[], mode: Mode): boolean {

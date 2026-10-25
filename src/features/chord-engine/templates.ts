@@ -487,6 +487,32 @@ export const STYLE_TEMPLATES: Record<StyleId, Record<Mode, string[][]>> = {
       ["I5", "iv/I", "I5", "bVII/I"],
     ],
   },
+  romanticBlack: {
+    // Romantic / Atmospheric Black: 哀愁と陶酔。add9/maj7 の甘い響きに借用和音(bVI・iv・bII)を重ね、
+    // 劇的な短調進行でトニックへ引き戻す(例: Dm(add9) → Bbmaj7 → Gm(add9) → A7(b9))。
+    // ドミナントは 7(b9) にして、短調の暗さと緊張を最後に1回だけ決定的に置く。
+    // トレモロで刻むギターの上で、悲劇的な和声を積み重ねる土台にする。
+    minor: [
+      ["i(add9)", "bVImaj7", "iv(add9)", "V7b9"],
+      ["i(add9)", "bVImaj7", "bIIImaj7", "V7b9"],
+      ["i(add9)", "iv(add9)", "bVImaj7", "V7b9"],
+      ["bVImaj7", "iv(add9)", "i(add9)", "V7b9"],
+      ["i(add9)", "bIImaj7", "bVImaj7", "V7b9"],
+      ["i(add9)", "bVII", "bVImaj7", "V7b9"],
+      ["i(add9)", "bVImaj7", "iiø", "V7b9"],
+      ["iv(add9)", "V7b9", "i(add9)", "bVImaj7"],
+    ],
+    major: [
+      ["Imaj7", "bVImaj7", "iv(add9)", "V7b9"],
+      ["vi(add9)", "IVmaj7", "iv(add9)", "V7b9"],
+      ["Iadd9", "iv(add9)", "bVImaj7", "V7b9"],
+      ["Iadd9", "bIIImaj7", "bVImaj7", "V7b9"],
+      ["vi(add9)", "bVImaj7", "bVII", "Iadd9"],
+      ["Iadd9", "IVmaj7", "iv(add9)", "Iadd9"],
+      ["Imaj7", "vi(add9)", "bVImaj7", "V7b9"],
+      ["Iadd9", "bVII", "bVImaj7", "V7b9"],
+    ],
+  },
 }
 
 /** スタイルごとの標準テンポ(BPM)。試聴とMIDI書き出しのデフォルトに使う */
@@ -511,6 +537,7 @@ export const STYLE_TEMPO: Record<StyleId, number> = {
   kayokyoku: 84,
   romanceNostalgia: 78,
   medievalBlack: 66,
+  romanticBlack: 72,
 }
 
 export const STYLE_OPTIONS: { value: StyleId; label: string; tagline: string }[] = [
@@ -534,6 +561,7 @@ export const STYLE_OPTIONS: { value: StyleId; label: string; tagline: string }[]
   { value: "kayokyoku", label: "歌謡曲", tagline: "80年代ニューミュージックの哀愁・泣きの短調" },
   { value: "romanceNostalgia", label: "Romance • Nostalgia", tagline: "夢見心地・失恋・郷愁、哀愁を帯びた美しさ" },
   { value: "medievalBlack", label: "Primitive / Medieval Black", tagline: "旋法・ドローン・半音の衝突・5度の重なり、原始的で中世的な不気味さ" },
+  { value: "romanticBlack", label: "Romantic / Atmospheric Black", tagline: "add9・maj7・借用和音、劇的な短調進行の哀愁と陶酔" },
 ]
 
 interface StylePrefs {
@@ -679,6 +707,13 @@ export const STYLE_PREFS: Record<StyleId, StylePrefs> = {
     slashProb: 0,
     minorColors: [],
     majorColors: [],
+  },
+  romanticBlack: {
+    // 甘い add9/maj7 を主役に、短調の和音にm9を時々。スラッシュベースは控えめ(トレモロで刻む和音の根音を保つ)
+    decorationProb: 0.5,
+    slashProb: 0.1,
+    minorColors: ["add9", "add9", "maj7", "m9"],
+    majorColors: ["add9", "maj7", "maj7"],
   },
 }
 

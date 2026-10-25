@@ -348,3 +348,69 @@ describe("Primitive / Medieval Black", () => {
     expect(sig(["i5", "i5", "i5", "i5"], "minor")).toBe(false)
   })
 })
+
+describe("Romantic / Atmospheric Black", () => {
+  const parse = (tokens: string[]) => tokens.map(parseToken)
+  const D_MINOR = { tonic: "D", mode: "minor" } as const
+  const SWEET = ["add9", "maj7", "m9"]
+
+  it("is an available style with a slow-ballad tempo", () => {
+    const option = STYLE_OPTIONS.find((o) => o.value === "romanticBlack")
+    expect(option?.label).toBe("Romantic / Atmospheric Black")
+    expect(normalizeStyleId("romanticBlack")).toBe("romanticBlack")
+    expect(STYLE_TEMPO.romanticBlack).toBeGreaterThanOrEqual(60)
+    expect(STYLE_TEMPO.romanticBlack).toBeLessThanOrEqual(84)
+  })
+
+  it("spells the tragic template as Dm(add9) - Bbmaj7 - Gm(add9) - A7b9 in D minor", () => {
+    const names = STYLE_TEMPLATES.romanticBlack.minor[0].map((t) => chordName(parseToken(t), D_MINOR))
+    expect(names).toEqual(["Dm(add9)", "Bbmaj7", "Gm(add9)", "A7b9"])
+  })
+
+  it("keeps the sweet colors (add9/maj7/m9) on at least half of the chords", () => {
+    for (const mode of MODES) {
+      for (const p of generateAll("romanticBlack", mode)) {
+        const share = p.romanNumerals.filter((t) => SWEET.includes(parseToken(t).suffix)).length / p.romanNumerals.length
+        expect(share, `${mode}: ${p.romanNumerals.join(" ")}`).toBeGreaterThanOrEqual(0.5)
+      }
+    }
+  })
+
+  it("always carries a dramatic shadow: a dominant 7th, iiø or a borrowed bII/bVI/bVII", () => {
+    // シグネチャーの実装とは別に、テスト側で数え直す
+    for (const mode of MODES) {
+      for (const p of generateAll("romanticBlack", mode)) {
+        const chords = parse(p.romanNumerals)
+        const shadow = chords.some(
+          (c) =>
+            (!c.lower && (c.suffix === "7" || c.suffix === "7b9")) ||
+            c.suffix === "ø" ||
+            (c.acc === -1 && ["II", "VI", "VII"].includes(c.roman)) ||
+            (mode === "major" && c.lower && c.roman === "IV"),
+        )
+        expect(shadow, `${mode}: ${p.romanNumerals.join(" ")}`).toBe(true)
+      }
+    }
+  })
+
+  it("places at most one decisive dominant per progression in minor", () => {
+    for (const p of generateAll("romanticBlack", "minor")) {
+      const dominants = p.romanNumerals.filter((t) => rootKey(t) === "V" && !parseToken(t).suffix.includes("sus"))
+      expect(dominants.length, p.romanNumerals.join(" ")).toBeLessThanOrEqual(1)
+    }
+  })
+
+  it("uses 7(b9) for the dominant and shows up in the generated output", () => {
+    const tokens = generateAll("romanticBlack", "minor").flatMap((p) => p.romanNumerals)
+    expect(tokens).toContain("V7b9")
+  })
+
+  it("rejects plain progressions without sweet colors or a dramatic shadow", () => {
+    const sig = (tokens: string[], mode: Mode) => matchesStyleSignature("romanticBlack", parse(tokens), mode)
+    expect(sig(["i(add9)", "bVImaj7", "iv(add9)", "V7b9"], "minor")).toBe(true)
+    expect(sig(["i", "bVI", "iv", "V7b9"], "minor")).toBe(false)
+    expect(sig(["i(add9)", "iv(add9)", "i(add9)", "iv(add9)"], "minor")).toBe(false)
+    expect(sig(["Iadd9", "vi(add9)", "IVmaj7", "Imaj7"], "major")).toBe(false)
+    expect(sig(["Iadd9", "bVImaj7", "iv(add9)", "V7b9"], "major")).toBe(true)
+  })
+})
