@@ -99,8 +99,12 @@ const SILENCE_THRESHOLD = 0.002
 const MAX_LEADING_SILENCE = 0.15
 /** 末尾が持続音とみなせる、最大の音量(窓ごとの実効値)に対する比 */
 const SUSTAINED_TAIL_RATIO = 0.3
-/** 末尾を調べる窓(秒)。サンプル終端の手前 0.35〜0.15 秒。終端の淡い消え方を避けるため終端そのものは見ない */
-const TAIL_WINDOW = { from: 0.35, to: 0.15 }
+/** 末尾を調べる窓(秒)。サンプル終端の手前 0.5〜0.1 秒。終端の淡い消え方を避けるため終端そのものは見ない。繰り返す区間もこの中から選ぶ */
+const TAIL_WINDOW = { from: 0.5, to: 0.1 }
+/** 繰り返す区間の最短の長さ(秒)。短すぎると繰り返しが震えて聞こえる */
+const MIN_LOOP = 0.12
+/** つなぎ目の候補(上向きのゼロ交差)の数の上限。組み合わせを調べる時間を抑える */
+const MAX_LOOP_CANDIDATES = 400
 const RMS_WINDOW = 0.05
 
 export interface SampleShape {
@@ -111,6 +115,37 @@ export interface SampleShape {
 }
 
 const shapeCache = new WeakMap<AudioBuffer, SampleShape>()
+
+/**
+ * 繰り返しのつなぎ目で波形が飛ばない区間を選ぶ。始点と終点を上向きのゼロ交差に限り、
+ * そのうち「終点の値と始点の値の差」と「傾きの差」が最小の組を取る。固定の位置で繰り返すと、
+ * 音の高さによっては波形がずれてつなぎ目ごとにクリック音(ブツブツ)が出る。見つからなければ null。
+ */
+function findSeamlessLoop(data: Float32Array, rate: number, from: number, to: number): { start: number; end: number } | null {
+  const crossings: number[] = []
+  for (let index = Math.max(1, from); index < to; index += 1) {
+    if (data[index - 1] < 0 && data[index] >= 0) crossings.push(index)
+  }
+  const stride = Math.ceil(crossings.length / MAX_LOOP_CANDIDATES)
+  const candidates = stride > 1 ? crossings.filter((_, i) => i % stride === 0) : crossings
+  const minLength = Math.floor(MIN_LOOP * rate)
+
+  let best: { start: number; end: number } | null = null
+  let bestCost = Infinity
+  for (const start of candidates) {
+    for (const end of candidates) {
+      if (end - start < minLength) continue
+      const jump = Math.abs(data[end] - data[start])
+      const slope = Math.abs(data[end] - data[end - 1] - (data[start] - data[start - 1]))
+      const cost = jump + slope
+      if (cost < bestCost) {
+        bestCost = cost
+        best = { start, end }
+      }
+    }
+  }
+  return best ? { start: best.start / rate, end: best.end / rate } : null
+}
 
 function rms(data: Float32Array, from: number, to: number): number {
   const a = Math.max(0, Math.min(data.length, from))
@@ -126,7 +161,7 @@ function rms(data: Float32Array, from: number, to: number): number {
  *  - 先頭の無音: mp3 で書き出したサンプルは頭に無音が付くことがあり、そのまま鳴らすと
  *    コードの切り替わりで新しい和音の発音が遅れて、前の和音が減衰したあとに音の谷ができる
  *  - 持続したまま終わるサンプル: パッドや弦などで、サンプルがコードより短いと途中で音が途切れる。
- *    終端が最大の音量に近いときだけ持続音とみなし、終端近くを繰り返して音価の終わりまで保つ。
+ *    終端が最大の音量に近いときだけ持続音とみなし、終端近くのつなぎ目がなめらかな区間を繰り返して音価の終わりまで保つ。
  *    ピアノのように自然に減衰して終わるサンプルは、そのまま鳴らす
  */
 export function analyzeSample(buffer: AudioBuffer): SampleShape {
@@ -147,7 +182,7 @@ export function analyzeSample(buffer: AudioBuffer): SampleShape {
   const tailFrom = data.length - Math.floor(TAIL_WINDOW.from * rate)
   const tailTo = data.length - Math.floor(TAIL_WINDOW.to * rate)
   if (peak > 0 && tailFrom > first && rms(data, tailFrom, tailTo) >= peak * SUSTAINED_TAIL_RATIO) {
-    loop = { start: tailFrom / rate, end: tailTo / rate }
+    loop = findSeamlessLoop(data, rate, tailFrom, tailTo)
   }
 
   const shape = { start, loop }

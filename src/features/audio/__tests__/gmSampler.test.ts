@@ -60,11 +60,38 @@ describe("サンプルの形(analyzeSample)", () => {
   })
 
   it("持続したまま終わるサンプルは、終端近くを繰り返す区間にする", () => {
-    const sustained = fakeBuffer(3, tone)
-    const { loop } = analyzeSample(sustained)
+    const { loop } = analyzeSample(fakeBuffer(3, tone))
     expect(loop).not.toBeNull()
-    expect(loop!.start).toBeCloseTo(3 - 0.35, 2)
-    expect(loop!.end).toBeCloseTo(3 - 0.15, 2)
+    expect(loop!.start).toBeGreaterThanOrEqual(3 - 0.5)
+    expect(loop!.end).toBeLessThanOrEqual(3 - 0.1)
+    expect(loop!.end - loop!.start).toBeGreaterThanOrEqual(0.12)
+  })
+
+  it("繰り返しのつなぎ目で波形が飛ばない(周期がサンプル数で割り切れない高さでも)", () => {
+    // 261.625565Hz(C4)は 8000Hz で 0.4 秒に整数周期が入らない。固定の位置で繰り返すとつなぎ目で大きく飛ぶ
+    const c4 = (t: number) => 0.5 * Math.sin(2 * Math.PI * 261.625565 * t)
+    const buffer = fakeBuffer(3, c4)
+    const { loop } = analyzeSample(buffer)
+    expect(loop).not.toBeNull()
+    const data = buffer.getChannelData(0)
+    const at = (seconds: number) => data[Math.round(seconds * RATE)]
+    const ordinaryStep = 0.5 * 2 * Math.PI * 261.625565 / RATE
+    expect(Math.abs(at(loop!.end) - at(loop!.start))).toBeLessThanOrEqual(ordinaryStep * 2)
+  })
+
+  it("倍音を含む波形でも、つなぎ目の飛びを小さく抑える", () => {
+    const rich = (t: number) =>
+      0.4 * Math.sin(2 * Math.PI * 196.3 * t) + 0.2 * Math.sin(2 * Math.PI * 392.6 * t + 0.4) + 0.1 * Math.sin(2 * Math.PI * 589.1 * t + 1.1)
+    const buffer = fakeBuffer(3, rich)
+    const { loop } = analyzeSample(buffer)
+    expect(loop).not.toBeNull()
+    const data = buffer.getChannelData(0)
+    const jump = Math.abs(data[Math.round(loop!.end * RATE)] - data[Math.round(loop!.start * RATE)])
+    expect(jump).toBeLessThan(0.1)
+  })
+
+  it("ゼロ交差が無く、つなぎ目を選べないときは繰り返さない", () => {
+    expect(analyzeSample(fakeBuffer(3, () => 0.3)).loop).toBeNull()
   })
 
   it("短すぎて末尾を調べられないサンプルは繰り返さない", () => {
@@ -112,8 +139,9 @@ describe("scheduleGmSample", () => {
     const { ctx, source } = fakeContext()
     scheduleGmSample(ctx, {} as AudioNode, fakeBuffer(3, tone), 60, 62, 0, 6)
     expect(source.loop).toBe(true)
-    expect(source.loopStart).toBeCloseTo(2.65, 2)
-    expect(source.loopEnd).toBeCloseTo(2.85, 2)
+    expect(source.loopStart).toBeGreaterThanOrEqual(2.5)
+    expect(source.loopEnd).toBeLessThanOrEqual(2.9)
+    expect(source.loopEnd - source.loopStart).toBeGreaterThanOrEqual(0.12)
   })
 
   it("減衰して終わるサンプルは繰り返さない", () => {
