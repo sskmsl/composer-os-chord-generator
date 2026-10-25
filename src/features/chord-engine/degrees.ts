@@ -13,7 +13,7 @@ export interface ParsedChord {
   roman: string
   /** 小文字表記(=マイナー系)か */
   lower: boolean
-  /** 品質サフィックス: "", "add9", "maj7", "m9", "m11", "11", "7", "sus2", "sus4", "7sus4", "dim", "ø", "6" */
+  /** 品質サフィックス: "", "add9", "maj7", "m9", "m11", "11", "7", "7b9", "5", "sus2", "sus4", "7sus4", "dim", "ø", "6" */
   suffix: string
   /** スラッシュベース(ディグリー)。raw は表示用の元表記 */
   bass?: { acc: number; roman: string; raw: string }
@@ -43,7 +43,7 @@ const FLAT_KEYS = new Set([
   "D-minor", "G-minor", "C-minor", "F-minor", "Bb-minor", "Eb-minor",
 ])
 
-const TOKEN_RE = /^([b#]?)(i{1,3}|iv|v|vi{0,2}|I{1,3}|IV|V|VI{0,2})((?:maj7|add9|m9|m11|7sus4|sus2|sus4|dim|aug|11|7|6|ø)?)$/
+const TOKEN_RE = /^([b#]?)(i{1,3}|iv|v|vi{0,2}|I{1,3}|IV|V|VI{0,2})((?:maj7|add9|m9|m11|7sus4|7b9|sus2|sus4|dim|aug|11|7|6|5|ø)?)$/
 
 export function parseToken(token: string): ParsedChord {
   const [main, bassPart] = token.replace(/[()]/g, "").split("/")
@@ -154,6 +154,12 @@ export function chordName(parsed: ParsedChord, key: MusicKey): string {
     case "7":
       quality = parsed.lower ? "m7" : "7"
       break
+    case "7b9":
+      quality = "7b9"
+      break
+    case "5":
+      quality = "5"
+      break
     case "6":
       quality = parsed.lower ? "m6" : "6"
       break
@@ -204,6 +210,10 @@ export function chordIntervals(parsed: ParsedChord): number[] {
       return [0, 5, 7, 10]
     case "7":
       return lower ? [0, 3, 7, 10] : [0, 4, 7, 10]
+    case "7b9":
+      return [0, 4, 7, 10, 13]
+    case "5":
+      return [0, 7]
     case "6":
       return lower ? [0, 3, 7, 9] : [0, 4, 7, 9]
     default:
@@ -299,6 +309,8 @@ const QUALITY_TO_TOKEN: Record<string, { lower: boolean; suffix: string }> = {
   sus4: { lower: false, suffix: "sus4" },
   "7sus4": { lower: false, suffix: "7sus4" },
   "6": { lower: false, suffix: "6" },
+  "7b9": { lower: false, suffix: "7b9" },
+  "5": { lower: false, suffix: "5" },
   m6: { lower: true, suffix: "6" },
 }
 
@@ -313,7 +325,7 @@ function nearestQuality(quality: string): { lower: boolean; suffix: string } {
   return QUALITY_TO_TOKEN[""]
 }
 
-const THIRDLESS_SUFFIXES = new Set(["sus2", "sus4", "7sus4", "aug"])
+const THIRDLESS_SUFFIXES = new Set(["sus2", "sus4", "7sus4", "aug", "5"])
 /** 短調(i ii° bIII iv V bVI bVII。属和音は和声的短音階の長三和音)・長音階(I ii iii IV V vi vii°)で短三和音系になる度数 */
 const MINOR_KEY_LOWER = new Set(["0:I", "0:II", "0:IV"])
 const MAJOR_KEY_LOWER = new Set(["0:II", "0:III", "0:VI", "0:VII"])

@@ -459,6 +459,60 @@ export const STYLE_TEMPLATES: Record<StyleId, Record<Mode, string[][]>> = {
       ["Imaj7", "bVIImaj7", "Iadd9", "ii7"],
     ],
   },
+  medievalBlack: {
+    // Primitive / Medieval Black: 旋法・ドローン・半音の衝突・5度の重なり。原始的で中世的な不気味さ。
+    // 低音(トニック)を持続させたまま、上の和音だけを動かして不穏さを作る(例: D5 → Eb/D → Gm/D → D5)。
+    // 甘い色彩(add9/maj7)も、ドミナントの引力(V・属七)も使わない。使うのは素の三和音・
+    // パワーコード(5)・ドローン上のスラッシュ和音だけ。bII のぶつかりと、bVII/bVI の旋法的な響きが核。
+    //  - ドローン型: 全和音の低音がトニックのまま(上声だけが動く)
+    //  - 5度型: パワーコードが平行に動く(開始音のない5度の重なり)
+    minor: [
+      ["i5", "bII/i", "iv/i", "i5"],
+      ["i5", "bII/i", "i5", "bVII/i"],
+      ["i5", "bVI/i", "bII/i", "i5"],
+      ["i5", "iv/i", "i5", "bII/i"],
+      ["i5", "bVII5", "bVI5", "bVII5"],
+      ["i5", "v/i", "bII/i", "i5"],
+      ["i5", "bII/i", "bVII/i", "i5"],
+      ["i5", "bIII/i", "bII/i", "i5"],
+    ],
+    major: [
+      ["I5", "bVII/I", "IV/I", "I5"],
+      ["I5", "bVII/I", "I5", "IV/I"],
+      ["I5", "bII/I", "I5", "bVII/I"],
+      ["I5", "bII/I", "bVII/I", "I5"],
+      ["I5", "bVII5", "IV5", "I5"],
+      ["I5", "bIII/I", "bVII/I", "I5"],
+      ["I5", "bVI/I", "bVII/I", "I5"],
+      ["I5", "iv/I", "I5", "bVII/I"],
+    ],
+  },
+  romanticBlack: {
+    // Romantic / Atmospheric Black: 哀愁と陶酔。add9/maj7 の甘い響きに借用和音(bVI・iv・bII)を重ね、
+    // 劇的な短調進行でトニックへ引き戻す(例: Dm(add9) → Bbmaj7 → Gm(add9) → A7(b9))。
+    // ドミナントは 7(b9) にして、短調の暗さと緊張を最後に1回だけ決定的に置く。
+    // トレモロで刻むギターの上で、悲劇的な和声を積み重ねる土台にする。
+    minor: [
+      ["i(add9)", "bVImaj7", "iv(add9)", "V7b9"],
+      ["i(add9)", "bVImaj7", "bIIImaj7", "V7b9"],
+      ["i(add9)", "iv(add9)", "bVImaj7", "V7b9"],
+      ["bVImaj7", "iv(add9)", "i(add9)", "V7b9"],
+      ["i(add9)", "bIImaj7", "bVImaj7", "V7b9"],
+      ["i(add9)", "bVII", "bVImaj7", "V7b9"],
+      ["i(add9)", "bVImaj7", "iiø", "V7b9"],
+      ["iv(add9)", "V7b9", "i(add9)", "bVImaj7"],
+    ],
+    major: [
+      ["Imaj7", "bVImaj7", "iv(add9)", "V7b9"],
+      ["vi(add9)", "IVmaj7", "iv(add9)", "V7b9"],
+      ["Iadd9", "iv(add9)", "bVImaj7", "V7b9"],
+      ["Iadd9", "bIIImaj7", "bVImaj7", "V7b9"],
+      ["vi(add9)", "bVImaj7", "bVII", "Iadd9"],
+      ["Iadd9", "IVmaj7", "iv(add9)", "Iadd9"],
+      ["Imaj7", "vi(add9)", "bVImaj7", "V7b9"],
+      ["Iadd9", "bVII", "bVImaj7", "V7b9"],
+    ],
+  },
 }
 
 /** スタイルごとの標準テンポ(BPM)。試聴とMIDI書き出しのデフォルトに使う */
@@ -482,6 +536,8 @@ export const STYLE_TEMPO: Record<StyleId, number> = {
   frenchPop: 104,
   kayokyoku: 84,
   romanceNostalgia: 78,
+  medievalBlack: 66,
+  romanticBlack: 72,
 }
 
 export const STYLE_OPTIONS: { value: StyleId; label: string; tagline: string }[] = [
@@ -504,6 +560,8 @@ export const STYLE_OPTIONS: { value: StyleId; label: string; tagline: string }[]
   { value: "frenchPop", label: "French Pop", tagline: "maj7と循環コード・洒脱で軽やかな憂い" },
   { value: "kayokyoku", label: "歌謡曲", tagline: "80年代ニューミュージックの哀愁・泣きの短調" },
   { value: "romanceNostalgia", label: "Romance • Nostalgia", tagline: "夢見心地・失恋・郷愁、哀愁を帯びた美しさ" },
+  { value: "medievalBlack", label: "Primitive / Medieval Black", tagline: "旋法・ドローン・半音の衝突・5度の重なり、原始的で中世的な不気味さ" },
+  { value: "romanticBlack", label: "Romantic / Atmospheric Black", tagline: "add9・maj7・借用和音、劇的な短調進行の哀愁と陶酔" },
 ]
 
 interface StylePrefs {
@@ -642,6 +700,20 @@ export const STYLE_PREFS: Record<StyleId, StylePrefs> = {
     slashProb: 0.25,
     minorColors: ["m9", "7", "add9"],
     majorColors: ["maj7", "maj7", "add9", "6"],
+  },
+  medievalBlack: {
+    // 装飾もスラッシュベースの追加も転回もしない。低音のドローンを崩さず、テンプレートの和音をそのまま使う
+    decorationProb: 0,
+    slashProb: 0,
+    minorColors: [],
+    majorColors: [],
+  },
+  romanticBlack: {
+    // 甘い add9/maj7 を主役に、短調の和音にm9を時々。スラッシュベースは控えめ(トレモロで刻む和音の根音を保つ)
+    decorationProb: 0.5,
+    slashProb: 0.1,
+    minorColors: ["add9", "add9", "maj7", "m9"],
+    majorColors: ["add9", "maj7", "maj7"],
   },
 }
 

@@ -143,7 +143,7 @@ function wasRecentlyUsed(bucket: string, skeleton: string): boolean {
  * Minimalism/Trip-Hop/Ritual/Electronica/Slowcoreは同じ骨格を反復すること自体が持ち味のスタイルなので、
  * 和声のリズム変化(§computeHarmonicRhythm)と骨格反復の抑制のどちらも対象外とする。
  */
-const REPETITIVE_STYLES = new Set<StyleId>(["minimalism", "tripHop", "ritual", "electronica", "slowcore"])
+const REPETITIVE_STYLES = new Set<StyleId>(["minimalism", "tripHop", "ritual", "electronica", "slowcore", "medievalBlack"])
 
 function rankAndSelect(
   pool: GeneratedProgression[],

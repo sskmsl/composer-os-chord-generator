@@ -245,6 +245,30 @@ const STYLE_VOICES: Partial<Record<StyleId, Partial<VoiceProfile>>> = {
     release: 1.0,
     chordGain: 0.05,
   },
+  medievalBlack: {
+    // 低く暗いオルガン/ドローン風: 鋸歯波を強く絞り、ゆっくり立ち上がって長く残す
+    waveform: "sawtooth",
+    detune: 12,
+    filterBase: 420,
+    filterPeak: 760,
+    filterQ: 1.1,
+    attack: 0.5,
+    release: 1.8,
+    chordGain: 0.045,
+    bassGain: 0.26,
+  },
+  romanticBlack: {
+    // 掻き鳴らすギターのような、明るさを少し抑えた減衰のある音
+    waveform: "sawtooth",
+    detune: 8,
+    filterBase: 900,
+    filterPeak: 2000,
+    attack: 0.02,
+    sustainLevel: 0.55,
+    decay: 0.3,
+    release: 1.1,
+    chordGain: 0.045,
+  },
 }
 
 function getVoice(style: StyleId): VoiceProfile {

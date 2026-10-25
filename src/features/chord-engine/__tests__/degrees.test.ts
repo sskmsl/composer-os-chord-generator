@@ -235,3 +235,27 @@ describe("tokenFromChordSymbol(手で書き換えたコード → 度数)", () =
     expect(tokenFromChordSymbol("H7", key)).toBeNull()
   })
 })
+
+describe("パワーコード(5)と7(♭9)", () => {
+  const DM: MusicKey = { tonic: "D", mode: "minor" }
+
+  it("度数から実コード名に直し、構成音を持つ", () => {
+    expect(chordName(parseToken("i5"), DM)).toBe("D5")
+    expect(chordName(parseToken("V7b9"), DM)).toBe("A7b9")
+    expect(chordIntervals(parseToken("i5"))).toEqual([0, 7])
+    expect(chordIntervals(parseToken("V7b9"))).toEqual([0, 4, 7, 10, 13])
+  })
+
+  it("ドローンの上で動く和音は、トニックをベースにしたスラッシュで表す", () => {
+    expect(chordName(parseToken("bII/i"), DM)).toBe("Eb/D")
+    expect(chordName(parseToken("iv/i"), DM)).toBe("Gm/D")
+  })
+
+  it("実コード名から度数へ戻り、同じ名前に戻る", () => {
+    for (const symbol of ["D5", "A7b9", "Eb/D", "Gm/D", "Bbmaj7", "Gm(add9)"]) {
+      const token = tokenFromChordSymbol(symbol, DM)
+      expect(token, symbol).not.toBeNull()
+      expect(chordName(parseToken(token!), DM), symbol).toBe(symbol)
+    }
+  })
+})

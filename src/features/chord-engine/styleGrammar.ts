@@ -1,6 +1,6 @@
 import type { Mode, StyleId } from "@/types/music"
 import type { ParsedChord } from "./degrees"
-import { chordIntervals, degreeSemitone, parseToken } from "./degrees"
+import { bassSemitoneOf, chordIntervals, degreeSemitone, parseToken } from "./degrees"
 import { STYLE_PREFS, STYLE_TEMPLATES } from "./templates"
 
 /**
@@ -199,7 +199,7 @@ function chordRoot(c: ParsedChord): string {
 const has = (chords: ParsedChord[], ...roots: string[]) => chords.some((c) => roots.includes(chordRoot(c)))
 const isMajorV = (c: ParsedChord) => chordRoot(c) === "V"
 /** 属七(長三和音+短7度)。V7だけでなく副属七(VI7/III7/II7)やbVII7も含む */
-const isDominantSeventh = (c: ParsedChord) => !c.lower && c.suffix === "7"
+const isDominantSeventh = (c: ParsedChord) => !c.lower && (c.suffix === "7" || c.suffix === "7b9")
 const share = (chords: ParsedChord[], pred: (c: ParsedChord) => boolean) =>
   chords.filter(pred).length / chords.length
 const distinctRoots = (chords: ParsedChord[]) => new Set(chords.map(chordRoot)).size
@@ -246,6 +246,9 @@ function hasLongingMove(chords: ParsedChord[], mode: Mode): boolean {
     chords.some((c) => isDominantSeventh(c) && ["III", "VI", "II"].includes(chordRoot(c)))
   )
 }
+
+/** 低音(スラッシュベースがあればそのベース)がトニックの和音の数。ドローン上の動きを数える */
+const tonicBassCount = (chords: ParsedChord[]) => chords.filter((c) => bassSemitoneOf(c) === 0).length
 
 /**
  * そのスタイルに「聞こえる」ための最低条件。語彙(styleVocabulary)に収まって
@@ -303,6 +306,19 @@ const STYLE_SIGNATURES: Record<StyleId, (chords: ParsedChord[], mode: Mode) => b
     cs.every((c) => ["", "7", "6", "maj7", "ø", "sus4", "7sus4"].includes(c.suffix)),
   // 柔らかい色彩(maj7/add9/m9/6/7)が半分以上(夢見心地)で、切なさの動き(借用iv・副属七・下降ベース等)を含む
   romanceNostalgia: (cs, mode) => share(cs, (c) => DREAMY_SUFFIXES.has(c.suffix) || c.suffix === "ø") >= 0.5 && hasLongingMove(cs, mode),
+  // 色彩を足さない素の三和音とパワーコードだけで、長調のVや属七の引力を持たず、
+  // 低音がトニックに居続ける(ドローン)か、パワーコードが半分以上(5度の重なり)。同じ和音だけの停滞は除く
+  medievalBlack: (cs) =>
+    cs.every((c) => c.suffix === "" || c.suffix === "5") &&
+    !cs.some((c) => isMajorV(c) || isDominantSeventh(c)) &&
+    distinctRoots(cs) >= 2 &&
+    (tonicBassCount(cs) >= cs.length - 1 || share(cs, (c) => c.suffix === "5") >= 0.5),
+  // 甘い色彩(add9/maj7/m9)が半分以上で、劇的な翳り(借用のbVI・iv・bII・bVII、7(b9)等の属七、iiø)を含む
+  romanticBlack: (cs, mode) =>
+    share(cs, (c) => ["add9", "maj7", "m9"].includes(c.suffix)) >= 0.5 &&
+    (cs.some((c) => isDominantSeventh(c) || c.suffix === "ø") ||
+      has(cs, "bII", "bVI", "bVII") ||
+      (mode === "major" && has(cs, "iv"))),
 }
 
 export function matchesStyleSignature(style: StyleId, chords: ParsedChord[], mode: Mode): boolean {
